@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 void main() {
   runApp(MyApp());
@@ -7,18 +7,20 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Full Screen Buttons',
-      debugShowCheckedModeBanner: false, // Removes the debug banner
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Full Screen 2 Rows of 7 Buttons'),
+    return CupertinoApp(
+      title: 'Music App',
+      debugShowCheckedModeBanner: false, // This removes the debug banner
+      home: CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          middle: Text('Music App Screen'),
         ),
-        body: Column(
-          children: [
-            buildButtonRow(1, 7),
-            buildButtonRow(8, 14),
-          ],
+        child: SafeArea( // Use SafeArea to prevent overlaps with system UI
+          child: Column(
+            children: [
+              buildButtonRow(1, 7),
+              buildButtonRow(8, 14),
+            ],
+          ),
         ),
       ),
     );
@@ -32,16 +34,18 @@ class MyApp extends StatelessWidget {
           return Expanded(
             child: Padding(
               padding: const EdgeInsets.all(4.0), // Adds space between buttons
-              child: SizedBox.expand(
-                child: ElevatedButton(
-                  onPressed: () {
-                    print('Button ${start + index} pressed');
-                  },
-                  child: Text('Button ${start + index}'),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.zero, // Ensures no extra padding
+              child: CupertinoButton(
+                onPressed: () {
+                  print('Button ${start + index} pressed');
+                },
+                child: Center( // Center the text within the button
+                  child: Text(
+                    'Button ${start + index}',
+                    style: TextStyle(fontSize: 16), // Adjust text size as needed
                   ),
                 ),
+                color: CupertinoColors.activeBlue, // Sets button color
+                padding: EdgeInsets.zero, // Ensures no extra padding
               ),
             ),
           );
