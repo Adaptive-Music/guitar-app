@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
       title: 'Music App',
       debugShowCheckedModeBanner: false, // This removes the debug banner
       home: CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(
+        navigationBar: const CupertinoNavigationBar(
           middle: Text('Music App Screen'),
         ),
         child: SafeArea( // Use SafeArea to prevent overlaps with system UI
@@ -38,14 +38,14 @@ class MyApp extends StatelessWidget {
                 onPressed: () {
                   print('Button ${start + index} pressed');
                 },
+                color: CupertinoColors.activeBlue, // Sets button color
+                padding: EdgeInsets.zero,
                 child: Center( // Center the text within the button
                   child: Text(
                     'Button ${start + index}',
-                    style: TextStyle(fontSize: 16), // Adjust text size as needed
+                    style: const TextStyle(fontSize: 16), // Adjust text size as needed
                   ),
-                ),
-                color: CupertinoColors.activeBlue, // Sets button color
-                padding: EdgeInsets.zero, // Ensures no extra padding
+                ), // Ensures no extra padding
               ),
             ),
           );
