@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 
 void main() {
   runApp(MyApp());
