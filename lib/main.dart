@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 void main() {
   runApp(MyApp());
@@ -7,20 +7,18 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return CupertinoApp(
-      title: 'Music App',
-      debugShowCheckedModeBanner: false, // This removes the debug banner
-      home: CupertinoPageScaffold(
-        navigationBar: const CupertinoNavigationBar(
-          middle: Text('Music App Screen'),
+    return MaterialApp(
+      title: 'Full Screen Buttons',
+      debugShowCheckedModeBanner: false, // Removes the debug banner
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Full Screen 2 Rows of 7 Buttons'),
         ),
-        child: SafeArea( // Use SafeArea to prevent overlaps with system UI
-          child: Column(
-            children: [
-              buildButtonRow(1, 7),
-              buildButtonRow(8, 14),
-            ],
-          ),
+        body: Column(
+          children: [
+            buildButtonRow(1, 7),
+            buildButtonRow(8, 14),
+          ],
         ),
       ),
     );
@@ -34,18 +32,16 @@ class MyApp extends StatelessWidget {
           return Expanded(
             child: Padding(
               padding: const EdgeInsets.all(4.0), // Adds space between buttons
-              child: CupertinoButton(
-                onPressed: () {
-                  print('Button ${start + index} pressed');
-                },
-                color: CupertinoColors.activeBlue, // Sets button color
-                padding: EdgeInsets.zero,
-                child: Center( // Center the text within the button
-                  child: Text(
-                    'Button ${start + index}',
-                    style: const TextStyle(fontSize: 16), // Adjust text size as needed
+              child: SizedBox.expand(
+                child: ElevatedButton(
+                  onPressed: () {
+                    print('Button ${start + index} pressed');
+                  },
+                  child: Text('Button ${start + index}'),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero, // Ensures no extra padding
                   ),
-                ), // Ensures no extra padding
+                ),
               ),
             ),
           );
