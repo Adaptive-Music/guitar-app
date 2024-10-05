@@ -6,7 +6,32 @@ void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final MidiPro _midi = MidiPro();
+  int sfID = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    loadSoundFont();
+    print("loaded");
+  }
+
+  // Function to load the SoundFont
+  Future<void> loadSoundFont() async {
+    sfID = await _midi.loadSoundfont(
+      path: 'assets/soundfonts/GeneralUserGS.sf2',
+      bank: 0,
+      program: 0,
+    );
+        // _midi.prepare(sf2: sf2);
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,8 +43,8 @@ class MyApp extends StatelessWidget {
         ),
         body: Column(
           children: [
-            buildButtonRow(1, 7),
-            buildButtonRow(8, 14),
+            buildButtonRow(60, 66), // First row of buttons (MIDI notes 60-66)
+            buildButtonRow(67, 73), // Second row of buttons (MIDI notes 67-73)
           ],
         ),
       ),
@@ -37,6 +62,7 @@ class MyApp extends StatelessWidget {
               child: SizedBox.expand(
                 child: ElevatedButton(
                   onPressed: () {
+                    _midi.playNote(key: start + index, velocity: 64, sfId: sfID); // Play corresponding MIDI note
                     print('Button ${start + index} pressed');
                   },
                   child: Text('Button ${start + index}'),
@@ -50,5 +76,11 @@ class MyApp extends StatelessWidget {
         }),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // _midi.unload(); // Unload the SoundFont when the widget is disposed
+    super.dispose();
   }
 }
