@@ -16,7 +16,7 @@ class _KeyNoteState extends State<KeyNote> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: (_) => {
+      onPanDown: (_) => {
         widget.midiController.playNote(key: widget.note, velocity: 64, sfId: widget.sfID),
         print('Button ${widget.note} pressed'),
         },
@@ -24,10 +24,18 @@ class _KeyNoteState extends State<KeyNote> {
         widget.midiController.stopNote(key: widget.note, sfId: widget.sfID),
         print('Button ${widget.note} let go (onTap)'),
       },
-      onTapCancel: () => {
+      onPanCancel: () => {
         widget.midiController.stopNote(key: widget.note, sfId: widget.sfID),
-        print('Button ${widget.note} let go (canceled)'),
+        print('Button ${widget.note} let go (onPanCancel)'),
       },
+      onPanEnd: (_) => {
+        widget.midiController.stopNote(key: widget.note, sfId: widget.sfID),
+        print('Button ${widget.note} let go (onPanEnd)'),
+      },
+      // onTapCancel: () => {
+      //   // widget.midiController.stopNote(key: widget.note, sfId: widget.sfID),
+      //   print('Button ${widget.note} let go (canceled)'),
+      // },
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.zero, // Ensures no extra padding
