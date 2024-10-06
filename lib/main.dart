@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_1/widgets/KeyNote.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 
 void main() {
@@ -60,16 +61,7 @@ class _MyAppState extends State<MyApp> {
             child: Padding(
               padding: const EdgeInsets.all(4.0), // Adds space between buttons
               child: SizedBox.expand(
-                child: ElevatedButton(
-                  onPressed: () {
-                    _midi.playNote(key: start + index, velocity: 64, sfId: sfID); // Play corresponding MIDI note
-                    print('Button ${start + index} pressed');
-                  },
-                  child: Text('Button ${start + index}'),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.zero, // Ensures no extra padding
-                  ),
-                ),
+                child: KeyNote(note: start + index, sfID: sfID, midiController: _midi)
               ),
             ),
           );
