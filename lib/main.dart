@@ -15,12 +15,13 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final MidiPro _midi = MidiPro();
   int sfID = 0;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     loadSoundFont();
-    print("loaded");
+    
   }
 
   // Function to load the SoundFont
@@ -30,11 +31,22 @@ class _MyAppState extends State<MyApp> {
       bank: 0,
       program: 0,
     );
+    setState(() {
+      _isLoading = false;
+      print('loaded');
+    });
         // _midi.prepare(sf2: sf2);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      // Show a loading screen while waiting for async task to complete
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    print('app building');
     return MaterialApp(
       title: 'Full Screen Buttons',
       debugShowCheckedModeBanner: false, // Removes the debug banner
