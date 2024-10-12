@@ -6,36 +6,56 @@ class KeyNote extends StatefulWidget {
   final int sfID;
   final MidiPro midiController;
   const KeyNote({super.key, required this.note, required this.sfID, required this.midiController});
+  
 
   @override
   State<KeyNote> createState() => _KeyNoteState();
 }
 
 class _KeyNoteState extends State<KeyNote> {
+  bool playing = false;
+
+  void playNote() {
+    widget.midiController.playNote(key: widget.note, velocity: 64, sfId: widget.sfID);
+    setState(() {
+      playing = true;
+    });
+  }
+
+  void stopNote() {
+    widget.midiController.stopNote(key: widget.note, sfId: widget.sfID);
+    setState(() {
+      playing = false;
+    });
+  }
 
   @override
+
   Widget build(BuildContext context) {
     return GestureDetector(
       onPanDown: (_) => {
-        widget.midiController.playNote(key: widget.note, velocity: 64, sfId: widget.sfID),
+        playNote(),
         print('Button ${widget.note} pressed'),
         },
       onTap: () => {
-        widget.midiController.stopNote(key: widget.note, sfId: widget.sfID),
+        stopNote(),
         print('Button ${widget.note} let go (onTap)'),
       },
+      // onPanUpdate: (_) => {
+      //   print('Button ${widget.note} (onUpdate)')
+      // },
       onPanCancel: () => {
-        widget.midiController.stopNote(key: widget.note, sfId: widget.sfID),
+        stopNote(),
         print('Button ${widget.note} let go (onPanCancel)'),
       },
       onPanEnd: (_) => {
-        widget.midiController.stopNote(key: widget.note, sfId: widget.sfID),
+        stopNote(),
         print('Button ${widget.note} let go (onPanEnd)'),
       },
-      // onTapCancel: () => {
-      //   // widget.midiController.stopNote(key: widget.note, sfId: widget.sfID),
-      //   print('Button ${widget.note} let go (canceled)'),
-      // },
+      onTapCancel: () => {
+        stopNote(),
+        print('Button ${widget.note} let go (canceled)'),
+      },
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.zero, // Ensures no extra padding
