@@ -52,10 +52,10 @@ class _KeyNoteState extends State<KeyNote> {
         stopNote(),
         print('Button ${widget.note} let go (onPanEnd)'),
       },
-      onTapCancel: () => {
-        stopNote(),
-        print('Button ${widget.note} let go (canceled)'),
-      },
+      // onTapCancel: () => {
+      //   stopNote(),
+      //   print('Button ${widget.note} let go (canceled)'),
+      // },
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.zero, // Ensures no extra padding

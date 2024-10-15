@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_application_1/widgets/KeyNote.dart';
+import 'package:flutter_application_1/widgets/KeyBoard.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 
 void main() {
@@ -46,7 +46,6 @@ class _MyAppState extends State<MyApp> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
-    print('app building');
     return MaterialApp(
       title: 'Full Screen Buttons',
       debugShowCheckedModeBanner: false, // Removes the debug banner
@@ -54,33 +53,11 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: Text('Full Screen 2 Rows of 7 Buttons'),
         ),
-        body: Column(
-          children: [
-            buildButtonRow(60, 66), // First row of buttons (MIDI notes 60-66)
-            buildButtonRow(67, 73), // Second row of buttons (MIDI notes 67-73)
-          ],
-        ),
+        body: KeyBoard(keyHarmony: 0, octave: 60,  scale: 'major', sfID: sfID, midiController: _midi),
       ),
     );
   }
 
-  // Function to build a row of buttons
-  Widget buildButtonRow(int start, int end) {
-    return Expanded(
-      child: Row(
-        children: List.generate(end - start + 1, (index) {
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(4.0), // Adds space between buttons
-              child: SizedBox.expand(
-                child: KeyNote(note: start + index, sfID: sfID, midiController: _midi)
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
 
   @override
   void dispose() {
