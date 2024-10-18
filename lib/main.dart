@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_application_1/widgets/KeyBoard.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
+import 'package:flutter_application_1/special/enums.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -16,6 +18,7 @@ class _MyAppState extends State<MyApp> {
   final MidiPro _midi = MidiPro();
   int sfID = 0;
   bool _isLoading = true;
+  Scale currentScale = Scale.major;
 
   @override
   void initState() {
@@ -53,7 +56,7 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: Text('Full Screen 2 Rows of 7 Buttons'),
         ),
-        body: KeyBoard(keyHarmony: 0, octave: 60,  scale: 'major', sfID: sfID, midiController: _midi),
+        body: KeyBoard(keyHarmony: 0, octave: 60,  scale: currentScale, sfID: sfID, midiController: _midi),
       ),
     );
   }
