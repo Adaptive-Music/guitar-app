@@ -18,8 +18,9 @@ class KeyBoard extends StatefulWidget {
 class _KeyBoardState extends State<KeyBoard> {
   Map<String, List<int>> scales = {
     'major': [0, 2, 4, 5, 7, 9, 11],
-    'minor': [0, 2, 4, 5, 7, 9, 11],
-    'pentatonic major': [0, 3, 5, 7, 10],
+    'minor': [0, 2, 3, 5, 7, 8, 10],
+    'pentatonic minor': [0, 3, 5, 7, 10],
+    'pentatonic major': [0, 2, 4, 7, 9],
   };
   
 
