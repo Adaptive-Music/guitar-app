@@ -11,6 +11,8 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -19,7 +21,8 @@ class _MyAppState extends State<MyApp> {
   final MidiPro _midi = MidiPro();
   int sfID = 0;
   bool _isLoading = true;
-  Scale currentScale = Scale.major;
+  Scale currentScale = Scale.minor;
+  PMode playingMode = PMode.tChord;
 
   @override
   void initState() {
@@ -54,7 +57,7 @@ class _MyAppState extends State<MyApp> {
               body: Text('Loading...'),
             );
           }
-        return HomeScreen(keyHarmony: 0, octave: 60, scale: currentScale, sfID: sfID, midiController: _midi);
+        return HomeScreen(keyHarmony: 0, octave: 60, scale: currentScale, sfID: sfID, midiController: _midi, playingMode: playingMode);
         },
       ),
     );
@@ -75,9 +78,11 @@ class HomeScreen extends StatefulWidget {
   final int keyHarmony;
   final Scale scale;
   final int octave;
+  final PMode playingMode;
   final int sfID;
   final MidiPro midiController;
-  const HomeScreen({super.key, required this.keyHarmony, required this.scale, required this.octave, required this.sfID, required this.midiController});
+  const HomeScreen({super.key, required this.keyHarmony, required this.scale, 
+  required this.octave, required this.sfID, required this.midiController, required this.playingMode});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -103,7 +108,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: KeyBoard(keyHarmony: widget.keyHarmony, octave: widget.octave,  scale: widget.scale, sfID: widget.sfID, midiController: widget.midiController),
+        body: KeyBoard(keyHarmony: widget.keyHarmony, octave: widget.octave,  
+        scale: widget.scale, sfID: widget.sfID, midiController: widget.midiController, playingMode: widget.playingMode),
       );
   }
 }
