@@ -97,12 +97,12 @@ class _HomeScreenState extends State<HomeScreen> {
           title: Text('Full Screen 2 Rows of 7 Buttons'),
           actions: <Widget>[
             IconButton(
-              icon: const Icon(Icons.shopping_cart),
+              icon: const Icon(Icons.settings),
               tooltip: 'Go to Settings',
               onPressed: () {
                 Navigator.push(
                   context,
-                 MaterialPageRoute(builder: (context) => SettingsPage(option1: 'Option 1A', option2: 'Option 2A',)),
+                 MaterialPageRoute(builder: (context) => SettingsPage(option1: 'Piano', option2: 'C',)),
               );
               },
             ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_application_1/special/enums.dart';
 
 class SettingsPage extends StatefulWidget {
 
@@ -15,6 +15,9 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   late String option1temp = widget.option1;
   late String option2temp = widget.option2;
+  late Scale selectedScale = Scale.major;
+  late String selectedOctave = '4';
+  late String selectedMode = 'Single Note';
   
   @override
   
@@ -28,9 +31,9 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           children: [
             DropdownButtonFormField<String>(
-              decoration: InputDecoration(labelText: option1temp),
+              decoration: InputDecoration(labelText: 'Instrument'),
               value: option1temp,
-              items: ['Option 1A', 'Option 1B', 'Option 1C']
+              items: ['Piano', 'Violin', 'Synthesiser', 'Guitar', 'Drums']
                   .map((value) => DropdownMenuItem(
                         value: value,
                         child: Text(value),
@@ -44,9 +47,9 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              decoration: InputDecoration(labelText: option2temp),
-              value: option2temp,
-              items: ['Option 2A', 'Option 2B', 'Option 2C']
+              decoration: InputDecoration(labelText: 'Key Centre'),
+              value: 'C',
+              items: ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
                   .map((value) => DropdownMenuItem(
                         value: value,
                         child: Text(value),
@@ -56,6 +59,82 @@ class _SettingsPageState extends State<SettingsPage> {
                 setState(() {
                   option2temp = newValue!;
                 });
+              },
+            ),
+            SizedBox(height: 16),
+            DropdownButtonFormField<Scale>(
+              decoration: InputDecoration(labelText: 'Scale'),
+              value: selectedScale,
+              items: Scale.values
+                  .map((scale) => DropdownMenuItem(
+                        value: scale,
+                        child: Text(scale.name),
+                      ))
+                  .toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  selectedScale = newValue!;
+                });
+              },
+            ),
+            SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              decoration: InputDecoration(labelText: 'Octave'),
+              value: selectedOctave,
+              items: ['2', '3', '4', '5', '6', '7']
+                  .map((value) => DropdownMenuItem(
+                        value: value,
+                        child: Text(value),
+                      ))
+                  .toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  selectedOctave = newValue!;
+                });
+              },
+            ),
+            SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              decoration: InputDecoration(labelText: 'Keyboard Mode'),
+              value: selectedMode,
+              items: ['Single Note', 'Triad Chord', 'Power Chord',]
+                  .map((value) => DropdownMenuItem(
+                        value: value,
+                        child: Text(value),
+                      ))
+                  .toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  selectedMode = newValue!;
+                });
+              },
+            ),
+            SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              decoration: InputDecoration(labelText: 'Visuals'),
+              value: 'Grid',
+              items: ['Grid', 'Custom']
+                  .map((value) => DropdownMenuItem(
+                        value: value,
+                        child: Text(value),
+                      ))
+                  .toList(),
+              onChanged: (newValue) {
+                setState(() {});
+              },
+            ),
+            SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              decoration: InputDecoration(labelText: 'Keyboard Symbols'),
+              value: 'Shapes',
+              items: ['Shapes', 'Letters', 'Numbers', 'None']
+                  .map((value) => DropdownMenuItem(
+                        value: value,
+                        child: Text(value),
+                      ))
+                  .toList(),
+              onChanged: (newValue) {
+                setState(() {});
               },
             ),
             SizedBox(height: 32),
