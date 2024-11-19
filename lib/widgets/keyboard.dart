@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 import 'package:flutter_application_1/widgets/KeyNote.dart';
-import 'package:flutter_application_1/special/enums.dart';
 
 class KeyBoard extends StatefulWidget {
   final int sfID;
   final MidiPro midiController;
 
   final int keyHarmony;
-  final Scale scale;
+  final List<int> scale;
   final int octave;
-
-  final PMode playingMode;
+  final String playingMode;
 
   const KeyBoard({super.key, required this.keyHarmony, required this.octave,  required this.scale, 
   required this.sfID, required this.midiController, required this.playingMode});
@@ -22,8 +20,6 @@ class KeyBoard extends StatefulWidget {
 }
 
 class _KeyBoardState extends State<KeyBoard> {
-
-  
   
   @override
   Widget build(BuildContext context) {
@@ -40,7 +36,7 @@ class _KeyBoardState extends State<KeyBoard> {
 
     return Expanded(
       child: Row(
-        children: List.generate(widget.scale.intervals.length, (index) {
+        children: List.generate(widget.scale.length, (index) {
           return Expanded(
             child: Padding(
               padding: const EdgeInsets.all(4.0), // Adds space between buttons

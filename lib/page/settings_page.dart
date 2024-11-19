@@ -1,26 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/special/enums.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
 
-  final String option1;
-  final String option2;
+  final SharedPreferences? prefs;
  
-  const SettingsPage({super.key, required this.option1, required this.option2});
+  const SettingsPage({super.key, required this.prefs});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  late String option1temp = widget.option1;
-  late String option2temp = widget.option2;
-  late Scale selectedScale = Scale.major;
-  late String selectedOctave = '4';
-  late String selectedMode = 'Single Note';
+  bool prefLoaded = false;
+  
+  
+  late String selectedKeyHarmony;
+  late String selectedPlayingMode;
+  late String selectedScale;
+  late String selectedOctave;
+  late String selectedMode;
+  late String selectedInstrument;
+  late String selectedVisuals;
+  late String selectedSymbols;
+
+  extractSettings() {
+    selectedKeyHarmony = widget.prefs!.getString('keyHarmony')!;
+    selectedOctave = widget.prefs!.getString('octave')!;
+    selectedScale = widget.prefs!.getString('currentScale')!;
+    selectedPlayingMode = widget.prefs!.getString('playingMode')!;
+    selectedInstrument = widget.prefs!.getString('instrument')!;
+    selectedVisuals = widget.prefs!.getString('visuals')!;
+    selectedSymbols = widget.prefs!.getString('symbols')!;
+    print("Key Harmony: $selectedKeyHarmony");
+    print("Octave: $selectedOctave");
+    print("Scale: $selectedScale");
+    print("Instrument: $selectedInstrument");
+    print("Playing Mode: $selectedPlayingMode");
+    print("Visual: $selectedVisuals");
+    print("Symbols: $selectedSymbols");
+    setState() {
+      prefLoaded = true;
+      print('Pref Loaded');
+    }
+  }
+
+  Future<void> saveSettings() async {
+    setState(() {
+      widget.prefs?.setString('keyHarmony', selectedKeyHarmony);
+      widget.prefs?.setString('octave', selectedOctave);
+      widget.prefs?.setString('currentScale', selectedScale);
+      widget.prefs?.setString('playingMode', selectedPlayingMode);
+      widget.prefs?.setString('instrument', selectedInstrument);
+      widget.prefs?.setString('visuals', selectedVisuals);
+      widget.prefs?.setString('symbols', selectedSymbols);
+      print('settings saved');
+    });
+  }
   
   @override
+
+  void initState() {
+    super.initState();
+    extractSettings();
+  }
   
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -32,7 +78,7 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             DropdownButtonFormField<String>(
               decoration: InputDecoration(labelText: 'Instrument'),
-              value: option1temp,
+              value: selectedInstrument,
               items: ['Piano', 'Violin', 'Synthesiser', 'Guitar', 'Drums']
                   .map((value) => DropdownMenuItem(
                         value: value,
@@ -41,15 +87,15 @@ class _SettingsPageState extends State<SettingsPage> {
                   .toList(),
               onChanged: (newValue) {
                 setState(() {
-                  option1temp = newValue!;
+                  selectedInstrument = newValue!;
                 });
               },
             ),
             SizedBox(height: 16),
             DropdownButtonFormField<String>(
               decoration: InputDecoration(labelText: 'Key Centre'),
-              value: 'C',
-              items: ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+              value: selectedKeyHarmony,
+              items: ['C', 'C# / Db', 'D', 'D# / Eb', 'E', 'F', 'F# / Gb', 'G', 'G# / Ab', 'A', 'A# / Bb', 'B']
                   .map((value) => DropdownMenuItem(
                         value: value,
                         child: Text(value),
@@ -57,18 +103,18 @@ class _SettingsPageState extends State<SettingsPage> {
                   .toList(),
               onChanged: (newValue) {
                 setState(() {
-                  option2temp = newValue!;
+                  selectedKeyHarmony = newValue!;
                 });
               },
             ),
             SizedBox(height: 16),
-            DropdownButtonFormField<Scale>(
+            DropdownButtonFormField<String>(
               decoration: InputDecoration(labelText: 'Scale'),
               value: selectedScale,
-              items: Scale.values
-                  .map((scale) => DropdownMenuItem(
-                        value: scale,
-                        child: Text(scale.name),
+              items: ['Major', 'Minor', 'Harmonic Minor', 'Pentatonic Major', 'Pentatonic Minor']
+                  .map((value) => DropdownMenuItem(
+                        value: value,
+                        child: Text(value),
                       ))
                   .toList(),
               onChanged: (newValue) {
@@ -81,7 +127,7 @@ class _SettingsPageState extends State<SettingsPage> {
             DropdownButtonFormField<String>(
               decoration: InputDecoration(labelText: 'Octave'),
               value: selectedOctave,
-              items: ['2', '3', '4', '5', '6', '7']
+              items: ['2', '3', '4', '5', '6', '7', '8']
                   .map((value) => DropdownMenuItem(
                         value: value,
                         child: Text(value),
@@ -96,8 +142,8 @@ class _SettingsPageState extends State<SettingsPage> {
             SizedBox(height: 16),
             DropdownButtonFormField<String>(
               decoration: InputDecoration(labelText: 'Keyboard Mode'),
-              value: selectedMode,
-              items: ['Single Note', 'Triad Chord', 'Power Chord',]
+              value: selectedPlayingMode,
+              items: ['Single Note', 'Triad Chord', 'Power Chord']
                   .map((value) => DropdownMenuItem(
                         value: value,
                         child: Text(value),
@@ -105,14 +151,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   .toList(),
               onChanged: (newValue) {
                 setState(() {
-                  selectedMode = newValue!;
+                  selectedPlayingMode = newValue!;
                 });
               },
             ),
             SizedBox(height: 16),
             DropdownButtonFormField<String>(
               decoration: InputDecoration(labelText: 'Visuals'),
-              value: 'Grid',
+              value: selectedVisuals,
               items: ['Grid', 'Custom']
                   .map((value) => DropdownMenuItem(
                         value: value,
@@ -120,13 +166,15 @@ class _SettingsPageState extends State<SettingsPage> {
                       ))
                   .toList(),
               onChanged: (newValue) {
-                setState(() {});
+                setState(() {
+                  selectedVisuals = newValue!;
+                });
               },
             ),
             SizedBox(height: 16),
             DropdownButtonFormField<String>(
               decoration: InputDecoration(labelText: 'Keyboard Symbols'),
-              value: 'Shapes',
+              value: selectedSymbols,
               items: ['Shapes', 'Letters', 'Numbers', 'None']
                   .map((value) => DropdownMenuItem(
                         value: value,
@@ -134,15 +182,18 @@ class _SettingsPageState extends State<SettingsPage> {
                       ))
                   .toList(),
               onChanged: (newValue) {
-                setState(() {});
+                setState(() {
+                  selectedSymbols = newValue!;
+                });
               },
             ),
             SizedBox(height: 32),
             ElevatedButton(
               onPressed: () {
+                saveSettings();
                 Navigator.pop(context);
               },
-              child: Text('Back to Main Menu'),
+              child: Text('Save Settings'),
             ),
           ],
         ),

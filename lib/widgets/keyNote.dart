@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
-import 'package:flutter_application_1/special/enums.dart';
  
 
 class KeyNote extends StatefulWidget {
   final int startNote;
   final int index;
-  final Scale scale;
+  final List<int> scale;
 
-  final PMode playingMode;
+  final String playingMode;
 
 
   final int sfID;
@@ -51,25 +50,46 @@ class _KeyNoteState extends State<KeyNote> {
   }
 
   void packNotes(){
-    int rootNote = widget.startNote + widget.scale.intervals[widget.index];
-    if (widget.playingMode.name == 'Single Note') {
-      notes = [ rootNote ];
-    } else if (widget.playingMode.name == 'Power Chord') {
+    int rootNote = widget.startNote + widget.scale[widget.index];
+    if (widget.playingMode == 'Single Note') {
+      setState(() {
+        notes = [ rootNote ];
+      });
+    } else if (widget.playingMode == 'Power Chord') {
       int fifthNote = rootNote + 5;
       int lowerRoot = rootNote - 12;
-      notes = [ lowerRoot,
-                fifthNote,
-                rootNote, 
-              ];
+      setState(() {
+        notes = [ lowerRoot,
+              fifthNote,
+              rootNote, 
+            ];
+      });
+      
     } else {
       int thirdPos = (widget.index + 2) % 7;
       int fifthPos = (widget.index + 4) % 7;
-      int thirdNote = widget.index > thirdPos ? widget.startNote + widget.scale.intervals[thirdPos] + 12 : widget.startNote + widget.scale.intervals[thirdPos];
-      int fifthNote = widget.index > fifthPos ? widget.startNote + widget.scale.intervals[fifthPos] + 12 : widget.startNote + widget.scale.intervals[fifthPos];
-      notes = [ rootNote, 
-                thirdNote,
-                fifthNote,
-              ];
+      int thirdNote = widget.index > thirdPos ? widget.startNote + widget.scale[thirdPos] + 12 : widget.startNote + widget.scale[thirdPos];
+      int fifthNote = widget.index > fifthPos ? widget.startNote + widget.scale[fifthPos] + 12 : widget.startNote + widget.scale[fifthPos];
+      setState(() {
+        notes = [ rootNote, 
+              thirdNote,
+              fifthNote,
+            ];
+      });
+      
+    }
+
+    print("Key - Scale: ${widget.scale}");
+    print("Key - Playing Mode: ${widget.playingMode}");
+    print("Key settings loaded");
+  }
+
+
+  @override
+  void didUpdateWidget(covariant KeyNote oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if ( (oldWidget.playingMode != widget.playingMode) || (oldWidget.startNote != widget.startNote) || (oldWidget.index != widget.index) || (oldWidget.scale != widget.scale) || (oldWidget.sfID != widget.sfID)) {
+      packNotes();
     }
   }
 
@@ -81,6 +101,7 @@ class _KeyNoteState extends State<KeyNote> {
   }
 
 
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onPanDown: (_) => {
@@ -111,7 +132,7 @@ class _KeyNoteState extends State<KeyNote> {
           padding: EdgeInsets.zero, // Ensures no extra padding
         ),
         onPressed: () {},
-        child: Text('Button ${widget.scale.intervals[widget.index]}'),
+        child: Text('Button ${widget.scale[widget.index]}'),
       ),
     );
     

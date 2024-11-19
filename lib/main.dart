@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_application_1/page/settings_page.dart';
 import 'package:flutter_application_1/widgets/KeyBoard.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 import 'package:flutter_application_1/special/enums.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 
 void main() {
@@ -20,16 +21,11 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final MidiPro _midi = MidiPro();
   int sfID = 0;
-  bool _isLoading = true;
-  Scale currentScale = Scale.minor;
-  PMode playingMode = PMode.tChord;
 
-  @override
-  void initState() {
-    super.initState();
-    loadSoundFont();
-    
-  }
+  SharedPreferences? _prefs;
+
+  bool _sfLoading = true;
+  bool _prefLoading = true;
 
   // Function to load the SoundFont
   Future<void> loadSoundFont() async {
@@ -39,10 +35,69 @@ class _MyAppState extends State<MyApp> {
       program: 0,
     );
     setState(() {
-      _isLoading = false;
-      print('loaded');
-    });   // _midi.prepare(sf2: sf2);
+      _sfLoading = false;
+      print('SF loaded');
+    });  
   }
+
+  Future<void> _initPrefs() async {
+      _prefs = await SharedPreferences.getInstance();
+      _checkPrefs();
+      setState(() {
+        _prefLoading = false;
+        print('Pref loaded');
+      }); 
+  }
+
+
+  _checkPrefs() async {
+    if (_prefs?.getString('keyHarmony') == null) {
+      await _prefs?.setString('keyHarmony', 'C');
+    }
+    
+    if (_prefs?.getString('octave') == null) {
+      _prefs?.setString('octave', '4');
+    }
+
+    if (_prefs?.getString('currentScale') == null) {
+      _prefs?.setString('currentScale', 'Major');
+    }
+    
+    if (_prefs?.getString('instrument') == null) {
+      _prefs?.setString('instrument', 'Piano');
+    }
+
+    if (_prefs?.getString('playingMode') == null) {
+      _prefs?.setString('playingMode', 'Single Note');
+    }
+
+    if (_prefs?.getString('visuals') == null) {
+      _prefs?.setString('visuals', 'Grid');
+    }
+
+     if (_prefs?.getString('symbols') == null) {
+      _prefs?.setString('symbols', 'Shapes');
+    }
+
+    print("Key Harmony: ${_prefs?.getString('keyHarmony')}");
+    print("Octave: ${_prefs?.getString('octave')}");
+    print("Scale: ${_prefs?.getString('currentScale')}");
+    print("Instrument: ${_prefs?.getString('instrument')}");
+    print("Playing Mode: ${_prefs?.getString('playingMode')}");
+    print("Visual: ${_prefs?.getString('visuals')}");
+    print("Symbols: ${_prefs?.getString('symbols')}");
+
+    print('checkPrefs called');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadSoundFont();
+    _initPrefs();
+  }
+
+    
 
   @override
   Widget build(BuildContext context) {
@@ -51,14 +106,14 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false, // Removes the debug banner
       home: Builder(
         builder: (context) {
-          if (_isLoading) {
+          if (_sfLoading || _prefLoading) {
           // Show a loading screen while waiting for async task to complete
             return Scaffold(
               body: Text('Loading...'),
             );
           }
-        return HomeScreen(keyHarmony: 0, octave: 60, scale: currentScale, sfID: sfID, midiController: _midi, playingMode: playingMode);
-        },
+        return HomeScreen(prefs: _prefs, sfID: sfID, midiController: _midi);
+        }, 
       ),
     );
   }
@@ -75,14 +130,10 @@ class _MyAppState extends State<MyApp> {
 
 
 class HomeScreen extends StatefulWidget {
-  final int keyHarmony;
-  final Scale scale;
-  final int octave;
-  final PMode playingMode;
+  final SharedPreferences? prefs;
   final int sfID;
   final MidiPro midiController;
-  const HomeScreen({super.key, required this.keyHarmony, required this.scale, 
-  required this.octave, required this.sfID, required this.midiController, required this.playingMode});
+  const HomeScreen({super.key, required this.sfID, required this.midiController, required this.prefs});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -90,7 +141,36 @@ class HomeScreen extends StatefulWidget {
 
 
 class _HomeScreenState extends State<HomeScreen> {
+  late int keyHarmony;
+  late int octave;
+  late List<int> scale;
+  late String playingMode;
+
+
   @override
+  void initState() {
+    super.initState();
+    extractSettings();
+  }
+
+  void extractSettings() {
+    setState(() {
+      keyHarmony = KeyCenter.getKey(widget.prefs!.getString('keyHarmony')!);
+      octave = Octave.getNum(widget.prefs!.getString('octave')!);
+      scale = Scale.getIntervals(widget.prefs!.getString('currentScale')!);
+      playingMode = widget.prefs!.getString('playingMode')!;
+    });
+    print("Extracted - Key Harmony: $keyHarmony");
+    print("Extracted - Octave: $octave");
+    print("Extracted - Scale: $scale");
+    print("Extracted - Playing Mode: $playingMode");
+
+    print('Settings extracted');
+  }
+
+  @override
+
+  
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
@@ -102,14 +182,16 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                 MaterialPageRoute(builder: (context) => SettingsPage(option1: 'Piano', option2: 'C',)),
-              );
+                 MaterialPageRoute(builder: (context) => SettingsPage(prefs: widget.prefs)),
+              ).then((value) {
+                extractSettings();
+              });
               },
             ),
           ],
         ),
-        body: KeyBoard(keyHarmony: widget.keyHarmony, octave: widget.octave,  
-        scale: widget.scale, sfID: widget.sfID, midiController: widget.midiController, playingMode: widget.playingMode),
+        body: KeyBoard(keyHarmony: keyHarmony, octave: octave,  scale: scale, 
+        sfID: widget.sfID, midiController: widget.midiController, playingMode: playingMode),
       );
   }
 }

@@ -1,9 +1,9 @@
 enum Scale {
   major(name: 'Major', intervals: [0, 2, 4, 5, 7, 9, 11]),
   minor(name: 'Minor', intervals: [0, 2, 3, 5, 7, 8, 10]),
-  harmonicMinor(name: 'Minor', intervals: [0, 2, 3, 5, 7, 8, 11]),
+  harmonicMinor(name: 'Harmonic Minor', intervals: [0, 2, 3, 5, 7, 8, 11]),
   pentatonicMinor(name: 'Pentatonic Minor', intervals: [0, 3, 5, 7, 10]),
-  pentatonicMajor(name: 'Pentatonic Major', intervals: [0, 3, 5, 7, 10]);
+  pentatonicMajor(name: 'Pentatonic Major', intervals: [0, 4, 5, 7, 11]);
 
   const Scale({
     required this.name,
@@ -12,20 +12,13 @@ enum Scale {
 
   final String name;
   final List<int> intervals;
-}
 
-enum PMode {
-  sNote(name: 'Single Note'),
-  tChord(name: 'Triad Chord'),
-  pChord(name: 'Power Chord'),
-  tArp(name: 'Arpeggio');
-
-  const PMode({
-    required this.name,
-  });
-
-  final String name;
-  
+  // Static method to find intervals by name
+  static List<int> getIntervals(String name) {
+    return Scale.values
+        .firstWhere((scale) => scale.name == name)
+        .intervals;
+  }
 }
 
 
@@ -50,6 +43,12 @@ enum KeyCenter {
 
   final String name;
   final int key;
+
+  static int getKey(String name) {
+    return KeyCenter.values
+        .firstWhere((keyCenter) => keyCenter.name == name)
+        .key;
+  }
 }
 
 
@@ -72,4 +71,10 @@ enum Octave {
 
   final String name;
   final int number;
+
+  static int getNum(String name) {
+    return Octave.values
+        .firstWhere((octave) => octave.name == name)
+        .number;
+  }
 }
