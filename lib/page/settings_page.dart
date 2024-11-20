@@ -130,7 +130,7 @@ class _SettingsPageState extends State<SettingsPage> {
             DropdownButtonFormField<String>(
               decoration: InputDecoration(labelText: 'Octave'),
               value: selectedOctave,
-              items: ['2', '3', '4', '5', '6', '7', '8']
+              items: ['2', '3', '4', '5', '6', '7']
                   .map((value) => DropdownMenuItem(
                         value: value,
                         child: Text(value),
