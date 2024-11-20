@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/special/enums.dart';
+import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
+  final int sfID;
 
   final SharedPreferences? prefs;
  
-  const SettingsPage({super.key, required this.prefs});
+  const SettingsPage({super.key, required this.prefs, required this.sfID});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -21,7 +23,7 @@ class _SettingsPageState extends State<SettingsPage> {
   late String selectedScale;
   late String selectedOctave;
   late String selectedMode;
-  late String selectedInstrument;
+  late Instrument selectedInstrument;
   late String selectedVisuals;
   late String selectedSymbols;
 
@@ -30,7 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
     selectedOctave = widget.prefs!.getString('octave')!;
     selectedScale = widget.prefs!.getString('currentScale')!;
     selectedPlayingMode = widget.prefs!.getString('playingMode')!;
-    selectedInstrument = widget.prefs!.getString('instrument')!;
+    selectedInstrument = Instrument.values.firstWhere((e) => e.name == widget.prefs!.getString('instrument')!);
     selectedVisuals = widget.prefs!.getString('visuals')!;
     selectedSymbols = widget.prefs!.getString('symbols')!;
     print("Key Harmony: $selectedKeyHarmony");
@@ -52,9 +54,10 @@ class _SettingsPageState extends State<SettingsPage> {
       widget.prefs?.setString('octave', selectedOctave);
       widget.prefs?.setString('currentScale', selectedScale);
       widget.prefs?.setString('playingMode', selectedPlayingMode);
-      widget.prefs?.setString('instrument', selectedInstrument);
+      widget.prefs?.setString('instrument', selectedInstrument.name);
       widget.prefs?.setString('visuals', selectedVisuals);
       widget.prefs?.setString('symbols', selectedSymbols);
+      MidiPro().selectInstrument(sfId: widget.sfID, bank:selectedInstrument.bank, program: selectedInstrument.program);
       print('settings saved');
     });
   }
@@ -76,13 +79,13 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            DropdownButtonFormField<String>(
+            DropdownButtonFormField<Instrument>(
               decoration: InputDecoration(labelText: 'Instrument'),
               value: selectedInstrument,
-              items: ['Piano', 'Violin', 'Synthesiser', 'Guitar', 'Drums']
-                  .map((value) => DropdownMenuItem(
-                        value: value,
-                        child: Text(value),
+              items: Instrument.values
+                  .map((instrument) => DropdownMenuItem(
+                        value: instrument,
+                        child: Text(instrument.name),
                       ))
                   .toList(),
               onChanged: (newValue) {

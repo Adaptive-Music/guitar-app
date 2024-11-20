@@ -64,7 +64,7 @@ class _MyAppState extends State<MyApp> {
     }
     
     if (_prefs?.getString('instrument') == null) {
-      _prefs?.setString('instrument', 'Piano');
+      _prefs?.setString('instrument', Instrument.values[0].name);
     }
 
     if (_prefs?.getString('playingMode') == null) {
@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                 MaterialPageRoute(builder: (context) => SettingsPage(prefs: widget.prefs)),
+                 MaterialPageRoute(builder: (context) => SettingsPage(prefs: widget.prefs, sfID: widget.sfID, )),
               ).then((value) {
                 extractSettings();
               });
