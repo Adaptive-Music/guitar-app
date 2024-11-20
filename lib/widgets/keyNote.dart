@@ -74,6 +74,7 @@ class _KeyNoteState extends State<KeyNote> {
         notes = [ rootNote, 
               thirdNote,
               fifthNote,
+              rootNote + 12,
             ];
       });
       

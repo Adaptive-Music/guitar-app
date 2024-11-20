@@ -82,9 +82,12 @@ enum Octave {
 enum Instrument {
   piano(bank: 0, program: 0),
   violin(bank: 0, program: 40),
-  guitar(bank: 0, program: 24),
+  acousticGuitar(bank: 0, program: 24),
+  electricGuitar(bank: 0, program: 29),
   flute(bank: 0, program: 73),
-  trumpet(bank: 0, program: 56);
+  trumpet(bank: 0, program: 56),
+  choir(bank: 0, program: 52),
+  dog(bank: 1, program: 123),;
   
   const Instrument({
     required this.bank,
@@ -96,6 +99,7 @@ enum Instrument {
 
   String get name {
     String last = toString().split('.').last;
+    last = last.replaceAllMapped(RegExp(r'([a-z])([A-Z])'), (Match m) => '${m[1]} ${m[2]}');
     return last[0].toUpperCase() + last.substring(1);
   }
 }
