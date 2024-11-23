@@ -171,7 +171,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Full Screen 2 Rows of 7 Buttons'),
+          title: Text('${widget.prefs?.getString('instrument')} - '
+              '${widget.prefs?.getString('keyHarmony')} ${widget.prefs?.getString('currentScale')} - '
+              'Octave ${widget.prefs?.getString('octave')} - ${widget.prefs?.getString('playingMode')}'),
           actions: <Widget>[
             IconButton(
               icon: const Icon(Icons.settings),
