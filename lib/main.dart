@@ -23,16 +23,23 @@ class _MyAppState extends State<MyApp> {
   int sfID = 0;
 
   SharedPreferences? _prefs;
+  Instrument selectedInstrument = Instrument.values[0]; // Default value
 
   bool _sfLoading = true;
   bool _prefLoading = true;
 
-  // Function to load the SoundFont
   Future<void> loadSoundFont() async {
+    if (_prefs == null) return; // Don't load if prefs aren't ready
+    
+    String? instrumentName = _prefs?.getString('instrument');
+    selectedInstrument = instrumentName != null 
+        ? Instrument.values.firstWhere((e) => e.name == instrumentName)
+        : Instrument.values[0];
+
     sfID = await _midi.loadSoundfont(
       path: 'assets/soundfonts/GeneralUserGS.sf2',
-      bank: 0,
-      program: 0,
+      bank: selectedInstrument.bank,
+      program: selectedInstrument.program,
     );
     setState(() {
       _sfLoading = false;
@@ -41,14 +48,14 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initPrefs() async {
-      _prefs = await SharedPreferences.getInstance();
-      _checkPrefs();
-      setState(() {
-        _prefLoading = false;
-        print('Pref loaded');
-      }); 
+    _prefs = await SharedPreferences.getInstance();
+    await _checkPrefs();
+    await loadSoundFont(); // Move soundfont loading here
+    setState(() {
+      _prefLoading = false;
+      print('Pref loaded');
+    }); 
   }
-
 
   _checkPrefs() async {
     if (_prefs?.getString('keyHarmony') == null) {
@@ -93,8 +100,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    loadSoundFont();
-    _initPrefs();
+    _initPrefs(); // Only call _initPrefs, which will handle loadSoundFont
   }
 
     
@@ -116,15 +122,6 @@ class _MyAppState extends State<MyApp> {
         }, 
       ),
     );
-  }
-
-
-
-
-  @override
-  void dispose() {
-    // _midi.unload(); // Unload the SoundFont when the widget is disposed
-    super.dispose();
   }
 }
 

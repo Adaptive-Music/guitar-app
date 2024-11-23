@@ -80,9 +80,9 @@ enum Octave {
 }
 
 enum Instrument {
-  piano(bank: 0, program: 0),
+  piano(bank: 0, program: 2),
   violin(bank: 0, program: 40),
-  acousticGuitar(bank: 0, program: 24),
+  acousticGuitar(bank: 0, program: 25),
   electricGuitar(bank: 0, program: 29),
   flute(bank: 0, program: 73),
   trumpet(bank: 0, program: 56),
