@@ -12,21 +12,24 @@ class KeyNote extends StatefulWidget {
 
   final int sfID;
   final MidiPro midiController;
-  final GlobalKey globalKey;
 
-  const KeyNote({required this.globalKey, super.key, required this.startNote, required this.sfID, required this.midiController, 
+  const KeyNote({super.key, required this.startNote, required this.sfID, required this.midiController, 
   required this.playingMode, required this.index, required this.scale});
   
 
   @override
-  State<KeyNote> createState() => _KeyNoteState();
+  State<KeyNote> createState() => KeyNoteState();
 }
 
-class _KeyNoteState extends State<KeyNote> {
+class KeyNoteState extends State<KeyNote> {
 
   List<int> notes = [];
 
   bool playing = false;
+
+  void someFunction() {
+    print("Some function called ${widget.key}");
+  }
 
   void playNote() {
 
@@ -108,15 +111,9 @@ class _KeyNoteState extends State<KeyNote> {
     return GestureDetector(
       onPanDown: (_) => {
         playNote(),
-        print('Button ${notes} pressed'),
+        print('Button ${notes} pressed (onPanDown)'),
+        print("Global key: ${widget.key}")
         },
-      onTap: () => {
-        stopNote(),
-        print('Button ${notes} let go (onTap)'),
-      },
-      // onPanUpdate: (_) => {
-      //   print('Button ${widget.note} (onUpdate)')
-      // },
       onPanCancel: () => {
         stopNote(),
         print('Button ${notes} let go (onPanCancel)'),

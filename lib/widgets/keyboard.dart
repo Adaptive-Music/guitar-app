@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/widgets/keyNote.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
-import 'package:flutter_application_1/widgets/KeyNote.dart';
 
 class KeyBoard extends StatefulWidget {
   final int sfID;
@@ -20,13 +20,16 @@ class KeyBoard extends StatefulWidget {
 }
 
 class _KeyBoardState extends State<KeyBoard> {
-  List<GlobalKey> keyNoteKeys = [];
+  late List<GlobalKey<KeyNoteState>> keyNoteKeys;
   final Map<int, Offset> _touchPositions = {};
 
   @override
   void initState() {
     super.initState();
-    keyNoteKeys = List.generate(widget.scale.length * 2, (index) => GlobalKey());
+    keyNoteKeys = List.generate(
+      widget.scale.length * 2,
+      (index) => GlobalKey<KeyNoteState>(),
+    );
   }
 
   @override
@@ -46,6 +49,10 @@ class _KeyBoardState extends State<KeyBoard> {
           setState(() {
             _touchPositions[event.pointer] = event.localPosition;
             print("Pointer ${event.pointer} down at ${event.localPosition}");
+            for (GlobalKey<KeyNoteState> key in keyNoteKeys) {
+              key.currentState!.someFunction();
+            }
+            print(keyNoteKeys);
           });
         },
         onPointerMove: (PointerMoveEvent event) {
@@ -67,7 +74,7 @@ class _KeyBoardState extends State<KeyBoard> {
                 padding: const EdgeInsets.all(4.0), // Adds space between buttons
                 child: SizedBox.expand(
                   child: KeyNote(
-                    globalKey: keyNoteKeys[keyOffset + index],
+                    key: keyNoteKeys[keyOffset + index],
                     startNote: startNote,
                     index: index,
                     scale: widget.scale,
