@@ -21,6 +21,7 @@ class KeyBoard extends StatefulWidget {
 
 class _KeyBoardState extends State<KeyBoard> {
   List<GlobalKey> keyNoteKeys = [];
+  final Map<int, Offset> _touchPositions = {};
 
   @override
   void initState() {
@@ -40,24 +41,44 @@ class _KeyBoardState extends State<KeyBoard> {
 
   Widget buildButtonRow(int startNote, int keyOffset) {
     return Expanded(
-      child: Row(
-        children: List.generate(widget.scale.length, (index) {
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(4.0), // Adds space between buttons
-              child: SizedBox.expand(
-                child: KeyNote(
-                  globalKey: keyNoteKeys[keyOffset + index],
-                  startNote: startNote,
-                  index: index,
-                  scale: widget.scale,
-                  playingMode: widget.playingMode,
-                  sfID: widget.sfID, 
-                  midiController: widget.midiController)
+      child: Listener(
+        onPointerDown: (PointerDownEvent event) {
+          setState(() {
+            _touchPositions[event.pointer] = event.localPosition;
+            print("Pointer ${event.pointer} down at ${event.localPosition}");
+          });
+        },
+        onPointerMove: (PointerMoveEvent event) {
+          setState(() {
+            _touchPositions[event.pointer] = event.localPosition;
+            print("Pointer ${event.pointer} moved to ${event.localPosition}");
+          });
+        },
+        onPointerUp: (PointerUpEvent event) {
+          setState(() {
+            _touchPositions.remove(event.pointer);
+            print("Pointer ${event.pointer} up at ${event.localPosition}");
+          });
+        },
+        child: Row(
+          children: List.generate(widget.scale.length, (index) {
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(4.0), // Adds space between buttons
+                child: SizedBox.expand(
+                  child: KeyNote(
+                    globalKey: keyNoteKeys[keyOffset + index],
+                    startNote: startNote,
+                    index: index,
+                    scale: widget.scale,
+                    playingMode: widget.playingMode,
+                    sfID: widget.sfID, 
+                    midiController: widget.midiController)
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }
