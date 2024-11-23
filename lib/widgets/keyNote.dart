@@ -133,6 +133,11 @@ class KeyNoteState extends State<KeyNote> {
     }
   }
 
+  String getMidiNoteName(int midiNote) {
+    final noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    return noteNames[midiNote % 12];
+  }
+
   @override
   Widget build(BuildContext context) {
     // Update bounds whenever widget rebuilds
@@ -145,7 +150,7 @@ class KeyNoteState extends State<KeyNote> {
         padding: EdgeInsets.zero, // Ensures no extra padding
       ),
       onPressed: () {},
-      child: Text('Button ${widget.scale[widget.index]}'),
+      child: Text(getMidiNoteName(widget.startNote + widget.scale[widget.index])),
     );
   }
 }
