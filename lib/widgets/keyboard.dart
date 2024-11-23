@@ -65,7 +65,6 @@ class _KeyBoardState extends State<KeyBoard> {
         },
         onPointerMove: (PointerMoveEvent event) {
           setState(() {
-            // Store global position instead of local
             _touchPositions[event.pointer] = event.position;
             handleTouch();
           });
@@ -73,7 +72,7 @@ class _KeyBoardState extends State<KeyBoard> {
         onPointerUp: (PointerUpEvent event) {
           setState(() {
             _touchPositions.remove(event.pointer);
-            print("Pointer ${event.pointer} up at ${event.localPosition}");
+            handleTouch();
           });
         },
         child: Row(

@@ -33,7 +33,6 @@ class KeyNoteState extends State<KeyNote> {
   void initState() {
     super.initState();
     packNotes();
-    // Remove bounds initialization from here
     WidgetsBinding.instance.addPostFrameCallback((_) {
       updateBounds();
     });
@@ -50,11 +49,14 @@ class KeyNoteState extends State<KeyNote> {
   }
 
   void checkTouches(Map<int, Offset> touchPositions) {
-    RenderBox renderBox = context.findRenderObject() as RenderBox;
     bool isTouched = touchPositions.values.any((position) {
       return bounds.contains(position);
     });
-    print("Note ${notes[0]} ${widget.key} isTouched: $isTouched");
+    if (isTouched && !playing) {
+      playNote();
+    } else if (!isTouched && playing) {
+      stopNote();
+    }
 
   }
 
@@ -137,31 +139,13 @@ class KeyNoteState extends State<KeyNote> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       updateBounds();
     });
-    return GestureDetector(
-      onPanDown: (_) => {
-        playNote(),
-        print('Button ${notes} pressed (onPanDown)'),
-        print("Global key: ${widget.key}")
-      },
-      onPanCancel: () => {
-        stopNote(),
-        print('Button ${notes} let go (onPanCancel)'),
-      },
-      onPanEnd: (_) => {
-        stopNote(),
-        print('Button ${notes} let go (onPanEnd)'),
-      },
-      // onTapCancel: () => {
-      //   stopNote(),
-      //   print('Button ${widget.note} let go (canceled)'),
-      // },
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.zero, // Ensures no extra padding
-        ),
-        onPressed: () {},
-        child: Text('Button ${widget.scale[widget.index]}'),
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: playing ? Colors.yellow : Colors.blue,
+        padding: EdgeInsets.zero, // Ensures no extra padding
       ),
+      onPressed: () {},
+      child: Text('Button ${widget.scale[widget.index]}'),
     );
   }
 }
