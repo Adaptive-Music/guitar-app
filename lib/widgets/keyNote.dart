@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
- 
 
 class KeyNote extends StatefulWidget {
   final int startNote;
@@ -9,79 +8,110 @@ class KeyNote extends StatefulWidget {
 
   final String playingMode;
 
-
   final int sfID;
   final MidiPro midiController;
 
-  const KeyNote({super.key, required this.startNote, required this.sfID, required this.midiController, 
-  required this.playingMode, required this.index, required this.scale});
-  
+  const KeyNote(
+      {super.key,
+      required this.startNote,
+      required this.sfID,
+      required this.midiController,
+      required this.playingMode,
+      required this.index,
+      required this.scale});
 
   @override
   State<KeyNote> createState() => KeyNoteState();
 }
 
 class KeyNoteState extends State<KeyNote> {
-
   List<int> notes = [];
-
+  late Rect bounds;
   bool playing = false;
 
-  void someFunction() {
-    print("Some function called ${widget.key}");
+  @override
+  void initState() {
+    super.initState();
+    packNotes();
+    // Remove bounds initialization from here
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updateBounds();
+    });
+  }
+
+  void updateBounds() {
+    if (!mounted) return;
+    RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      final Offset topLeft = renderBox.localToGlobal(Offset.zero);
+      final Size size = renderBox.size;
+      bounds = topLeft & size;
+    }
+  }
+
+  void checkTouches(Map<int, Offset> touchPositions) {
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+    bool isTouched = touchPositions.values.any((position) {
+      return bounds.contains(position);
+    });
+    print("Note ${notes[0]} ${widget.key} isTouched: $isTouched");
+
   }
 
   void playNote() {
-
-    for (var i = 0; i  < notes.length; i++) {
-      widget.midiController.playNote(key: notes[i], velocity: 64, sfId: widget.sfID);
+    for (var i = 0; i < notes.length; i++) {
+      widget.midiController
+          .playNote(key: notes[i], velocity: 64, sfId: widget.sfID);
     }
-    
+
     setState(() {
       playing = true;
     });
   }
 
   void stopNote() {
-
-    for (var i = 0; i  < notes.length; i++) {
+    for (var i = 0; i < notes.length; i++) {
       widget.midiController.stopNote(key: notes[i], sfId: widget.sfID);
     }
-    
+
     setState(() {
       playing = false;
     });
   }
 
-  void packNotes(){
+  void packNotes() {
     int rootNote = widget.startNote + widget.scale[widget.index];
     if (widget.playingMode == 'Single Note') {
       setState(() {
-        notes = [ rootNote ];
+        notes = [rootNote];
       });
     } else if (widget.playingMode == 'Power Chord') {
       int fifthNote = rootNote + 5;
       int lowerRoot = rootNote - 12;
       setState(() {
-        notes = [ lowerRoot,
-              fifthNote,
-              rootNote, 
-            ];
+        notes = [
+          lowerRoot,
+          fifthNote,
+          rootNote,
+        ];
       });
-      
     } else {
       int thirdPos = (widget.index + 2) % 7;
       int fifthPos = (widget.index + 4) % 7;
-      int thirdNote = widget.index > thirdPos ? widget.startNote + widget.scale[thirdPos] + 12 : widget.startNote + widget.scale[thirdPos];
-      int fifthNote = widget.index > fifthPos ? widget.startNote + widget.scale[fifthPos] + 12 : widget.startNote + widget.scale[fifthPos];
+      int thirdNote = widget.index > thirdPos
+          ? widget.startNote + widget.scale[thirdPos] + 12
+          : widget.startNote + widget.scale[thirdPos];
+      int fifthNote = widget.index > fifthPos
+          ? widget.startNote + widget.scale[fifthPos] + 12
+          : widget.startNote + widget.scale[fifthPos];
       setState(() {
-        notes = [ rootNote, 
-              thirdNote,
-              fifthNote,
-              rootNote + 12,
-            ];
+        notes = [
+          rootNote,
+          thirdNote,
+          fifthNote,
+          rootNote + 12,
+        ];
       });
-      
     }
 
     print("Key - Scale: ${widget.scale}");
@@ -89,31 +119,30 @@ class KeyNoteState extends State<KeyNote> {
     print("Key settings loaded");
   }
 
-
   @override
   void didUpdateWidget(covariant KeyNote oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if ( (oldWidget.playingMode != widget.playingMode) || (oldWidget.startNote != widget.startNote) || (oldWidget.index != widget.index) || (oldWidget.scale != widget.scale) || (oldWidget.sfID != widget.sfID)) {
+    if ((oldWidget.playingMode != widget.playingMode) ||
+        (oldWidget.startNote != widget.startNote) ||
+        (oldWidget.index != widget.index) ||
+        (oldWidget.scale != widget.scale) ||
+        (oldWidget.sfID != widget.sfID)) {
       packNotes();
     }
   }
 
   @override
-
-  void initState() {
-    super.initState();
-    packNotes();
-  }
-
-
-  @override
   Widget build(BuildContext context) {
+    // Update bounds whenever widget rebuilds
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updateBounds();
+    });
     return GestureDetector(
       onPanDown: (_) => {
         playNote(),
         print('Button ${notes} pressed (onPanDown)'),
         print("Global key: ${widget.key}")
-        },
+      },
       onPanCancel: () => {
         stopNote(),
         print('Button ${notes} let go (onPanCancel)'),
@@ -134,7 +163,5 @@ class KeyNoteState extends State<KeyNote> {
         child: Text('Button ${widget.scale[widget.index]}'),
       ),
     );
-    
-    
   }
 }
