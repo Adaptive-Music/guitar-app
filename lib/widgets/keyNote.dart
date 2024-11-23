@@ -12,8 +12,9 @@ class KeyNote extends StatefulWidget {
 
   final int sfID;
   final MidiPro midiController;
+  final GlobalKey globalKey;
 
-  const KeyNote({super.key, required this.startNote, required this.sfID, required this.midiController, 
+  const KeyNote({required this.globalKey, super.key, required this.startNote, required this.sfID, required this.midiController, 
   required this.playingMode, required this.index, required this.scale});
   
 

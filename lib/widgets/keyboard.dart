@@ -20,21 +20,25 @@ class KeyBoard extends StatefulWidget {
 }
 
 class _KeyBoardState extends State<KeyBoard> {
-  
+  List<GlobalKey> keyNoteKeys = [];
+
+  @override
+  void initState() {
+    super.initState();
+    keyNoteKeys = List.generate(widget.scale.length * 2, (index) => GlobalKey());
+  }
+
   @override
   Widget build(BuildContext context) {
-    
-    return  Column(
+    return Column(
       children: [
-        buildButtonRow(widget.octave + widget.keyHarmony), // First row of buttons (MIDI notes 60-66)
-        buildButtonRow(widget.octave - 12 + widget.keyHarmony), // Second row of buttons (MIDI notes 67-73)
+        buildButtonRow(widget.octave + widget.keyHarmony, 0), // First row of buttons (MIDI notes 60-66)
+        buildButtonRow(widget.octave - 12 + widget.keyHarmony, widget.scale.length), // Second row of buttons (MIDI notes 67-73)
       ]
     );
   }
 
-
-  Widget buildButtonRow( int startNote ) {
-
+  Widget buildButtonRow(int startNote, int keyOffset) {
     return Expanded(
       child: Row(
         children: List.generate(widget.scale.length, (index) {
@@ -43,6 +47,7 @@ class _KeyBoardState extends State<KeyBoard> {
               padding: const EdgeInsets.all(4.0), // Adds space between buttons
               child: SizedBox.expand(
                 child: KeyNote(
+                  globalKey: keyNoteKeys[keyOffset + index],
                   startNote: startNote,
                   index: index,
                   scale: widget.scale,
@@ -56,6 +61,4 @@ class _KeyBoardState extends State<KeyBoard> {
       ),
     );
   }
-
-
 }
