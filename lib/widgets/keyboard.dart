@@ -65,6 +65,12 @@ class _KeyBoardState extends State<KeyBoard> {
           handleTouch();
         });
       },
+      onPointerCancel: (PointerCancelEvent event) {
+        setState(() {
+          _touchPositions.remove(event.pointer);
+          handleTouch();
+        });
+      },
       child: Column(children: [
         buildButtonRow(widget.octave + widget.keyHarmony, 0),
         buildButtonRow(widget.octave - 12 + widget.keyHarmony, widget.scale.length),
