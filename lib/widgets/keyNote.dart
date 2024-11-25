@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
+import 'package:confetti/confetti.dart';
 
 class KeyNote extends StatefulWidget {
   final int startNote;
@@ -28,6 +29,7 @@ class KeyNoteState extends State<KeyNote> {
   List<int> notes = [];
   late Rect bounds;
   bool playing = false;
+  late ConfettiController _confettiController;
 
   @override
   void initState() {
@@ -36,6 +38,13 @@ class KeyNoteState extends State<KeyNote> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       updateBounds();
     });
+    _confettiController = ConfettiController(duration: const Duration(seconds: 1));
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
   }
 
   void updateBounds() {
@@ -65,7 +74,7 @@ class KeyNoteState extends State<KeyNote> {
       widget.midiController
           .playNote(key: notes[i], velocity: 64, sfId: widget.sfID);
     }
-
+    _confettiController.play();
     setState(() {
       playing = true;
     });
@@ -75,7 +84,7 @@ class KeyNoteState extends State<KeyNote> {
     for (var i = 0; i < notes.length; i++) {
       widget.midiController.stopNote(key: notes[i], sfId: widget.sfID);
     }
-
+    _confettiController.stop();
     setState(() {
       playing = false;
     });
@@ -144,13 +153,32 @@ class KeyNoteState extends State<KeyNote> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       updateBounds();
     });
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: playing ? Colors.yellow : Colors.blue,
-        padding: EdgeInsets.zero, // Ensures no extra padding
-      ),
-      onPressed: () {},
-      child: Text(getMidiNoteName(widget.startNote + widget.scale[widget.index])),
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Move ConfettiWidget behind the button
+        ConfettiWidget(
+          confettiController: _confettiController,
+          blastDirectionality: BlastDirectionality.explosive,
+          shouldLoop: true,
+          emissionFrequency: 0.3,
+          numberOfParticles: 1,
+          // ...other configurations...
+        ),
+        Opacity(
+          opacity: 0.9,
+          child: SizedBox.expand(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: playing ? Colors.yellow : Colors.blue,
+                padding: EdgeInsets.zero, // Ensures no extra padding
+              ),
+              onPressed: () {},
+              child: Text(getMidiNoteName(widget.startNote + widget.scale[widget.index])),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
