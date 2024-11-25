@@ -32,7 +32,7 @@ class _KeyBoardState extends State<KeyBoard> {
   void initState() {
     super.initState();
     keyNoteKeys = List.generate(
-      widget.scale.length * 2,
+      (widget.scale.length + 1) * 2,  // Added +1 for the extra button in each row
       (index) => GlobalKey<KeyNoteState>(),
     );
   }
@@ -73,7 +73,7 @@ class _KeyBoardState extends State<KeyBoard> {
       },
       child: Column(children: [
         buildButtonRow(widget.octave + widget.keyHarmony, 0),
-        buildButtonRow(widget.octave - 12 + widget.keyHarmony, widget.scale.length),
+        buildButtonRow(widget.octave - 12 + widget.keyHarmony, widget.scale.length + 1),
       ]),
     );
   }
@@ -81,22 +81,39 @@ class _KeyBoardState extends State<KeyBoard> {
   Widget buildButtonRow(int startNote, int keyOffset) {
     return Expanded(
       child: Row(
-        children: List.generate(widget.scale.length, (index) {
-          return Expanded(
+        children: [
+          ...List.generate(widget.scale.length, (index) {
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: SizedBox.expand(
+                    child: KeyNote(
+                        key: keyNoteKeys[keyOffset + index],
+                        startNote: startNote,
+                        index: index,
+                        scale: widget.scale,
+                        playingMode: widget.playingMode,
+                        sfID: widget.sfID,
+                        midiController: widget.midiController)),
+              ),
+            );
+          }),
+          // Add the octave-up button
+          Expanded(
             child: Padding(
               padding: const EdgeInsets.all(4.0),
               child: SizedBox.expand(
                   child: KeyNote(
-                      key: keyNoteKeys[keyOffset + index],
-                      startNote: startNote,
-                      index: index,
+                      key: keyNoteKeys[keyOffset + widget.scale.length],
+                      startNote: startNote + 12,  // One octave higher
+                      index: 0,  // Same scale degree as first button
                       scale: widget.scale,
                       playingMode: widget.playingMode,
                       sfID: widget.sfID,
                       midiController: widget.midiController)),
             ),
-          );
-        }),
+          ),
+        ],
       ),
     );
   }
