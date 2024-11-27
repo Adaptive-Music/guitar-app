@@ -91,6 +91,13 @@ class KeyNoteState extends State<KeyNote> {
   }
 
   void packNotes() {
+    if (widget.index >= widget.scale.length) {
+      setState(() {
+        notes = [];
+      });
+      return;
+    }
+    
     int rootNote = widget.startNote + widget.scale[widget.index];
     if (widget.playingMode == 'Single Note') {
       setState(() {
@@ -163,7 +170,7 @@ class KeyNoteState extends State<KeyNote> {
           shouldLoop: true,
           emissionFrequency: 0.3,
           numberOfParticles: 1,
-          // ...other configurations...
+          strokeWidth: 1,
         ),
         Opacity(
           opacity: 0.9,

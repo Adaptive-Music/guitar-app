@@ -37,6 +37,20 @@ class _KeyBoardState extends State<KeyBoard> {
     );
   }
 
+  @override
+  void didUpdateWidget(covariant KeyBoard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.scale.length != widget.scale.length) {
+      // Recreate keys when scale length changes
+      setState(() {
+        keyNoteKeys = List.generate(
+          (widget.scale.length + 1) * 2,
+          (index) => GlobalKey<KeyNoteState>(),
+        );
+      });
+    }
+  }
+
   void handleTouch() {
     for (GlobalKey<KeyNoteState> key in keyNoteKeys) {
       key.currentState!.checkTouches(_touchPositions);
@@ -83,12 +97,14 @@ class _KeyBoardState extends State<KeyBoard> {
       child: Row(
         children: [
           ...List.generate(widget.scale.length, (index) {
+            final keyIndex = keyOffset + index;
+            if (keyIndex >= keyNoteKeys.length) return const SizedBox(); // Safety check
             return Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: SizedBox.expand(
                     child: KeyNote(
-                        key: keyNoteKeys[keyOffset + index],
+                        key: keyNoteKeys[keyIndex],
                         startNote: startNote,
                         index: index,
                         scale: widget.scale,
@@ -98,21 +114,22 @@ class _KeyBoardState extends State<KeyBoard> {
               ),
             );
           }),
-          // Add the octave-up button
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: SizedBox.expand(
-                  child: KeyNote(
-                      key: keyNoteKeys[keyOffset + widget.scale.length],
-                      startNote: startNote + 12,  // One octave higher
-                      index: 0,  // Same scale degree as first button
-                      scale: widget.scale,
-                      playingMode: widget.playingMode,
-                      sfID: widget.sfID,
-                      midiController: widget.midiController)),
+          // Add the octave-up button with safety check
+          if (keyOffset + widget.scale.length < keyNoteKeys.length)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: SizedBox.expand(
+                    child: KeyNote(
+                        key: keyNoteKeys[keyOffset + widget.scale.length],
+                        startNote: startNote + 12,
+                        index: 0,
+                        scale: widget.scale,
+                        playingMode: widget.playingMode,
+                        sfID: widget.sfID,
+                        midiController: widget.midiController)),
+              ),
             ),
-          ),
         ],
       ),
     );
