@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/widgets/keyNote.dart';
 import 'package:flutter_confetti/flutter_confetti.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
+import 'dart:math';
 
 class KeyBoard extends StatefulWidget {
   final int sfID;
@@ -66,19 +67,36 @@ class _KeyBoardState extends State<KeyBoard> {
   }
 
   void launchConfetti(int pointer) async {
-    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    final OverlayState? overlay = Overlay.of(context);
+    if (overlay == null) return;
+    
+    final RenderBox renderBox = overlay.context.findRenderObject() as RenderBox;
     final Size size = renderBox.size;
     
     while (_touchPositions.keys.contains(pointer)) {
-      final Offset localPosition = renderBox.globalToLocal(_touchPositions[pointer]!);
+      final Offset position = _touchPositions[pointer]!;
       Confetti.launch(
         context,
         options: ConfettiOptions(
-          x: localPosition.dx / size.width,
-          y: localPosition.dy / size.height,
+          x: position.dx / size.width,
+          y: position.dy / size.height,
+          startVelocity: 3,
+          spread: 360,
+          particleCount: 6,
+          decay: 1.0,
+          ticks: 50,
+          gravity: 0,
+          scalar: 3.0,
+        ),
+        particleBuilder: (index) => Emoji(
+          emoji: ['♩', '♪', '♫', '♬', '𝄞', '𝄢'][index % 6],
+          textStyle: TextStyle(
+            color: defaultColors[Random().nextInt(defaultColors.length)],
+            fontSize: 30,
+          )
         ),
       );
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(Duration(milliseconds: 150));
     }
   }
 
