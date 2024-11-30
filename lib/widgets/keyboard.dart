@@ -29,13 +29,26 @@ class KeyBoard extends StatefulWidget {
 class _KeyBoardState extends State<KeyBoard> {
   late List<GlobalKey<KeyNoteState>> keyNoteKeys;
   final Map<int, Offset> _touchPositions = {};
+  final Random _random = Random();
+  late final ConfettiOptions _confettiOptions;
+  final List<String> _musicEmojis = ['♩', '♪', '♫', '♬'];
 
   @override
   void initState() {
     super.initState();
     keyNoteKeys = List.generate(
-      (widget.scale.length + 1) * 2,  // Added +1 for the extra button in each row
+      (widget.scale.length + 1) * 2,
       (index) => GlobalKey<KeyNoteState>(),
+    );
+    
+    _confettiOptions = ConfettiOptions(
+      flat: true,
+      startVelocity: 4,
+      spread: 360,
+      particleCount: 1,
+      decay: 1.0,
+      ticks: 40,
+      gravity: 0,
     );
   }
 
@@ -72,31 +85,27 @@ class _KeyBoardState extends State<KeyBoard> {
     
     final RenderBox renderBox = overlay.context.findRenderObject() as RenderBox;
     final Size size = renderBox.size;
+    final fontSize = 50.0;
     
     while (_touchPositions.keys.contains(pointer)) {
-      final Offset position = _touchPositions[pointer]!;
+      final position = _touchPositions[pointer]!;
+      
       Confetti.launch(
         context,
-        options: ConfettiOptions(
-          x: position.dx / size.width,
-          y: position.dy / size.height,
-          startVelocity: 3,
-          spread: 360,
-          particleCount: 6,
-          decay: 1.0,
-          ticks: 50,
-          gravity: 0,
-          scalar: 3.0,
+        options: _confettiOptions.copyWith(
+          x: (position.dx - fontSize / 2) / size.width,
+          y: (position.dy - fontSize / 2) / size.height,
         ),
         particleBuilder: (index) => Emoji(
-          emoji: ['♩', '♪', '♫', '♬', '𝄞', '𝄢'][index % 6],
+          emoji: _musicEmojis[_random.nextInt(_musicEmojis.length)],
           textStyle: TextStyle(
-            color: defaultColors[Random().nextInt(defaultColors.length)],
-            fontSize: 30,
+            color: defaultColors[_random.nextInt(defaultColors.length)],
+            fontSize: 50,
+            height: 1.1
           )
         ),
       );
-      await Future.delayed(Duration(milliseconds: 150));
+      await Future.delayed(const Duration(milliseconds: 50));
     }
   }
 
