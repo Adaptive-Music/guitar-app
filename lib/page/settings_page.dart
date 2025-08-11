@@ -21,10 +21,35 @@ class _SettingsPageState extends State<SettingsPage> {
   late String selectedPlayingMode;
   late String selectedScale;
   late String selectedOctave;
-  late String selectedMode;
   late Instrument selectedInstrument;
   late String selectedVisuals;
   late String selectedSymbols;
+
+  List<String> selectionKeyHarmony = [
+                        'C',
+                        'C# / Db',
+                        'D',
+                        'D# / Eb',
+                        'E',
+                        'F',
+                        'F# / Gb',
+                        'G',
+                        'G# / Ab',
+                        'A',
+                        'A# / Bb',
+                        'B'
+                      ];
+  late List<String> selectionPlayingMode;
+  List<String> selectionScale = [
+                        'Major',
+                        'Minor',
+                        'Harmonic Minor',
+                        'Pentatonic Major',
+                        'Pentatonic Minor'
+                      ]; 
+  List<String> selectionOctave = ['2', '3', '4', '5', '6', '7'];
+  List<String> selectionVisuals = ['Grid', 'Custom'];
+  List<String> selectionSymbols = ['Shapes', 'Letters', 'Numbers', 'None'];
 
   extractSettings() {
     selectedKeyHarmony = widget.prefs!.getString('keyHarmony')!;
@@ -45,6 +70,20 @@ class _SettingsPageState extends State<SettingsPage> {
     setState() {
       prefLoaded = true;
       print('Pref Loaded');
+    }
+  }
+
+  loadSelections() {
+    if (selectedScale == 'Pentatonic Major' || selectedScale == 'Pentatonic Minor') {
+      setState(() {
+        selectionPlayingMode = ['Single Note', 'Power Chord'];
+        selectedPlayingMode = selectedPlayingMode == 'Triad Chord' ? 'Single Note' : selectedPlayingMode;
+      });
+      
+    } else {
+      setState(() {
+        selectionPlayingMode = ['Single Note', 'Triad Chord', 'Power Chord'];
+      });  
     }
   }
 
@@ -69,6 +108,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     extractSettings();
+    loadSelections();
   }
 
   @override
@@ -105,20 +145,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(labelText: 'Key Centre'),
                       value: selectedKeyHarmony,
-                      items: [
-                        'C',
-                        'C# / Db',
-                        'D',
-                        'D# / Eb',
-                        'E',
-                        'F',
-                        'F# / Gb',
-                        'G',
-                        'G# / Ab',
-                        'A',
-                        'A# / Bb',
-                        'B'
-                      ]
+                      items: selectionKeyHarmony
                           .map((value) => DropdownMenuItem(
                                 value: value,
                                 child: Text(value),
@@ -134,13 +161,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(labelText: 'Scale'),
                       value: selectedScale,
-                      items: [
-                        'Major',
-                        'Minor',
-                        'Harmonic Minor',
-                        'Pentatonic Major',
-                        'Pentatonic Minor'
-                      ]
+                      items: selectionScale
                           .map((value) => DropdownMenuItem(
                                 value: value,
                                 child: Text(value),
@@ -150,13 +171,14 @@ class _SettingsPageState extends State<SettingsPage> {
                         setState(() {
                           selectedScale = newValue!;
                         });
+                        loadSelections();
                       },
                     ),
                     SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(labelText: 'Octave'),
                       value: selectedOctave,
-                      items: ['2', '3', '4', '5', '6', '7']
+                      items: selectionOctave
                           .map((value) => DropdownMenuItem(
                                 value: value,
                                 child: Text(value),
@@ -172,7 +194,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(labelText: 'Keyboard Mode'),
                       value: selectedPlayingMode,
-                      items: ['Single Note', 'Triad Chord', 'Power Chord']
+                      items: selectionPlayingMode
                           .map((value) => DropdownMenuItem(
                                 value: value,
                                 child: Text(value),
@@ -188,7 +210,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(labelText: 'Visuals'),
                       value: selectedVisuals,
-                      items: ['Grid', 'Custom']
+                      items: selectionVisuals
                           .map((value) => DropdownMenuItem(
                                 value: value,
                                 child: Text(value),
@@ -205,7 +227,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       decoration:
                           InputDecoration(labelText: 'Keyboard Symbols'),
                       value: selectedSymbols,
-                      items: ['Shapes', 'Letters', 'Numbers', 'None']
+                      items: selectionSymbols
                           .map((value) => DropdownMenuItem(
                                 value: value,
                                 child: Text(value),

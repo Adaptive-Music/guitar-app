@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 
 class KeyNote extends StatefulWidget {
@@ -61,6 +62,7 @@ class KeyNoteState extends State<KeyNote> {
   }
 
   void playNote() {
+    HapticFeedback.mediumImpact();  // Add haptic feedback
     for (var i = 0; i < notes.length; i++) {
       widget.midiController
           .playNote(key: notes[i], velocity: 64, sfId: widget.sfID);
@@ -82,6 +84,13 @@ class KeyNoteState extends State<KeyNote> {
   }
 
   void packNotes() {
+    if (widget.index >= widget.scale.length) {
+      setState(() {
+        notes = [];
+      });
+      return;
+    }
+    
     int rootNote = widget.startNote + widget.scale[widget.index];
     if (widget.playingMode == 'Single Note') {
       setState(() {
