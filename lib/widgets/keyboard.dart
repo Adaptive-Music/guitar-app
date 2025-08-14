@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/widgets/keyNote.dart';
 import 'package:flutter_confetti/flutter_confetti.dart';
+import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 import 'dart:math';
 
 class KeyBoard extends StatefulWidget {
   final int sfID;
   final MidiPro midiController;
+  final MidiCommand midiCommand;
 
   final int keyHarmony;
   final List<int> scale;
@@ -20,6 +22,7 @@ class KeyBoard extends StatefulWidget {
       required this.scale,
       required this.sfID,
       required this.midiController,
+      required this.midiCommand,
       required this.playingMode});
 
   @override
@@ -140,7 +143,7 @@ class _KeyBoardState extends State<KeyBoard> {
       },
       child: Column(children: [
         buildButtonRow(widget.octave + widget.keyHarmony, 0),
-        buildButtonRow(widget.octave - 12 + widget.keyHarmony, widget.scale.length + 1),
+        // buildButtonRow(widget.octave - 12 + widget.keyHarmony, widget.scale.length + 1),
       ]),
     );
   }
@@ -159,12 +162,13 @@ class _KeyBoardState extends State<KeyBoard> {
                   child: SizedBox.expand(
                       child: KeyNote(
                           key: keyNoteKeys[keyOffset + index],
-                          startNote: startNote,
+                          startNote: 60,
                           index: index,
-                          scale: widget.scale,
-                          playingMode: widget.playingMode,
+                          scale: [0, 2, 4, 5, 7, 9, 11],
+                          playingMode: 'Single Note',
                           sfID: widget.sfID,
-                          midiController: widget.midiController)),
+                          midiController: widget.midiController,
+                          midiCommand: widget.midiCommand)),
                 ),
               );
             }
@@ -178,10 +182,11 @@ class _KeyBoardState extends State<KeyBoard> {
                         key: keyNoteKeys[keyOffset + widget.scale.length],
                         startNote: startNote + 12,  // One octave higher
                         index: 0,  // Same scale degree as first button
-                        scale: widget.scale,
-                        playingMode: widget.playingMode,
+                        scale: [0, 2, 4, 5, 7, 9, 11],
+                        playingMode: 'Single Note',
                         sfID: widget.sfID,
-                        midiController: widget.midiController)),
+                        midiController: widget.midiController,
+                        midiCommand: widget.midiCommand)),
               ),
             ),
         ],

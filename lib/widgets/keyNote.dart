@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 
 class KeyNote extends StatefulWidget {
@@ -11,12 +12,14 @@ class KeyNote extends StatefulWidget {
 
   final int sfID;
   final MidiPro midiController;
+  final MidiCommand midiCommand;
 
   const KeyNote(
       {super.key,
       required this.startNote,
       required this.sfID,
       required this.midiController,
+      required this.midiCommand,
       required this.playingMode,
       required this.index,
       required this.scale});
@@ -64,8 +67,9 @@ class KeyNoteState extends State<KeyNote> {
   void playNote() {
     HapticFeedback.mediumImpact();  // Add haptic feedback
     for (var i = 0; i < notes.length; i++) {
-      widget.midiController
-          .playNote(key: notes[i], velocity: 64, sfId: widget.sfID);
+      // widget.midiController
+      //     .playNote(key: notes[i], velocity: 64, sfId: widget.sfID);
+      sendNoteOn(notes[i]);
     }
 
     setState(() {
@@ -75,12 +79,25 @@ class KeyNoteState extends State<KeyNote> {
 
   void stopNote() {
     for (var i = 0; i < notes.length; i++) {
-      widget.midiController.stopNote(key: notes[i], sfId: widget.sfID);
+      // widget.midiController.stopNote(key: notes[i], sfId: widget.sfID);
+      sendNoteOff(notes[i]);
     }
 
     setState(() {
       playing = false;
     });
+  }
+
+  void sendNoteOn(note) {
+    final noteOn = Uint8List.fromList([0x90, note, 100]);
+    widget.midiCommand.sendData(noteOn);
+    print(note);
+  }
+
+  void sendNoteOff(note) {
+    final noteOff = Uint8List.fromList([0x80, note, 0]);
+    widget.midiCommand.sendData(noteOff);
+    print(note);
   }
 
   void packNotes() {

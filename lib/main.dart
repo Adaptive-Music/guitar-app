@@ -74,11 +74,11 @@ class _MyAppState extends State<MyApp> {
   Future<void> testNotes() async {
     List<int> notes = [60, 62, 64, 65, 67, 69];
     
-    while (true) {
+    for (int i = 0; i < 2; i++) {
       for (int i in notes) {
         sendNoteOn(i);
-      await Future.delayed(Duration(milliseconds: 500));
-      sendNoteOff(i);
+        await Future.delayed(Duration(milliseconds: 500));
+        sendNoteOff(i);
       }
     }
   
@@ -92,11 +92,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   void sendNoteOff(note) {
-
-  final noteOff = Uint8List.fromList([0x80, note, 0]);
-  _midi_cmd.sendData(noteOff);
-
-}
+    final noteOff = Uint8List.fromList([0x80, note, 0]);
+    _midi_cmd.sendData(noteOff);
+  }
 
   Future<void> _initPrefs() async {
     _prefs = await SharedPreferences.getInstance();
@@ -174,7 +172,7 @@ class _MyAppState extends State<MyApp> {
               body: Text('Loading...'),
             );
           }
-        return HomeScreen(prefs: _prefs, sfID: sfID, midiController: _midi);
+        return HomeScreen(prefs: _prefs, sfID: sfID, midiController: _midi, midiCommand: _midi_cmd);
         }, 
       ),
     );
@@ -186,7 +184,8 @@ class HomeScreen extends StatefulWidget {
   final SharedPreferences? prefs;
   final int sfID;
   final MidiPro midiController;
-  const HomeScreen({super.key, required this.sfID, required this.midiController, required this.prefs});
+  final MidiCommand midiCommand;
+  const HomeScreen({super.key, required this.sfID, required this.midiController, required this.prefs, required this.midiCommand});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -246,7 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         body: KeyBoard(keyHarmony: keyHarmony, octave: octave,  scale: scale, 
-        sfID: widget.sfID, midiController: widget.midiController, playingMode: playingMode),
+        sfID: widget.sfID, midiController: widget.midiController, midiCommand: widget.midiCommand, playingMode: playingMode),
       );
   }
 }
