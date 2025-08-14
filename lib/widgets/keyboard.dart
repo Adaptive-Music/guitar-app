@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/widgets/keyNote.dart';
 import 'package:flutter_confetti/flutter_confetti.dart';
@@ -43,7 +45,7 @@ class _KeyBoardState extends State<KeyBoard> {
       (widget.scale.length + 1) * 2,
       (index) => GlobalKey<KeyNoteState>(),
     );
-    
+    initMidiListening();
     _confettiOptions = ConfettiOptions(
       flat: true,
       startVelocity: 4,
@@ -110,6 +112,35 @@ class _KeyBoardState extends State<KeyBoard> {
       );
       await Future.delayed(const Duration(milliseconds: 50));
     }
+  }
+
+  void initMidiListening() async {
+    // Connect to a device first
+    // Example: connectToDevice(device) where 'device' is from midiCommand.devices
+
+    // Listen for incoming MIDI data
+    widget.midiCommand.onMidiDataReceived?.listen((MidiPacket packet) {
+      // packet.data is a Uint8List containing raw MIDI bytes
+      Uint8List data = packet.data;
+
+      // Example: interpret a Note On (0x90) message
+      if (data.isNotEmpty) {
+        int status = data[0];
+        int note = data.length > 1 ? data[1] : 0;
+        int velocity = data.length > 2 ? data[2] : 0;
+
+        print("Received MIDI message: status=$status, note=$note, velocity=$velocity");
+
+        if ((status & 0xF0) == 0x90 && velocity > 0) {
+          widget.midiController
+          .playNote(key: note, velocity: 64, sfId: widget.sfID);
+          print("Note On: $note with velocity $velocity");
+        } else if ((status & 0xF0) == 0x80 || ((status & 0xF0) == 0x90 && velocity == 0)) {
+          widget.midiController.stopNote(key: note, sfId: widget.sfID);
+          print("Note Off: $note");
+        }
+      }
+    });
   }
 
   @override
