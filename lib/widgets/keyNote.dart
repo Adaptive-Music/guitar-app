@@ -125,9 +125,9 @@ class KeyNoteState extends State<KeyNote> {
       });
     }
 
-    print("Key - Scale: ${widget.scale}");
-    print("Key - Playing Mode: ${widget.playingMode}");
-    print("Key settings loaded");
+    // print("Key - Scale: ${widget.scale}");
+    // print("Key - Playing Mode: ${widget.playingMode}");
+    // print("Key settings loaded");
   }
 
   @override

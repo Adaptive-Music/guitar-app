@@ -1,6 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/page/settings_page.dart';
 import 'package:flutter_application_1/widgets/KeyBoard.dart';
+import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 import 'package:flutter_application_1/special/enums.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,13 +23,18 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final MidiPro _midi = MidiPro();
+  final MidiCommand _midi_cmd = MidiCommand();
   int sfID = 0;
 
   SharedPreferences? _prefs;
   Instrument selectedInstrument = Instrument.values[0]; // Default value
 
   bool _sfLoading = true;
+  bool _midiCmdLoading = true;
   bool _prefLoading = true;
+
+  List<MidiDevice>? midiDevices = [];
+  MidiDevice? selectedMidiDevice;
 
   Future<void> loadSoundFont() async {
     if (_prefs == null) return; // Don't load if prefs aren't ready
@@ -43,19 +51,67 @@ class _MyAppState extends State<MyApp> {
     );
     setState(() {
       _sfLoading = false;
-      print('SF loaded');
     });  
   }
+
+  Future<void> setMidiDevices() async {
+    final newMidiDevices = await _midi_cmd.devices;
+    setState(() {
+      midiDevices = newMidiDevices;
+      _midiCmdLoading = false;
+    });
+  }
+
+  void selectMidiDevice() async {
+    if (midiDevices?.length == 1) {
+      _midi_cmd.connectToDevice(midiDevices![0]);
+      print('midi device connected');
+    } else {
+      print('midi device not founqd and therefore not connected');
+    }
+  }
+
+  Future<void> testNotes() async {
+    List<int> notes = [60, 62, 64, 65, 67, 69];
+    
+    while (true) {
+      for (int i in notes) {
+        sendNoteOn(i);
+      await Future.delayed(Duration(milliseconds: 500));
+      sendNoteOff(i);
+      }
+    }
+  
+  }
+  
+  void sendNoteOn(note) {
+
+    final noteOn = Uint8List.fromList([0x90, note, 100]);
+
+    _midi_cmd.sendData(noteOn);
+  }
+
+  void sendNoteOff(note) {
+
+  final noteOff = Uint8List.fromList([0x80, note, 0]);
+  _midi_cmd.sendData(noteOff);
+
+}
 
   Future<void> _initPrefs() async {
     _prefs = await SharedPreferences.getInstance();
     await _checkPrefs();
     await loadSoundFont(); // Move soundfont loading here
+    await setMidiDevices();
+    selectMidiDevice();
+    testNotes();
     setState(() {
       _prefLoading = false;
       print('Pref loaded');
     }); 
   }
+
+
 
   _checkPrefs() async {
     if (_prefs?.getString('keyHarmony') == null) {
@@ -86,15 +142,15 @@ class _MyAppState extends State<MyApp> {
       _prefs?.setString('symbols', 'Shapes');
     }
 
-    print("Key Harmony: ${_prefs?.getString('keyHarmony')}");
-    print("Octave: ${_prefs?.getString('octave')}");
-    print("Scale: ${_prefs?.getString('currentScale')}");
-    print("Instrument: ${_prefs?.getString('instrument')}");
-    print("Playing Mode: ${_prefs?.getString('playingMode')}");
-    print("Visual: ${_prefs?.getString('visuals')}");
-    print("Symbols: ${_prefs?.getString('symbols')}");
+    // print("Key Harmony: ${_prefs?.getString('keyHarmony')}");
+    // print("Octave: ${_prefs?.getString('octave')}");
+    // print("Scale: ${_prefs?.getString('currentScale')}");
+    // print("Instrument: ${_prefs?.getString('instrument')}");
+    // print("Playing Mode: ${_prefs?.getString('playingMode')}");
+    // print("Visual: ${_prefs?.getString('visuals')}");
+    // print("Symbols: ${_prefs?.getString('symbols')}");
 
-    print('checkPrefs called');
+    // print('checkPrefs called');
   }
 
   @override
@@ -112,7 +168,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false, // Removes the debug banner
       home: Builder(
         builder: (context) {
-          if (_sfLoading || _prefLoading) {
+          if (_sfLoading || _prefLoading || _midiCmdLoading) {
           // Show a loading screen while waiting for async task to complete
             return Scaffold(
               body: Text('Loading...'),

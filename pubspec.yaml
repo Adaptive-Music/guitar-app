@@ -37,6 +37,7 @@ dependencies:
   flutter_midi_pro: ^3.1.4
   shared_preferences: ^2.3.3
   flutter_confetti: ^0.3.4
+  flutter_midi_command: ^0.5.3
 
 dev_dependencies:
   flutter_test:
