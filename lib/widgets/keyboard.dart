@@ -133,7 +133,7 @@ class _KeyBoardState extends State<KeyBoard> {
 
         if ((status & 0xF0) == 0x90 && velocity > 0) {
           widget.midiController
-          .playNote(key: note, velocity: 64, sfId: widget.sfID);
+          .playNote(key: note, velocity: 100, sfId: widget.sfID);
           print("Note On: $note with velocity $velocity");
         } else if ((status & 0xF0) == 0x80 || ((status & 0xF0) == 0x90 && velocity == 0)) {
           widget.midiController.stopNote(key: note, sfId: widget.sfID);
