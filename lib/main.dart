@@ -65,7 +65,7 @@ class _MyAppState extends State<MyApp> {
 
   void selectMidiDevice() async {
     for (var device in midiDevices!) {
-      if (device.name == "Teensyduino Teensy MIDI") {
+      if (device.name.contains("Teensy")) {
         _midi_cmd.connectToDevice(device);
         print('midi device connected');
         break;
@@ -79,7 +79,7 @@ class _MyAppState extends State<MyApp> {
     for (int i = 0; i < 2; i++) {
       for (int i in notes) {
         sendNoteOn(i);
-        await Future.delayed(Duration(milliseconds: 500));
+        await Future.delayed(Duration(milliseconds: 150));
         sendNoteOff(i);
       }
     }
