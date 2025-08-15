@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_1/special/enums.dart';
 import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 
@@ -58,8 +59,10 @@ class KeyNoteState extends State<KeyNote> {
     });
     if (isTouched && !playing) {
       playNote();
+      print('Button ${widget.index} touched');
     } else if (!isTouched && playing) {
       stopNote();
+      print('Button ${widget.index} released');
     }
 
   }
@@ -69,7 +72,7 @@ class KeyNoteState extends State<KeyNote> {
     for (var i = 0; i < notes.length; i++) {
       // widget.midiController
       //     .playNote(key: notes[i], velocity: 64, sfId: widget.sfID);
-      sendNoteOn(notes[i]);
+      sendNoteOn(60 + Scale.major.intervals[widget.index]);
     }
 
     setState(() {
@@ -80,7 +83,7 @@ class KeyNoteState extends State<KeyNote> {
   void stopNote() {
     for (var i = 0; i < notes.length; i++) {
       // widget.midiController.stopNote(key: notes[i], sfId: widget.sfID);
-      sendNoteOff(notes[i]);
+      sendNoteOff(60 + Scale.major.intervals[widget.index]);
     }
 
     setState(() {
