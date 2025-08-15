@@ -56,6 +56,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> setMidiDevices() async {
     final newMidiDevices = await _midi_cmd.devices;
+    
     setState(() {
       midiDevices = newMidiDevices;
       _midiCmdLoading = false;
@@ -63,11 +64,12 @@ class _MyAppState extends State<MyApp> {
   }
 
   void selectMidiDevice() async {
-    if (midiDevices?.length == 1) {
-      _midi_cmd.connectToDevice(midiDevices![0]);
-      print('midi device connected');
-    } else {
-      print('midi device not founqd and therefore not connected');
+    for (var device in midiDevices!) {
+      if (device.name == "Teensyduino Teensy MIDI") {
+        _midi_cmd.connectToDevice(device);
+        print('midi device connected');
+        break;
+      }
     }
   }
 
