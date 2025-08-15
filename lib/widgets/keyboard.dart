@@ -208,22 +208,6 @@ class _KeyBoardState extends State<KeyBoard> {
               );
             }
           ),
-          if (keyOffset + widget.scale.length < keyNoteKeys.length)
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: SizedBox.expand(
-                    child: KeyNote(
-                        key: keyNoteKeys[keyOffset + widget.scale.length],
-                        startNote: startNote + 12,  // One octave higher
-                        index: 0,  // Same scale degree as first button
-                        scale: [0, 2, 4, 5, 7, 9, 11],
-                        playingMode: 'Single Note',
-                        sfID: widget.sfID,
-                        midiController: widget.midiController,
-                        midiCommand: widget.midiCommand)),
-              ),
-            ),
         ],
       ),
     );

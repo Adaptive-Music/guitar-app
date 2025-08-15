@@ -1,9 +1,24 @@
 enum Scale {
-  major(name: 'Major', intervals: [0, 2, 4, 5, 7, 9, 11]),
-  minor(name: 'Minor', intervals: [0, 2, 3, 5, 7, 8, 10]),
-  harmonicMinor(name: 'Harmonic Minor', intervals: [0, 2, 3, 5, 7, 8, 11]),
-  pentatonicMinor(name: 'Pentatonic Minor', intervals: [0, 3, 5, 7, 10]),
-  pentatonicMajor(name: 'Pentatonic Major', intervals: [0, 4, 5, 7, 11]);
+  major(
+    name: 'Major', 
+    intervals: [0, 2, 4, 5, 7, 9, 11, 12]
+    ),
+  minor(
+    name: 'Minor', 
+    intervals: [0, 2, 3, 5, 7, 8, 10, 12]
+    ),
+  harmonicMinor(
+    name: 'Harmonic Minor', 
+    intervals: [0, 2, 3, 5, 7, 8, 11, 12]
+    ),
+  pentatonicMinor(
+    name: 'Pentatonic Minor', 
+    intervals: [0, 3, 5, 7, 10, 12, 15, 17]
+    ),
+  pentatonicMajor(
+    name: 'Pentatonic Major', 
+    intervals: [0, 4, 5, 7, 11, 12, 16, 17]
+    );
 
   const Scale({
     required this.name,
