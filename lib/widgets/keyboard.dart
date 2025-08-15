@@ -193,10 +193,10 @@ class _KeyBoardState extends State<KeyBoard> {
                   child: SizedBox.expand(
                       child: KeyNote(
                           key: keyNoteKeys[keyOffset + index],
-                          startNote: 60,
+                          startNote: startNote,
                           index: index,
-                          scale: [0, 2, 4, 5, 7, 9, 11],
-                          playingMode: 'Single Note',
+                          scale: widget.scale,
+                          playingMode: widget.playingMode,
                           sfID: widget.sfID,
                           midiController: widget.midiController,
                           midiCommand: widget.midiCommand)),
