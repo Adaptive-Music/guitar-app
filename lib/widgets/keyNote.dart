@@ -32,8 +32,8 @@ class KeyNote extends StatefulWidget {
 class KeyNoteState extends State<KeyNote> {
   List<int> notes = [];
   late Rect bounds;
-  bool playing = false;
-  bool playingSound = false;
+  bool isLedOn = false;
+  bool isPlayingSound = false;
 
   @override
   void initState() {
@@ -58,10 +58,10 @@ class KeyNoteState extends State<KeyNote> {
     bool isTouched = touchPositions.values.any((position) {
       return bounds.contains(position);
     });
-    if (isTouched && !playing) {
+    if (isTouched && !isLedOn) {
       ledOn();
       print('Button ${widget.index} touched');
-    } else if (!isTouched && playing) {
+    } else if (!isTouched && isLedOn) {
       ledOff();
       print('Button ${widget.index} released');
     }
@@ -75,7 +75,7 @@ class KeyNoteState extends State<KeyNote> {
           .playNote(key: notes[i], velocity: 64, sfId: widget.sfID);
     }
     setState(() {
-      playingSound = true;
+      isPlayingSound = true;
     });
   }
 
@@ -85,7 +85,7 @@ class KeyNoteState extends State<KeyNote> {
       widget.midiController.stopNote(key: notes[i], sfId: widget.sfID);
     }
     setState(() {
-      playingSound = false;
+      isPlayingSound = false;
     });
   }
 
@@ -97,7 +97,7 @@ class KeyNoteState extends State<KeyNote> {
     sendNoteOn(60 + Scale.major.intervals[widget.index]);
 
     setState(() {
-      playing = true;
+      isLedOn = true;
     });
   }
 
@@ -106,7 +106,7 @@ class KeyNoteState extends State<KeyNote> {
     sendNoteOff(60 + Scale.major.intervals[widget.index]);
 
     setState(() {
-      playing = false;
+      isLedOn = false;
     });
   }
 
@@ -197,8 +197,13 @@ class KeyNoteState extends State<KeyNote> {
     });
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: playing ? Colors.yellow : Colors.blue,
+        backgroundColor:
+          isPlayingSound && isLedOn ? Colors.lightGreenAccent :
+          isPlayingSound ? Colors.orange :
+          isLedOn ? Colors.yellow :
+          Colors.blue,
         padding: EdgeInsets.zero, // Ensures no extra padding
+        splashFactory: NoSplash.splashFactory,  // Add this line
       ),
       onPressed: () {},
       child: Text(getMidiNoteName(widget.startNote + widget.scale[widget.index])),
