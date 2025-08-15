@@ -32,8 +32,8 @@ class KeyNote extends StatefulWidget {
 class KeyNoteState extends State<KeyNote> {
   List<int> notes = [];
   late Rect bounds;
-  bool isLedOn = false;
-  bool isPlayingSound = false;
+  bool isLedOn = false; // When key pressed on app, frog LED lights up
+  bool isPlayingSound = false; // When frog button pressed, sound is played
 
   @override
   void initState() {
@@ -201,9 +201,9 @@ class KeyNoteState extends State<KeyNote> {
           isPlayingSound && isLedOn ? Colors.lightGreenAccent :
           isPlayingSound ? Colors.orange :
           isLedOn ? Colors.yellow :
-          Colors.blue,
+          Colors.lightBlue,
         padding: EdgeInsets.zero, // Ensures no extra padding
-        splashFactory: NoSplash.splashFactory,  // Add this line
+        splashFactory: NoSplash.splashFactory,
       ),
       onPressed: () {},
       child: Text(getMidiNoteName(widget.startNote + widget.scale[widget.index])),
