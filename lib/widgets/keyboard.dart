@@ -150,7 +150,7 @@ class _KeyBoardState extends State<KeyBoard> {
       onPointerDown: (PointerDownEvent event) {
         setState(() {
           _touchPositions[event.pointer] = event.position;
-          launchConfetti(event.pointer);
+          // launchConfetti(event.pointer);
           handleTouch();
         });
       },
