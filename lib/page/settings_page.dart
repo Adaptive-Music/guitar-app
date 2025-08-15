@@ -206,39 +206,39 @@ class _SettingsPageState extends State<SettingsPage> {
                         });
                       },
                     ),
-                    SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(labelText: 'Visuals'),
-                      value: selectedVisuals,
-                      items: selectionVisuals
-                          .map((value) => DropdownMenuItem(
-                                value: value,
-                                child: Text(value),
-                              ))
-                          .toList(),
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedVisuals = newValue!;
-                        });
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      decoration:
-                          InputDecoration(labelText: 'Keyboard Symbols'),
-                      value: selectedSymbols,
-                      items: selectionSymbols
-                          .map((value) => DropdownMenuItem(
-                                value: value,
-                                child: Text(value),
-                              ))
-                          .toList(),
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedSymbols = newValue!;
-                        });
-                      },
-                    ),
+                    // SizedBox(height: 16),
+                    // DropdownButtonFormField<String>(
+                    //   decoration: InputDecoration(labelText: 'Visuals'),
+                    //   value: selectedVisuals,
+                    //   items: selectionVisuals
+                    //       .map((value) => DropdownMenuItem(
+                    //             value: value,
+                    //             child: Text(value),
+                    //           ))
+                    //       .toList(),
+                    //   onChanged: (newValue) {
+                    //     setState(() {
+                    //       selectedVisuals = newValue!;
+                    //     });
+                    //   },
+                    // ),
+                    // SizedBox(height: 16),
+                    // DropdownButtonFormField<String>(
+                    //   decoration:
+                    //       InputDecoration(labelText: 'Keyboard Symbols'),
+                    //   value: selectedSymbols,
+                    //   items: selectionSymbols
+                    //       .map((value) => DropdownMenuItem(
+                    //             value: value,
+                    //             child: Text(value),
+                    //           ))
+                    //       .toList(),
+                    //   onChanged: (newValue) {
+                    //     setState(() {
+                    //       selectedSymbols = newValue!;
+                    //     });
+                    //   },
+                    // ),
                     SizedBox(height: 32),
                   ],
                 ),
