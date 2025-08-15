@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/page/settings_page.dart';
 import 'package:flutter_application_1/widgets/KeyBoard.dart';
@@ -10,7 +10,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Force Portrait Mode
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight, 
+  ]);
+
   runApp(MyApp());
 }
 
