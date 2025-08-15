@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/special/enums.dart';
 import 'package:flutter_application_1/widgets/keyNote.dart';
 import 'package:flutter_confetti/flutter_confetti.dart';
 import 'package:flutter_midi_command/flutter_midi_command.dart';
@@ -63,8 +64,8 @@ class _KeyBoardState extends State<KeyBoard> {
     if (oldWidget.scale.length != widget.scale.length) {
       // Clear all existing touches and stop all notes
       _touchPositions.clear();
-      for (var key in keyNoteKeys) {
-        key.currentState?.stopNote();
+    for (var key in keyNoteKeys) {
+        key.currentState?.ledOff();
       }
       // Recreate keys for new scale length
       setState(() {
@@ -131,13 +132,16 @@ class _KeyBoardState extends State<KeyBoard> {
 
         print("Received MIDI message: status=$status, note=$note, velocity=$velocity");
 
+        // Determine which frog button has been pressed (0-7)
+        int index = note == 72 ? 7 : Scale.major.intervals.indexOf(note - 60);
         if ((status & 0xF0) == 0x90 && velocity > 0) {
-          widget.midiController
-          .playNote(key: note, velocity: 100, sfId: widget.sfID);
-          print("Note On: $note with velocity $velocity");
+          keyNoteKeys[index].currentState?.playNote();
+          // widget.midiController
+          // .playNote(key: note, velocity: 100, sfId: widget.sfID);
+          print("Index: $index, Note On: $note with velocity $velocity");
         } else if ((status & 0xF0) == 0x80 || ((status & 0xF0) == 0x90 && velocity == 0)) {
-          widget.midiController.stopNote(key: note, sfId: widget.sfID);
-          print("Note Off: $note");
+          keyNoteKeys[index].currentState?.stopNote();
+          print("Index: $index, Note Off: $note");
         }
       }
     });

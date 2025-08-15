@@ -33,6 +33,7 @@ class KeyNoteState extends State<KeyNote> {
   List<int> notes = [];
   late Rect bounds;
   bool playing = false;
+  bool playingSound = false;
 
   @override
   void initState() {
@@ -58,38 +59,59 @@ class KeyNoteState extends State<KeyNote> {
       return bounds.contains(position);
     });
     if (isTouched && !playing) {
-      playNote();
+      ledOn();
       print('Button ${widget.index} touched');
     } else if (!isTouched && playing) {
-      stopNote();
+      ledOff();
       print('Button ${widget.index} released');
     }
 
   }
 
   void playNote() {
-    HapticFeedback.mediumImpact();  // Add haptic feedback
+    print("Playing notes: $notes");
     for (var i = 0; i < notes.length; i++) {
-      // widget.midiController
-      //     .playNote(key: notes[i], velocity: 64, sfId: widget.sfID);
-      sendNoteOn(60 + Scale.major.intervals[widget.index]);
+      widget.midiController
+          .playNote(key: notes[i], velocity: 64, sfId: widget.sfID);
     }
+    setState(() {
+      playingSound = true;
+    });
+  }
+
+  void stopNote() {
+    print("Stopping notes: $notes");
+    for (var i = 0; i < notes.length; i++) {
+      widget.midiController.stopNote(key: notes[i], sfId: widget.sfID);
+    }
+    setState(() {
+      playingSound = false;
+    });
+  }
+
+
+  void ledOn() {
+    HapticFeedback.mediumImpact();  // Add haptic feedback
+    // widget.midiController
+    //     .playNote(key: notes[i], velocity: 64, sfId: widget.sfID);
+    sendNoteOn(60 + Scale.major.intervals[widget.index]);
 
     setState(() {
       playing = true;
     });
   }
 
-  void stopNote() {
-    for (var i = 0; i < notes.length; i++) {
-      // widget.midiController.stopNote(key: notes[i], sfId: widget.sfID);
-      sendNoteOff(60 + Scale.major.intervals[widget.index]);
-    }
+  void ledOff() {
+    // widget.midiController.stopNote(key: notes[i], sfId: widget.sfID);
+    sendNoteOff(60 + Scale.major.intervals[widget.index]);
 
     setState(() {
       playing = false;
     });
   }
+
+
+  
 
   void sendNoteOn(note) {
     final noteOn = Uint8List.fromList([0x90, note, 100]);
