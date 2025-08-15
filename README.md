@@ -1,17 +1,15 @@
-# flutter_application_1
+# TadBuddy
 
-A new Flutter project.
+A companion app for the Frogophone.
+Allows parent/carer/educator to control LEDs on the Frogophone using the on screen buttons in TadBuddy, to prompt user to press the matching buttons.
+Button presses on the Frogophone cause the app to play appropriate notes.
+TadBuddy supports devices running Android, iOS, and MacOS.
+
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+* Before starting up TadBuddy, please ensure Frogophone is set to the default C Major scale, and plugged into the device. A USB adaptor may be required to suit your device.
 
-A few resources to get you started if this is your first Flutter project:
+* On app startup, Frogophone's LEDs will cycle sequentially twice, to indicate successful connection.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# music-keys-demo
+* Now it is ready to play.
