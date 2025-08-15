@@ -75,19 +75,21 @@ class _MyAppState extends State<MyApp> {
     for (var device in midiDevices!) {
       if (device.name.contains("Teensy")) {
         _midi_cmd.connectToDevice(device);
-        print('midi device connected');
+        print('Connected to ${device.name}.');
         break;
       }
     }
+  testLEDs(2);
   }
 
-  Future<void> testNotes() async {
+  /// Cycle through the LEDs on the connected MIDI device.
+  Future<void> testLEDs(int cycles) async {
     List<int> notes = [60, 62, 64, 65, 67, 69];
     
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < cycles; i++) {
       for (int i in notes) {
         sendNoteOn(i);
-        await Future.delayed(Duration(milliseconds: 150));
+        await Future.delayed(Duration(milliseconds: 500));
         sendNoteOff(i);
       }
     }
@@ -112,7 +114,6 @@ class _MyAppState extends State<MyApp> {
     await loadSoundFont(); // Move soundfont loading here
     await setMidiDevices();
     selectMidiDevice();
-    testNotes();
     setState(() {
       _prefLoading = false;
       print('Pref loaded');

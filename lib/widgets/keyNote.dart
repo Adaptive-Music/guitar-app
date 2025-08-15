@@ -199,8 +199,8 @@ class KeyNoteState extends State<KeyNote> {
       style: ElevatedButton.styleFrom(
         backgroundColor:
           isPlayingSound && isLedOn ? Colors.lightGreenAccent :
-          isPlayingSound ? Colors.orange :
-          isLedOn ? Colors.yellow :
+          isPlayingSound ? Colors.orangeAccent :
+          isLedOn ? Colors.yellowAccent :
           Colors.lightBlue,
         padding: EdgeInsets.zero, // Ensures no extra padding
         splashFactory: NoSplash.splashFactory,
