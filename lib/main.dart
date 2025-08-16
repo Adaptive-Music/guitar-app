@@ -33,6 +33,7 @@ class _MyAppState extends State<MyApp> {
   final MidiPro _midi = MidiPro();
   final MidiCommand _midi_cmd = MidiCommand();
   int sfID = 0;
+  MidiDevice? _connectedMidiDevice;
 
   SharedPreferences? _prefs;
   Instrument selectedInstrument = Instrument.values[0]; // Default value
@@ -72,6 +73,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   void selectMidiDevice() async {
+    if (_connectedMidiDevice != null && _connectedMidiDevice!.connected) {
+      print('Already connected to ${_connectedMidiDevice!.name}.');
+      return; // Already connected
+    }
     for (var device in midiDevices!) {
       if (device.name.contains("Teensy")) {
         _midi_cmd.connectToDevice(device);
@@ -79,7 +84,7 @@ class _MyAppState extends State<MyApp> {
         break;
       }
     }
-  testLEDs(2);
+    testLEDs(2);
   }
 
   /// Cycle through the LEDs on the connected MIDI device.
@@ -114,6 +119,17 @@ class _MyAppState extends State<MyApp> {
     await loadSoundFont(); // Move soundfont loading here
     await setMidiDevices();
     selectMidiDevice();
+    _midi_cmd.onMidiSetupChanged?.listen((event) async {
+      print(event);
+      // Handle MIDI setup changes
+      if (_connectedMidiDevice == null) {
+        print('Not connected yet, trying to connect...');
+        selectMidiDevice();
+      } else if (!_connectedMidiDevice!.connected == false) {
+        print('MIDI device disconnected, reconnecting...');
+        selectMidiDevice();
+      }
+    });
     setState(() {
       _prefLoading = false;
       print('Pref loaded');
