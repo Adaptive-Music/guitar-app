@@ -89,7 +89,7 @@ class _MyAppState extends State<MyApp> {
     for (int i = 0; i < cycles; i++) {
       for (int i in notes) {
         sendNoteOn(i);
-        await Future.delayed(Duration(milliseconds: 500));
+        await Future.delayed(Duration(milliseconds: 100));
         sendNoteOff(i);
       }
     }
