@@ -41,6 +41,7 @@ class _MyAppState extends State<MyApp> {
   bool _sfLoading = true;
   bool _midiCmdLoading = true;
   bool _prefLoading = true;
+  bool _isConnecting = false;
 
   List<MidiDevice>? midiDevices = [];
   MidiDevice? selectedMidiDevice;
@@ -73,6 +74,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void selectMidiDevice() async {
+    if (_isConnecting) return; // Prevent multiple connections
+    _isConnecting = true;
     if (_connectedMidiDevice != null && _connectedMidiDevice!.connected) {
       print('Already connected to ${_connectedMidiDevice!.name}.');
       return; // Already connected
@@ -85,6 +88,7 @@ class _MyAppState extends State<MyApp> {
       }
     }
     testLEDs(2);
+    _isConnecting = false;
   }
 
   /// Cycle through the LEDs on the connected MIDI device.
@@ -102,9 +106,7 @@ class _MyAppState extends State<MyApp> {
   }
   
   void sendNoteOn(note) {
-
     final noteOn = Uint8List.fromList([0x90, note, 100]);
-
     _midi_cmd.sendData(noteOn);
   }
 
