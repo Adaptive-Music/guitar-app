@@ -76,8 +76,8 @@ class _MyAppState extends State<MyApp> {
     for (var device in midiDevices!) {
       if (
         device.name.contains("Teensy") || 
-        // device.name.contains("Zoe") ||
-        device.name.contains("MIDI")
+        device.name.contains("MIDI") ||
+        device.name.contains("Zoe")
         ) {
         await _midi_cmd.connectToDevice(device);
         print('Connected to ${device.name}.');
