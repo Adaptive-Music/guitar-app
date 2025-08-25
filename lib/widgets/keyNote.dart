@@ -116,13 +116,13 @@ class KeyNoteState extends State<KeyNote> {
   void sendNoteOn(note) {
     final noteOn = Uint8List.fromList([0x90, note, 100]);
     widget.midiCommand.sendData(noteOn);
-    print("Sending $note NoteOn");
+    print(note);
   }
 
   void sendNoteOff(note) {
     final noteOff = Uint8List.fromList([0x80, note, 0]);
     widget.midiCommand.sendData(noteOff);
-    print("Sending $note NoteOff");
+    print(note);
   }
 
   void packNotes() {
