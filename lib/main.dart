@@ -7,6 +7,7 @@ import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 import 'package:flutter_application_1/special/enums.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 
 
@@ -171,6 +172,16 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _initPrefs(); // Only call _initPrefs, which will handle loadSoundFont
+    
+    // Enable wakelock to prevent screen timeout
+    WakelockPlus.enable();
+  }
+  
+  @override
+  void dispose() {
+    // Disable wakelock when the app is closed
+    WakelockPlus.disable();
+    super.dispose();
   }
 
     
@@ -219,6 +230,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     extractSettings();
+    
+    // Make sure wakelock is still enabled when this screen is shown
+    WakelockPlus.enable();
   }
 
   void extractSettings() {
