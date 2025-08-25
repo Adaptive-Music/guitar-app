@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/page/settings_page.dart';
@@ -91,8 +92,7 @@ class _MyAppState extends State<MyApp> {
       if (
         device.name.contains("Teensy") || 
         device.name.contains("MIDI") ||
-        device.name.contains("Zoe")
-        ) {
+        (device.name.contains("Zoe") && !Platform.isAndroid)) {
         await _midi_cmd.connectToDevice(device);
         print('Connected to ${device.name}.');
         print(midiDevices);
