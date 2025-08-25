@@ -9,24 +9,30 @@ import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 import 'dart:math';
 
 class KeyBoard extends StatefulWidget {
-  final int sfID;
+  final int sfID1;
+  final int sfID2;
   final MidiPro midiController;
   final MidiCommand midiCommand;
 
   final int keyHarmony;
   final List<int> scale;
-  final int octave;
-  final String playingMode;
+  final int octave1;
+  final int octave2;
+  final String playingMode1;
+  final String playingMode2;
 
   const KeyBoard(
       {super.key,
       required this.keyHarmony,
-      required this.octave,
+      required this.octave1,
+      required this.octave2,
       required this.scale,
-      required this.sfID,
+      required this.sfID1,
+      required this.sfID2,
       required this.midiController,
       required this.midiCommand,
-      required this.playingMode});
+      required this.playingMode1,
+      required this.playingMode2});
 
   @override
   State<KeyBoard> createState() => _KeyBoardState();
@@ -177,13 +183,13 @@ class _KeyBoardState extends State<KeyBoard> {
         });
       },
       child: Column(children: [
-        buildButtonRow(widget.octave + widget.keyHarmony, 0),
+        buildButtonRow(widget.octave1 + widget.keyHarmony, widget.octave2 + widget.keyHarmony, 0),
         // buildButtonRow(widget.octave - 12 + widget.keyHarmony, widget.scale.length + 1),
       ]),
     );
   }
 
-  Widget buildButtonRow(int startNote, int keyOffset) {
+  Widget buildButtonRow(int startNote1, int startNote2, int keyOffset) {
     int maxButtons = ((keyNoteKeys.length) ~/ 2) - 1;
     return Expanded(
       child: Row(
@@ -197,11 +203,14 @@ class _KeyBoardState extends State<KeyBoard> {
                   child: SizedBox.expand(
                       child: KeyNote(
                           key: keyNoteKeys[keyOffset + index],
-                          startNote: startNote,
+                          startNote1: startNote1,
+                          startNote2: startNote2,
                           index: index,
                           scale: widget.scale,
-                          playingMode: widget.playingMode,
-                          sfID: widget.sfID,
+                          playingMode1: widget.playingMode1,
+                          playingMode2: widget.playingMode2,
+                          sfID1: widget.sfID1,
+                          sfID2: widget.sfID2,
                           midiController: widget.midiController,
                           midiCommand: widget.midiCommand)),
                 ),

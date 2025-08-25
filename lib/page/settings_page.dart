@@ -4,11 +4,12 @@ import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
-  final int sfID;
+  final int sfID1;
+  final int sfID2;
 
   final SharedPreferences? prefs;
 
-  const SettingsPage({super.key, required this.prefs, required this.sfID});
+  const SettingsPage({super.key, required this.prefs, required this.sfID1, required this.sfID2});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -111,7 +112,7 @@ class _SettingsPageState extends State<SettingsPage> {
       // widget.prefs?.setString('visuals', selectedVisuals);
       // widget.prefs?.setString('symbols', selectedSymbols);
       MidiPro().selectInstrument(
-          sfId: widget.sfID,
+          sfId: widget.sfID1,
           bank: selectedInstrument.bank,
           program: selectedInstrument.program);
       print('settings saved');

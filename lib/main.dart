@@ -33,7 +33,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final MidiPro _midi = MidiPro();
   final MidiCommand _midi_cmd = MidiCommand();
-  late int sfID;
+  late int sfID1;
   late int sfID2;
 
   SharedPreferences? _prefs;
@@ -60,7 +60,7 @@ class _MyAppState extends State<MyApp> {
         ? Instrument.values.firstWhere((e) => e.name == instrument2Name)
         : Instrument.values[0];
 
-    sfID = await _midi.loadSoundfont(
+    sfID1 = await _midi.loadSoundfont(
       path: 'assets/soundfonts/GeneralUserGS.sf2',
       bank: selectedInstrument.bank,
       program: selectedInstrument.program,
@@ -224,7 +224,7 @@ class _MyAppState extends State<MyApp> {
               body: Text('Loading...'),
             );
           }
-        return HomeScreen(prefs: _prefs, sfID: sfID, midiController: _midi, midiCommand: _midi_cmd);
+        return HomeScreen(prefs: _prefs, sfID1: sfID1, sfID2: sfID2, midiController: _midi, midiCommand: _midi_cmd);
         }, 
       ),
     );
@@ -234,10 +234,11 @@ class _MyAppState extends State<MyApp> {
 
 class HomeScreen extends StatefulWidget {
   final SharedPreferences? prefs;
-  final int sfID;
+  final int sfID1;
+  final int sfID2;
   final MidiPro midiController;
   final MidiCommand midiCommand;
-  const HomeScreen({super.key, required this.sfID, required this.midiController, required this.prefs, required this.midiCommand});
+  const HomeScreen({super.key, required this.sfID1, required this.sfID2, required this.midiController, required this.prefs, required this.midiCommand});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -246,12 +247,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late int keyHarmony;
-  late int octave;
+  late int octave1;
   late int octave2;
   late List<int> scale;
-  late String playingMode;
-  late String playingMode2 ;
-
+  late String playingMode1;
+  late String playingMode2;
 
   @override
   void initState() {
@@ -265,17 +265,17 @@ class _HomeScreenState extends State<HomeScreen> {
   void extractSettings() {
     setState(() {
       keyHarmony = KeyCenter.getKey(widget.prefs!.getString('keyHarmony')!);
-      octave = Octave.getNum(widget.prefs!.getString('octave')!);
+      octave1 = Octave.getNum(widget.prefs!.getString('octave')!);
       octave2 = Octave.getNum(widget.prefs!.getString('octave2')!);
       scale = Scale.getIntervals(widget.prefs!.getString('currentScale')!);
-      playingMode = widget.prefs!.getString('playingMode')!;
+      playingMode1 = widget.prefs!.getString('playingMode')!;
       playingMode2 = widget.prefs!.getString('playingMode2')!;
     });
     print("Extracted - Key Harmony: $keyHarmony");
-    print("Extracted - Octave: $octave");
+    print("Extracted - Octave: $octave1");
     print("Extracted - Octave2: $octave2");
     print("Extracted - Scale: $scale");
-    print("Extracted - Playing Mode: $playingMode");
+    print("Extracted - Playing Mode: $playingMode1");
     print("Extracted - Playing Mode2: $playingMode2");
 
     print('Settings extracted');
@@ -297,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                 MaterialPageRoute(builder: (context) => SettingsPage(prefs: widget.prefs, sfID: widget.sfID, )),
+                 MaterialPageRoute(builder: (context) => SettingsPage(prefs: widget.prefs, sfID1: widget.sfID1, sfID2: widget.sfID2, )),
               ).then((value) {
                 extractSettings();
               });
@@ -305,8 +305,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: KeyBoard(keyHarmony: keyHarmony, octave: octave,  scale: scale, 
-        sfID: widget.sfID, midiController: widget.midiController, midiCommand: widget.midiCommand, playingMode: playingMode),
+        body: KeyBoard(keyHarmony: keyHarmony, octave1: octave1, octave2: octave2, scale: scale,
+        sfID1: widget.sfID1, sfID2: widget.sfID2, midiController: widget.midiController, midiCommand: widget.midiCommand, playingMode1: playingMode1, playingMode2: playingMode2),
       );
   }
 }
