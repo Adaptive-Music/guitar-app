@@ -19,11 +19,14 @@ class _SettingsPageState extends State<SettingsPage> {
 
   late String selectedKeyHarmony;
   late String selectedPlayingMode;
+  late String selectedPlayingMode2;
   late String selectedScale;
   late String selectedOctave;
+  late String selectedOctave2;
   late Instrument selectedInstrument;
-  late String selectedVisuals;
-  late String selectedSymbols;
+  late Instrument selectedInstrument2;
+  // late String selectedVisuals;
+  // late String selectedSymbols;
 
   List<String> selectionKeyHarmony = [
                         'C',
@@ -48,25 +51,32 @@ class _SettingsPageState extends State<SettingsPage> {
                         'Pentatonic Minor'
                       ]; 
   List<String> selectionOctave = ['2', '3', '4', '5', '6', '7'];
-  List<String> selectionVisuals = ['Grid', 'Custom'];
-  List<String> selectionSymbols = ['Shapes', 'Letters', 'Numbers', 'None'];
+  // List<String> selectionVisuals = ['Grid', 'Custom'];
+  // List<String> selectionSymbols = ['Shapes', 'Letters', 'Numbers', 'None'];
 
   extractSettings() {
     selectedKeyHarmony = widget.prefs!.getString('keyHarmony')!;
-    selectedOctave = widget.prefs!.getString('octave')!;
     selectedScale = widget.prefs!.getString('currentScale')!;
+    selectedOctave = widget.prefs!.getString('octave')!;
+    selectedOctave2 = widget.prefs!.getString('octave2')!;
     selectedPlayingMode = widget.prefs!.getString('playingMode')!;
+    selectedPlayingMode2 = widget.prefs!.getString('playingMode2')!;
     selectedInstrument = Instrument.values
         .firstWhere((e) => e.name == widget.prefs!.getString('instrument')!);
-    selectedVisuals = widget.prefs!.getString('visuals')!;
-    selectedSymbols = widget.prefs!.getString('symbols')!;
+    selectedInstrument2 = Instrument.values
+        .firstWhere((e) => e.name == widget.prefs!.getString('instrument2')!);
+    // selectedVisuals = widget.prefs!.getString('visuals')!;
+    // selectedSymbols = widget.prefs!.getString('symbols')!;
     print("Key Harmony: $selectedKeyHarmony");
-    print("Octave: $selectedOctave");
     print("Scale: $selectedScale");
+    print("Octave: $selectedOctave");
+    print("Octave2: $selectedOctave2");
     print("Instrument: $selectedInstrument");
+    print("Instrument2: $selectedInstrument2");
     print("Playing Mode: $selectedPlayingMode");
-    print("Visual: $selectedVisuals");
-    print("Symbols: $selectedSymbols");
+    print("Playing Mode2: $selectedPlayingMode2");
+    // print("Visual: $selectedVisuals");
+    // print("Symbols: $selectedSymbols");
     setState() {
       prefLoaded = true;
       print('Pref Loaded');
@@ -78,24 +88,28 @@ class _SettingsPageState extends State<SettingsPage> {
       setState(() {
         selectionPlayingMode = ['Single Note', 'Power Chord'];
         selectedPlayingMode = selectedPlayingMode == 'Triad Chord' ? 'Single Note' : selectedPlayingMode;
+        selectedPlayingMode2 = selectedPlayingMode2 == 'Triad Chord' ? 'Single Note' : selectedPlayingMode2;
       });
-      
     } else {
       setState(() {
         selectionPlayingMode = ['Single Note', 'Triad Chord', 'Power Chord'];
       });  
     }
+    
   }
 
   Future<void> saveSettings() async {
     setState(() {
       widget.prefs?.setString('keyHarmony', selectedKeyHarmony);
-      widget.prefs?.setString('octave', selectedOctave);
       widget.prefs?.setString('currentScale', selectedScale);
+      widget.prefs?.setString('octave', selectedOctave);
+      widget.prefs?.setString('octave2', selectedOctave2);
       widget.prefs?.setString('playingMode', selectedPlayingMode);
+      widget.prefs?.setString('playingMode2', selectedPlayingMode2);
       widget.prefs?.setString('instrument', selectedInstrument.name);
-      widget.prefs?.setString('visuals', selectedVisuals);
-      widget.prefs?.setString('symbols', selectedSymbols);
+      widget.prefs?.setString('instrument2', selectedInstrument2.name);
+      // widget.prefs?.setString('visuals', selectedVisuals);
+      // widget.prefs?.setString('symbols', selectedSymbols);
       MidiPro().selectInstrument(
           sfId: widget.sfID,
           bank: selectedInstrument.bank,
@@ -126,22 +140,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    DropdownButtonFormField<Instrument>(
-                      decoration: InputDecoration(labelText: 'Instrument'),
-                      value: selectedInstrument,
-                      items: Instrument.values
-                          .map((instrument) => DropdownMenuItem(
-                                value: instrument,
-                                child: Text(instrument.name),
-                              ))
-                          .toList(),
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedInstrument = newValue!;
-                        });
-                      },
-                    ),
-                    SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(labelText: 'Key Centre'),
                       value: selectedKeyHarmony,
@@ -175,6 +173,37 @@ class _SettingsPageState extends State<SettingsPage> {
                       },
                     ),
                     SizedBox(height: 16),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text('🐸', style: TextStyle(fontSize: 40)), // Frog emoji
+                        SizedBox(width: 10),
+                        Text('Frog Settings', style: TextStyle(
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green[800],
+                        )),
+                      ],
+                    ),
+                    // SizedBox(height: 16),
+                    
+                    DropdownButtonFormField<Instrument>(
+                      decoration: InputDecoration(labelText: 'Instrument'),
+                      initialValue: selectedInstrument,
+                      items: Instrument.values
+                          .map((instrument) => DropdownMenuItem(
+                                value: instrument,
+                                child: Text(instrument.name),
+                              ))
+                          .toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedInstrument = newValue!;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(labelText: 'Octave'),
                       value: selectedOctave,
@@ -203,6 +232,69 @@ class _SettingsPageState extends State<SettingsPage> {
                       onChanged: (newValue) {
                         setState(() {
                           selectedPlayingMode = newValue!;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 16),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text('📱', style: TextStyle(fontSize: 40)), // Frog emoji
+                        SizedBox(width: 10),
+                        Text('App Settings', style: TextStyle(
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green[800],
+                        )),
+                      ],
+                    ),
+                    // SizedBox(height: 16),
+                    
+                    DropdownButtonFormField<Instrument>(
+                      decoration: InputDecoration(labelText: 'Instrument'),
+                      initialValue: selectedInstrument2,
+                      items: Instrument.values
+                          .map((instrument) => DropdownMenuItem(
+                                value: instrument,
+                                child: Text(instrument.name),
+                              ))
+                          .toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedInstrument2 = newValue!;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(labelText: 'Octave'),
+                      value: selectedOctave2,
+                      items: selectionOctave
+                          .map((value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(value),
+                              ))
+                          .toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedOctave2 = newValue!;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(labelText: 'Keyboard Mode'),
+                      value: selectedPlayingMode2,
+                      items: selectionPlayingMode
+                          .map((value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(value),
+                              ))
+                          .toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedPlayingMode2 = newValue!;
                         });
                       },
                     ),

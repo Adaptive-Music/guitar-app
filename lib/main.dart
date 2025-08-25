@@ -33,10 +33,12 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final MidiPro _midi = MidiPro();
   final MidiCommand _midi_cmd = MidiCommand();
-  int sfID = 0;
+  late int sfID;
+  late int sfID2;
 
   SharedPreferences? _prefs;
   Instrument selectedInstrument = Instrument.values[0]; // Default value
+  Instrument selectedInstrument2 = Instrument.values[0];
 
   bool _sfLoading = true;
   bool _midiCmdLoading = true;
@@ -53,11 +55,23 @@ class _MyAppState extends State<MyApp> {
         ? Instrument.values.firstWhere((e) => e.name == instrumentName)
         : Instrument.values[0];
 
+    String? instrument2Name = _prefs?.getString('instrument2');
+    selectedInstrument2 = instrument2Name != null
+        ? Instrument.values.firstWhere((e) => e.name == instrument2Name)
+        : Instrument.values[0];
+
     sfID = await _midi.loadSoundfont(
       path: 'assets/soundfonts/GeneralUserGS.sf2',
       bank: selectedInstrument.bank,
       program: selectedInstrument.program,
     );
+
+    sfID2 = await _midi.loadSoundfont(
+      path: 'assets/soundfonts/GeneralUserGS.sf2',
+      bank: selectedInstrument2.bank,
+      program: selectedInstrument2.program,
+    );
+
     setState(() {
       _sfLoading = false;
     });  
@@ -105,7 +119,6 @@ class _MyAppState extends State<MyApp> {
   void sendNoteOn(note) {
 
     final noteOn = Uint8List.fromList([0x90, note, 100]);
-
     _midi_cmd.sendData(noteOn);
   }
 
@@ -133,29 +146,41 @@ class _MyAppState extends State<MyApp> {
       await _prefs?.setString('keyHarmony', 'C');
     }
     
+    if (_prefs?.getString('currentScale') == null) {
+      _prefs?.setString('currentScale', 'Major');
+    }
+
     if (_prefs?.getString('octave') == null) {
       _prefs?.setString('octave', '4');
     }
 
-    if (_prefs?.getString('currentScale') == null) {
-      _prefs?.setString('currentScale', 'Major');
+    if (_prefs?.getString('octave2') == null) {
+      _prefs?.setString('octave2', '4');
     }
-    
+
     if (_prefs?.getString('instrument') == null) {
       _prefs?.setString('instrument', Instrument.values[0].name);
+    }
+
+    if (_prefs?.getString('instrument2') == null) {
+      _prefs?.setString('instrument2', Instrument.values[0].name);
     }
 
     if (_prefs?.getString('playingMode') == null) {
       _prefs?.setString('playingMode', 'Single Note');
     }
 
-    if (_prefs?.getString('visuals') == null) {
-      _prefs?.setString('visuals', 'Grid');
+    if (_prefs?.getString('playingMode2') == null) {
+      _prefs?.setString('playingMode2', 'Single Note');
     }
 
-     if (_prefs?.getString('symbols') == null) {
-      _prefs?.setString('symbols', 'Shapes');
-    }
+    // if (_prefs?.getString('visuals') == null) {
+    //   _prefs?.setString('visuals', 'Grid');
+    // }
+
+    //  if (_prefs?.getString('symbols') == null) {
+    //   _prefs?.setString('symbols', 'Shapes');
+    // }
 
     // print("Key Harmony: ${_prefs?.getString('keyHarmony')}");
     // print("Octave: ${_prefs?.getString('octave')}");
@@ -222,8 +247,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late int keyHarmony;
   late int octave;
+  late int octave2;
   late List<int> scale;
   late String playingMode;
+  late String playingMode2 ;
 
 
   @override
@@ -239,13 +266,17 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       keyHarmony = KeyCenter.getKey(widget.prefs!.getString('keyHarmony')!);
       octave = Octave.getNum(widget.prefs!.getString('octave')!);
+      octave2 = Octave.getNum(widget.prefs!.getString('octave2')!);
       scale = Scale.getIntervals(widget.prefs!.getString('currentScale')!);
       playingMode = widget.prefs!.getString('playingMode')!;
+      playingMode2 = widget.prefs!.getString('playingMode2')!;
     });
     print("Extracted - Key Harmony: $keyHarmony");
     print("Extracted - Octave: $octave");
+    print("Extracted - Octave2: $octave2");
     print("Extracted - Scale: $scale");
     print("Extracted - Playing Mode: $playingMode");
+    print("Extracted - Playing Mode2: $playingMode2");
 
     print('Settings extracted');
   }
