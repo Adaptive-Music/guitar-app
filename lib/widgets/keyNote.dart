@@ -38,7 +38,7 @@ class KeyNote extends StatefulWidget {
 }
 
 class KeyNoteState extends State<KeyNote> {
-  List<int> notes = [];
+  List<int> notes1 = [];
   List<int> notes2 = [];
   late Rect bounds;
   bool isLedOn = false; // When key pressed on app, frog LED lights up
@@ -79,10 +79,10 @@ class KeyNoteState extends State<KeyNote> {
   }
 
   void playNote() {
-    print("Playing notes: $notes");
-    for (var i = 0; i < notes.length; i++) {
+    print("Playing notes: $notes1");
+    for (var i = 0; i < notes1.length; i++) {
       widget.midiController
-          .playNote(key: notes[i], velocity: 64, sfId: widget.sfID1);
+          .playNote(key: notes1[i], velocity: 64, sfId: widget.sfID1);
     }
     setState(() {
       isPlayingSound = true;
@@ -90,9 +90,9 @@ class KeyNoteState extends State<KeyNote> {
   }
 
   void stopNote() {
-    print("Stopping notes: $notes");
-    for (var i = 0; i < notes.length; i++) {
-      widget.midiController.stopNote(key: notes[i], sfId: widget.sfID1);
+    print("Stopping notes: $notes1");
+    for (var i = 0; i < notes1.length; i++) {
+      widget.midiController.stopNote(key: notes1[i], sfId: widget.sfID1);
     }
     setState(() {
       isPlayingSound = false;
@@ -105,7 +105,11 @@ class KeyNoteState extends State<KeyNote> {
     // widget.midiController
     //     .playNote(key: notes[i], velocity: 64, sfId: widget.sfID);
     sendNoteOn(60 + Scale.major.intervals[widget.index]);
-
+    for (var i = 0; i < notes2.length; i++) {
+      widget.midiController
+          .playNote(key: notes2[i], velocity: 64, sfId: widget.sfID2);
+    }
+    print("Playing notes $notes2");
     setState(() {
       isLedOn = true;
     });
@@ -114,7 +118,10 @@ class KeyNoteState extends State<KeyNote> {
   void ledOff() {
     // widget.midiController.stopNote(key: notes[i], sfId: widget.sfID);
     sendNoteOff(60 + Scale.major.intervals[widget.index]);
-
+    for (var i = 0; i < notes2.length; i++) {
+      widget.midiController.stopNote(key: notes2[i], sfId: widget.sfID2);
+    }
+    print("Stopping notes $notes2");
     setState(() {
       isLedOn = false;
     });
@@ -136,10 +143,13 @@ class KeyNoteState extends State<KeyNote> {
   }
 
   void packNotes(int selection) {
-    List<int> noteList = selection == 1 ? notes : notes2;
     if (widget.index >= widget.scale.length) {
       setState(() {
-        noteList = [];
+        if (selection == 1) {
+          notes1 = [];
+        } else {
+          notes2 = [];
+        }
       });
       return;
     }
@@ -148,38 +158,47 @@ class KeyNoteState extends State<KeyNote> {
     String playingMode = selection == 1 ? widget.playingMode1 : widget.playingMode2;
     int rootNote = startNote + widget.scale[widget.index];
 
+    List<int> newNotes = [];
     if (playingMode == 'Single Note') {
-      setState(() {
-        notes = [rootNote];
-      });
+      newNotes = [rootNote];
     } else if (playingMode == 'Power Chord') {
-      int fifthNote = rootNote + 5;
+      int fifthNote = rootNote + 7;  // Perfect fifth is 7 semitones
       int upperRoot = rootNote + 12;
-      setState(() {
-        notes = [
-          rootNote,
-          fifthNote,
-          upperRoot,
-        ];
-      });
+      newNotes = [
+        rootNote,
+        fifthNote,
+        upperRoot,
+      ];
     } else {
+      // Triad Chord
       int thirdPos = (widget.index + 2) % 7;
       int fifthPos = (widget.index + 4) % 7;
+      
+      int startNoteForChord = selection == 1 ? widget.startNote1 : widget.startNote2;
+      
       int thirdNote = widget.index > thirdPos
-          ? widget.startNote1 + widget.scale[thirdPos] + 12
-          : widget.startNote1 + widget.scale[thirdPos];
+          ? startNoteForChord + widget.scale[thirdPos] + 12
+          : startNoteForChord + widget.scale[thirdPos];
+      
       int fifthNote = widget.index > fifthPos
-          ? widget.startNote1 + widget.scale[fifthPos] + 12
-          : widget.startNote1 + widget.scale[fifthPos];
-      setState(() {
-        notes = [
-          rootNote,
-          thirdNote,
-          fifthNote,
-          rootNote + 12,
-        ];
-      });
+          ? startNoteForChord + widget.scale[fifthPos] + 12
+          : startNoteForChord + widget.scale[fifthPos];
+          
+      newNotes = [
+        rootNote,
+        thirdNote,
+        fifthNote,
+        rootNote + 12,
+      ];
     }
+    
+    setState(() {
+      if (selection == 1) {
+        notes1 = newNotes;
+      } else {
+        notes2 = newNotes;
+      }
+    });
 
     // print("Key - Scale: ${widget.scale}");
     // print("Key - Playing Mode: ${widget.playingMode}");

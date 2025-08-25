@@ -115,6 +115,10 @@ class _SettingsPageState extends State<SettingsPage> {
           sfId: widget.sfID1,
           bank: selectedInstrument.bank,
           program: selectedInstrument.program);
+      MidiPro().selectInstrument(
+          sfId: widget.sfID2,
+          bank: selectedInstrument2.bank,
+          program: selectedInstrument2.program);
       print('settings saved');
     });
   }
