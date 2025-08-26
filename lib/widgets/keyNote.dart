@@ -48,6 +48,17 @@ class KeyNoteState extends State<KeyNote> {
   bool isLedOn = false; // When key pressed on app, frog LED lights up
   bool isPlayingSound = false; // When frog button pressed, sound is played
 
+  static const List<Map<String, dynamic>> symbolData = [
+    {'symbol': '⭐', 'color': Colors.yellow},
+    {'symbol': '▲', 'color': Colors.purple},
+    {'symbol': '❤', 'color': Colors.red},
+    {'symbol': '◆', 'color': Colors.orange},
+    {'symbol': '■', 'color': Colors.blue},
+    {'symbol': '●', 'color': Colors.lightGreen},
+    {'symbol': '☽', 'color': Colors.yellow},
+    {'symbol': '☀', 'color': Colors.yellow},
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -235,6 +246,11 @@ class KeyNoteState extends State<KeyNote> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       updateBounds();
     });
+    // Get the symbol data for this button
+    final symbolInfo = widget.index < symbolData.length 
+        ? symbolData[widget.index] 
+        : {'symbol': '●', 'color': Colors.grey}; // fallback for any extra buttons
+
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor:
@@ -246,7 +262,71 @@ class KeyNoteState extends State<KeyNote> {
         splashFactory: NoSplash.splashFactory,
       ),
       onPressed: () {},
-      child: Text(getMidiNoteName(widget.startNote1 + widget.scale[widget.index])),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              // Multiple offset copies to create outline effect
+              for (var dx in [-1.5, 1.5])
+                for (var dy in [-1.5, 1.5])
+                  Positioned(
+                    left: dx,
+                    top: dy,
+                    child: Text(
+                      symbolInfo['symbol'] as String,
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: Colors.black,
+                        height: 1,
+                      ),
+                    ),
+                  ),
+              // Main symbol
+              Text(
+                symbolInfo['symbol'] as String,
+                style: TextStyle(
+                  fontSize: 24,
+                  color: symbolInfo['color'] as Color,
+                  height: 1,
+                  shadows: [
+                    Shadow(
+                      blurRadius: 2,
+                      color: Colors.black,
+                      offset: Offset(0, 0),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              // Outline for note name
+              Text(
+                getMidiNoteName(widget.startNote1 + widget.scale[widget.index]),
+                style: TextStyle(
+                  fontSize: 16,
+                  foreground: Paint()
+                    ..style = PaintingStyle.stroke
+                    ..strokeWidth = 2
+                    ..color = Colors.white,
+                ),
+              ),
+              // Main note name
+              Text(
+                getMidiNoteName(widget.startNote1 + widget.scale[widget.index]),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
