@@ -308,7 +308,7 @@ class KeyNoteState extends State<KeyNote> {
               Text(
                 getMidiNoteName(widget.startNote1 + widget.scale[widget.index]),
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 20,
                   foreground: Paint()
                     ..style = PaintingStyle.stroke
                     ..strokeWidth = 2
@@ -319,7 +319,7 @@ class KeyNoteState extends State<KeyNote> {
               Text(
                 getMidiNoteName(widget.startNote1 + widget.scale[widget.index]),
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 20,
                   color: Colors.black87,
                 ),
               ),
