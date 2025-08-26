@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -48,15 +49,15 @@ class KeyNoteState extends State<KeyNote> {
   bool isLedOn = false; // When key pressed on app, frog LED lights up
   bool isPlayingSound = false; // When frog button pressed, sound is played
 
-  static const List<Map<String, dynamic>> symbolData = [
-    {'symbol': '⭐', 'color': Colors.yellow, 'size': 22.0},  // slightly smaller star
-    {'symbol': '▲', 'color': Colors.purple, 'size': 24.0},  // triangle
-    {'symbol': '❤', 'color': Colors.red, 'size': 22.0},     // slightly smaller heart
-    {'symbol': '◆', 'color': Colors.orange, 'size': 32.0},  // larger diamond
-    {'symbol': '■', 'color': Colors.blue, 'size': 24.0},    // square
-    {'symbol': '●', 'color': Colors.lightGreen, 'size': 28.0}, // slightly smaller circle
-    {'symbol': '🌙', 'color': Colors.yellow, 'size': 22.0},  // slightly smaller moon
-    {'symbol': '☀', 'color': Colors.yellow, 'size': 22.0},  // slightly smaller sun
+  static List<Map<String, dynamic>> symbolData = [
+    {'symbol': '★', 'color': Colors.yellow, 'size': 28.0},  // star
+    {'symbol': '▲', 'color': Colors.purple, 'size': 28.0},  // triangle
+    {'symbol': '♥', 'color': Colors.red, 'size': 28.0},     // heart
+    {'symbol': '◆', 'color': Colors.orange, 'size': 28.0},  // diamond
+    {'symbol': '■', 'color': Colors.blue, 'size': 28.0},    // square
+    {'symbol': '●', 'color': Colors.lightGreen, 'size': 28.0}, // circle
+    {'symbol': '🌙', 'color': Colors.yellow, 'size': 28.0},  // full moon
+    {'symbol': '☀️', 'color': Colors.yellow, 'size': 28.0},  // sun
   ];
 
   @override
@@ -295,12 +296,19 @@ class KeyNoteState extends State<KeyNote> {
                   Positioned(
                     left: offset.dx,
                     top: offset.dy,
-                    child: Text(
-                      symbolInfo['symbol'] as String,
-                      style: TextStyle(
-                        fontSize: symbolInfo['size'] as double,
-                        color: Colors.black,
-                        height: 1,
+                    child: ColorFiltered(
+                      colorFilter: ColorFilter.mode(
+                        Colors.black.withOpacity(0.8),
+                        BlendMode.srcATop,
+                      ),
+                      child: Text(
+                        symbolInfo['symbol'] as String,
+                        style: TextStyle(
+                          fontSize: symbolInfo['size'] as double,
+                          fontFamily: 'Roboto',
+                          color: Colors.black,
+                          height: 1,
+                        ),
                       ),
                     ),
                   ),
@@ -309,6 +317,7 @@ class KeyNoteState extends State<KeyNote> {
                   symbolInfo['symbol'] as String,
                   style: TextStyle(
                     fontSize: symbolInfo['size'] as double,
+                    fontFamily: 'Roboto',
                     color: symbolInfo['color'] as Color,
                     height: 1,
                   ),
