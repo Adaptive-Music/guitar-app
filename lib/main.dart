@@ -308,13 +308,14 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             // Volume controls
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Frog volume control
                   Row(
                     children: [
-                      Text('🐸', style: TextStyle(fontSize: 16)),
+                      Text('🐸', style: TextStyle(fontSize: 20)),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: 150,
@@ -338,11 +339,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   // App volume control
                   Row(
                     children: [
-                      Text('📱', style: TextStyle(fontSize: 16)),
+                      Text('📱', style: TextStyle(fontSize: 20)),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: 150,

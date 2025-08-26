@@ -324,8 +324,9 @@ class KeyNoteState extends State<KeyNote> {
                   fontSize: 20,
                   foreground: Paint()
                     ..style = PaintingStyle.stroke
-                    ..strokeWidth = 2
+                    ..strokeWidth = 3.5
                     ..color = Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               // Main note name
@@ -334,6 +335,7 @@ class KeyNoteState extends State<KeyNote> {
                 style: TextStyle(
                   fontSize: 20,
                   color: Colors.black87,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
