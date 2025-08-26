@@ -263,11 +263,13 @@ class KeyNoteState extends State<KeyNote> {
       ),
       onPressed: () {},
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         mainAxisSize: MainAxisSize.min, // Use minimum space needed
         children: [
           Container(
+            height: 40, // Fixed height for symbol section
             padding: EdgeInsets.all(4.0),
+            alignment: Alignment.center,
             child: Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.center,
@@ -314,31 +316,37 @@ class KeyNoteState extends State<KeyNote> {
               ],
             ),
           ),
-          Stack(
+          Container(
+            height: 28, // Fixed height for consistent alignment
             alignment: Alignment.center,
-            children: [
-              // Outline for note name
-              Text(
-                getMidiNoteName(widget.startNote1 + widget.scale[widget.index]),
-                style: TextStyle(
-                  fontSize: 20,
-                  foreground: Paint()
-                    ..style = PaintingStyle.stroke
-                    ..strokeWidth = 3.5
-                    ..color = Colors.white,
-                  fontWeight: FontWeight.bold,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Outline for note name
+                Text(
+                  getMidiNoteName(widget.startNote1 + widget.scale[widget.index]),
+                  style: TextStyle(
+                    fontSize: 20,
+                    foreground: Paint()
+                      ..style = PaintingStyle.stroke
+                      ..strokeWidth = 3.5
+                      ..color = Colors.white,
+                    fontWeight: FontWeight.bold,
+                    height: 1, // Ensure consistent line height
+                  ),
                 ),
-              ),
-              // Main note name
-              Text(
-                getMidiNoteName(widget.startNote1 + widget.scale[widget.index]),
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.bold,
+                // Main note name
+                Text(
+                  getMidiNoteName(widget.startNote1 + widget.scale[widget.index]),
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.bold,
+                    height: 1, // Ensure consistent line height
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
