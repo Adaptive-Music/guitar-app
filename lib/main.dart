@@ -214,7 +214,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Full Screen Buttons',
+      title: 'TadBuddy',
       debugShowCheckedModeBanner: false, // Removes the debug banner
       home: Builder(
         builder: (context) {
@@ -252,6 +252,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<int> scale;
   late String playingMode1;
   late String playingMode2;
+  double frogVolume = 1.0;
+  double appVolume = 1.0;
 
   @override
   void initState() {
@@ -287,9 +289,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('${widget.prefs?.getString('instrument')} - '
-              '${widget.prefs?.getString('keyHarmony')} ${widget.prefs?.getString('currentScale')} - '
-              'Octave ${widget.prefs?.getString('octave')} - ${widget.prefs?.getString('playingMode')}'),
+          title: Text('${widget.prefs?.getString('keyHarmony')} ${widget.prefs?.getString('currentScale')}'),
           actions: <Widget>[
             IconButton(
               icon: const Icon(Icons.settings),
@@ -305,8 +305,94 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: KeyBoard(keyHarmony: keyHarmony, octave1: octave1, octave2: octave2, scale: scale,
-        sfID1: widget.sfID1, sfID2: widget.sfID2, midiController: widget.midiController, midiCommand: widget.midiCommand, playingMode1: playingMode1, playingMode2: playingMode2),
+        body: Column(
+          children: [
+            // Volume controls
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Column(
+                children: [
+                  // Frog volume control
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: Slider(
+                          value: frogVolume,
+                          onChanged: (value) {
+                            setState(() {
+                              frogVolume = value;
+                            });
+                            // TODO: Implement volume control for frog sounds
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Row(
+                        children: [
+                          Text('🐸', style: TextStyle(fontSize: 16)),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${widget.prefs?.getString('instrument')} - '
+                            'Octave ${widget.prefs?.getString('octave')} - '
+                            '${widget.prefs?.getString('playingMode')}',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // App volume control
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: Slider(
+                          value: appVolume,
+                          onChanged: (value) {
+                            setState(() {
+                              appVolume = value;
+                            });
+                            // TODO: Implement volume control for app sounds
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Row(
+                        children: [
+                          Text('📱', style: TextStyle(fontSize: 16)),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${widget.prefs?.getString('instrument2')} - '
+                            'Octave ${widget.prefs?.getString('octave2')} - '
+                            '${widget.prefs?.getString('playingMode2')}',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // Keyboard
+            Expanded(
+              child: KeyBoard(
+                keyHarmony: keyHarmony, 
+                octave1: octave1, 
+                octave2: octave2, 
+                scale: scale,
+                sfID1: widget.sfID1, 
+                sfID2: widget.sfID2, 
+                midiController: widget.midiController, 
+                midiCommand: widget.midiCommand, 
+                playingMode1: playingMode1, 
+                playingMode2: playingMode2
+              ),
+            ),
+          ],
+        ),
       );
   }
 }
