@@ -56,7 +56,7 @@ class KeyNoteState extends State<KeyNote> {
     {'symbol': '◆', 'color': Colors.orange, 'size': 28.0},  // diamond
     {'symbol': '■', 'color': Colors.blue, 'size': 28.0},    // square
     {'symbol': '●', 'color': Colors.lightGreen, 'size': 28.0}, // circle
-    {'symbol': '🌙', 'color': Colors.yellow, 'size': 28.0},  // full moon
+    {'symbol': '🌙', 'color': Colors.yellow, 'size': 28.0},  // moon
     {'symbol': '☀️', 'color': Colors.yellow, 'size': 28.0},  // sun
   ];
 
@@ -261,6 +261,10 @@ class KeyNoteState extends State<KeyNote> {
           Colors.lightBlue,
         padding: EdgeInsets.zero, // Ensures no extra padding
         splashFactory: NoSplash.splashFactory,
+        side: BorderSide(
+          color: Colors.black54,
+          width: 2.0,
+        ),
       ),
       onPressed: () {},
       child: Column(

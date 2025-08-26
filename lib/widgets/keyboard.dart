@@ -186,10 +186,13 @@ class _KeyBoardState extends State<KeyBoard> {
           handleTouch();
         });
       },
-      child: Column(children: [
-        buildButtonRow(widget.octave1 + widget.keyHarmony, widget.octave2 + widget.keyHarmony, 0),
-        // buildButtonRow(widget.octave - 12 + widget.keyHarmony, widget.scale.length + 1),
-      ]),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: Column(children: [
+          buildButtonRow(widget.octave1 + widget.keyHarmony, widget.octave2 + widget.keyHarmony, 0),
+          // buildButtonRow(widget.octave - 12 + widget.keyHarmony, widget.scale.length + 1),
+        ]),
+      ),
     );
   }
 
