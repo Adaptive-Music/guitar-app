@@ -55,7 +55,7 @@ class KeyNoteState extends State<KeyNote> {
     {'symbol': '◆', 'color': Colors.orange, 'size': 32.0},  // larger diamond
     {'symbol': '■', 'color': Colors.blue, 'size': 24.0},    // square
     {'symbol': '●', 'color': Colors.lightGreen, 'size': 28.0}, // slightly smaller circle
-    {'symbol': '☽', 'color': Colors.yellow, 'size': 22.0},  // slightly smaller moon
+    {'symbol': '🌙', 'color': Colors.yellow, 'size': 22.0},  // slightly smaller moon
     {'symbol': '☀', 'color': Colors.yellow, 'size': 22.0},  // slightly smaller sun
   ];
 
@@ -264,32 +264,31 @@ class KeyNoteState extends State<KeyNote> {
       onPressed: () {},
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min, // Use minimum space needed
         children: [
           Container(
-            padding: EdgeInsets.all(4.0), // Add padding to prevent clipping
+            padding: EdgeInsets.all(4.0),
             child: Stack(
+              clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
                 // Create outline by placing copies in multiple positions around the symbol
                 for (var offset in [
-                  // Inner ring
-                  Offset(-1.2, 0), // left
-                  Offset(1.2, 0), // right
-                  Offset(0, -1.2), // top
-                  Offset(0, 1.2), // bottom
-                  Offset(-0.85, -0.85), // top-left
-                  Offset(0.85, -0.85), // top-right
-                  Offset(-0.85, 0.85), // bottom-left
-                  Offset(0.85, 0.85), // bottom-right
-                  // Outer ring for thickness
-                  Offset(-1.5, 0), // outer left
-                  Offset(1.5, 0), // outer right
-                  Offset(0, -1.5), // outer top
-                  Offset(0, 1.5), // outer bottom
-                  Offset(-1.1, -1.1), // outer top-left
-                  Offset(1.1, -1.1), // outer top-right
-                  Offset(-1.1, 1.1), // outer bottom-left
-                  Offset(1.1, 1.1), // outer bottom-right
+                  // Main outline positions
+                  Offset(-1.5, 0),
+                  Offset(1.5, 0),
+                  Offset(0, -1.5),
+                  Offset(0, 1.5),
+                  // Diagonal positions
+                  Offset(-1.1, -1.1),
+                  Offset(1.1, -1.1),
+                  Offset(-1.1, 1.1),
+                  Offset(1.1, 1.1),
+                  // Additional positions for better coverage
+                  Offset(-1.3, -0.7),
+                  Offset(1.3, -0.7),
+                  Offset(-1.3, 0.7),
+                  Offset(1.3, 0.7)
                 ])
                   Positioned(
                     left: offset.dx,
