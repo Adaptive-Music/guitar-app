@@ -49,14 +49,14 @@ class KeyNoteState extends State<KeyNote> {
   bool isPlayingSound = false; // When frog button pressed, sound is played
 
   static const List<Map<String, dynamic>> symbolData = [
-    {'symbol': '⭐', 'color': Colors.yellow},
-    {'symbol': '▲', 'color': Colors.purple},
-    {'symbol': '❤', 'color': Colors.red},
-    {'symbol': '◆', 'color': Colors.orange},
-    {'symbol': '■', 'color': Colors.blue},
-    {'symbol': '●', 'color': Colors.lightGreen},
-    {'symbol': '☽', 'color': Colors.yellow},
-    {'symbol': '☀', 'color': Colors.yellow},
+    {'symbol': '⭐', 'color': Colors.yellow, 'size': 22.0},  // slightly smaller star
+    {'symbol': '▲', 'color': Colors.purple, 'size': 24.0},  // triangle
+    {'symbol': '❤', 'color': Colors.red, 'size': 22.0},     // slightly smaller heart
+    {'symbol': '◆', 'color': Colors.orange, 'size': 32.0},  // larger diamond
+    {'symbol': '■', 'color': Colors.blue, 'size': 24.0},    // square
+    {'symbol': '●', 'color': Colors.lightGreen, 'size': 28.0}, // slightly smaller circle
+    {'symbol': '☽', 'color': Colors.yellow, 'size': 22.0},  // slightly smaller moon
+    {'symbol': '☀', 'color': Colors.yellow, 'size': 22.0},  // slightly smaller sun
   ];
 
   @override
@@ -249,7 +249,7 @@ class KeyNoteState extends State<KeyNote> {
     // Get the symbol data for this button
     final symbolInfo = widget.index < symbolData.length 
         ? symbolData[widget.index] 
-        : {'symbol': '●', 'color': Colors.grey}; // fallback for any extra buttons
+        : {'symbol': '●', 'color': Colors.grey, 'size': 24.0}; // fallback for any extra buttons
 
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -265,41 +265,55 @@ class KeyNoteState extends State<KeyNote> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              // Multiple offset copies to create outline effect
-              for (var dx in [-1.5, 1.5])
-                for (var dy in [-1.5, 1.5])
+          Container(
+            padding: EdgeInsets.all(4.0), // Add padding to prevent clipping
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Create outline by placing copies in multiple positions around the symbol
+                for (var offset in [
+                  // Inner ring
+                  Offset(-1.2, 0), // left
+                  Offset(1.2, 0), // right
+                  Offset(0, -1.2), // top
+                  Offset(0, 1.2), // bottom
+                  Offset(-0.85, -0.85), // top-left
+                  Offset(0.85, -0.85), // top-right
+                  Offset(-0.85, 0.85), // bottom-left
+                  Offset(0.85, 0.85), // bottom-right
+                  // Outer ring for thickness
+                  Offset(-1.5, 0), // outer left
+                  Offset(1.5, 0), // outer right
+                  Offset(0, -1.5), // outer top
+                  Offset(0, 1.5), // outer bottom
+                  Offset(-1.1, -1.1), // outer top-left
+                  Offset(1.1, -1.1), // outer top-right
+                  Offset(-1.1, 1.1), // outer bottom-left
+                  Offset(1.1, 1.1), // outer bottom-right
+                ])
                   Positioned(
-                    left: dx,
-                    top: dy,
+                    left: offset.dx,
+                    top: offset.dy,
                     child: Text(
                       symbolInfo['symbol'] as String,
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: symbolInfo['size'] as double,
                         color: Colors.black,
                         height: 1,
                       ),
                     ),
                   ),
-              // Main symbol
-              Text(
-                symbolInfo['symbol'] as String,
-                style: TextStyle(
-                  fontSize: 24,
-                  color: symbolInfo['color'] as Color,
-                  height: 1,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 2,
-                      color: Colors.black,
-                      offset: Offset(0, 0),
-                    ),
-                  ],
+                // Main symbol
+                Text(
+                  symbolInfo['symbol'] as String,
+                  style: TextStyle(
+                    fontSize: symbolInfo['size'] as double,
+                    color: symbolInfo['color'] as Color,
+                    height: 1,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           Stack(
             alignment: Alignment.center,
