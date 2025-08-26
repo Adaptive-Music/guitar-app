@@ -315,6 +315,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Frog volume control
                   Row(
                     children: [
+                      Text('🐸', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 8),
                       SizedBox(
                         width: 150,
                         child: Slider(
@@ -328,17 +330,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Row(
-                        children: [
-                          Text('🐸', style: TextStyle(fontSize: 16)),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${widget.prefs?.getString('instrument')} - '
-                            'Octave ${widget.prefs?.getString('octave')} - '
-                            '${widget.prefs?.getString('playingMode')}',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ],
+                      Text(
+                        '${widget.prefs?.getString('instrument')} - '
+                        'Octave ${widget.prefs?.getString('octave')} - '
+                        '${widget.prefs?.getString('playingMode')}',
+                        style: TextStyle(fontSize: 16),
                       ),
                     ],
                   ),
@@ -346,6 +342,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   // App volume control
                   Row(
                     children: [
+                      Text('📱', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 8),
                       SizedBox(
                         width: 150,
                         child: Slider(
@@ -359,17 +357,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Row(
-                        children: [
-                          Text('📱', style: TextStyle(fontSize: 16)),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${widget.prefs?.getString('instrument2')} - '
-                            'Octave ${widget.prefs?.getString('octave2')} - '
-                            '${widget.prefs?.getString('playingMode2')}',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ],
+                      Text(
+                        '${widget.prefs?.getString('instrument2')} - '
+                        'Octave ${widget.prefs?.getString('octave2')} - '
+                        '${widget.prefs?.getString('playingMode2')}',
+                        style: TextStyle(fontSize: 16),
                       ),
                     ],
                   ),
