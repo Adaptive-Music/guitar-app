@@ -19,9 +19,11 @@ class KeyNote extends StatefulWidget {
   final int sfID2;
   final MidiPro midiController;
   final MidiCommand midiCommand;
+  final int frogVolume;
+  final int appVolume;
 
-  const KeyNote(
-      {super.key,
+  const KeyNote({
+      super.key,
       required this.startNote1,
       required this.startNote2,
       required this.sfID1,
@@ -31,7 +33,9 @@ class KeyNote extends StatefulWidget {
       required this.playingMode1,
       required this.playingMode2,
       required this.index,
-      required this.scale});
+      required this.scale,
+      required this.frogVolume,
+      required this.appVolume});
 
   @override
   State<KeyNote> createState() => KeyNoteState();
@@ -79,10 +83,10 @@ class KeyNoteState extends State<KeyNote> {
   }
 
   void playNote() {
-    print("Playing notes: $notes1");
+    print("Playing notes: $notes1 with volume: ${widget.frogVolume}");
     for (var i = 0; i < notes1.length; i++) {
       widget.midiController
-          .playNote(key: notes1[i], velocity: 64, sfId: widget.sfID1);
+          .playNote(key: notes1[i], velocity: widget.frogVolume, sfId: widget.sfID1);
     }
     setState(() {
       isPlayingSound = true;
@@ -102,14 +106,13 @@ class KeyNoteState extends State<KeyNote> {
 
   void ledOn() {
     HapticFeedback.mediumImpact();  // Add haptic feedback
-    // widget.midiController
-    //     .playNote(key: notes[i], velocity: 64, sfId: widget.sfID);
+    // Send LED note on with frog volume for LED brightness
     sendNoteOn(60 + Scale.major.intervals[widget.index]);
     for (var i = 0; i < notes2.length; i++) {
       widget.midiController
-          .playNote(key: notes2[i], velocity: 64, sfId: widget.sfID2);
+          .playNote(key: notes2[i], velocity: widget.appVolume, sfId: widget.sfID2);
     }
-    print("Playing notes $notes2");
+    print("Playing notes $notes2 with volume: ${widget.appVolume}");
     setState(() {
       isLedOn = true;
     });
@@ -131,9 +134,9 @@ class KeyNoteState extends State<KeyNote> {
   
 
   void sendNoteOn(note) {
-    final noteOn = Uint8List.fromList([0x90, note, 100]);
+    final noteOn = Uint8List.fromList([0x90, note, widget.frogVolume]);
     widget.midiCommand.sendData(noteOn);
-    print(note);
+    print("Note: $note with LED brightness: ${widget.frogVolume}");
   }
 
   void sendNoteOff(note) {

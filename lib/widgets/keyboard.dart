@@ -20,9 +20,11 @@ class KeyBoard extends StatefulWidget {
   final int octave2;
   final String playingMode1;
   final String playingMode2;
+  final int frogVolume;
+  final int appVolume;
 
-  const KeyBoard(
-      {super.key,
+  const KeyBoard({
+      super.key,
       required this.keyHarmony,
       required this.octave1,
       required this.octave2,
@@ -32,7 +34,9 @@ class KeyBoard extends StatefulWidget {
       required this.midiController,
       required this.midiCommand,
       required this.playingMode1,
-      required this.playingMode2});
+      required this.playingMode2,
+      required this.frogVolume,
+      required this.appVolume});
 
   @override
   State<KeyBoard> createState() => _KeyBoardState();
@@ -212,7 +216,9 @@ class _KeyBoardState extends State<KeyBoard> {
                           sfID1: widget.sfID1,
                           sfID2: widget.sfID2,
                           midiController: widget.midiController,
-                          midiCommand: widget.midiCommand)),
+                          midiCommand: widget.midiCommand,
+                          frogVolume: widget.frogVolume,
+                          appVolume: widget.appVolume)),
                 ),
               );
             }

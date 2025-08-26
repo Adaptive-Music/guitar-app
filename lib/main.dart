@@ -252,8 +252,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<int> scale;
   late String playingMode1;
   late String playingMode2;
-  double frogVolume = 1.0;
-  double appVolume = 1.0;
+  int frogVolume = 127;
+  int appVolume = 127;
 
   @override
   void initState() {
@@ -320,12 +320,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       SizedBox(
                         width: 150,
                         child: Slider(
-                          value: frogVolume,
+                          value: frogVolume / 127,
+                          min: 0,
+                          max: 1,
                           onChanged: (value) {
                             setState(() {
-                              frogVolume = value;
+                              frogVolume = (value * 127).round();
                             });
-                            // TODO: Implement volume control for frog sounds
                           },
                         ),
                       ),
@@ -347,12 +348,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       SizedBox(
                         width: 150,
                         child: Slider(
-                          value: appVolume,
+                          value: appVolume / 127,
+                          min: 0,
+                          max: 1,
                           onChanged: (value) {
                             setState(() {
-                              appVolume = value;
+                              appVolume = (value * 127).round();
                             });
-                            // TODO: Implement volume control for app sounds
                           },
                         ),
                       ),
@@ -380,7 +382,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 midiController: widget.midiController, 
                 midiCommand: widget.midiCommand, 
                 playingMode1: playingMode1, 
-                playingMode2: playingMode2
+                playingMode2: playingMode2,
+                frogVolume: frogVolume,
+                appVolume: appVolume
               ),
             ),
           ],
