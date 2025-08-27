@@ -288,6 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          centerTitle: true,
           title: Text('${widget.prefs?.getString('keyHarmony')} ${widget.prefs?.getString('currentScale')}'),
           actions: <Widget>[
             IconButton(
@@ -315,7 +316,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Frog volume control
                   Row(
                     children: [
-                      Text('🐸', style: TextStyle(fontSize: 20)),
+                      Expanded(
+                        flex: 1,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text('🐸', style: TextStyle(fontSize: 20)),
+                          ],
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: 150,
@@ -331,11 +340,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        '${widget.prefs?.getString('instrument')} - '
-                        'Octave ${widget.prefs?.getString('octave')} - '
-                        '${widget.prefs?.getString('playingMode')}',
-                        style: TextStyle(fontSize: 16),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          '${widget.prefs?.getString('instrument')} - '
+                          'Octave ${widget.prefs?.getString('octave')} - '
+                          '${widget.prefs?.getString('playingMode')}',
+                          style: TextStyle(fontSize: 16),
+                        ),
                       ),
                     ],
                   ),
@@ -343,7 +355,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   // App volume control
                   Row(
                     children: [
-                      Text('📱', style: TextStyle(fontSize: 20)),
+                      Expanded(
+                        flex: 1,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text('📱', style: TextStyle(fontSize: 20)),
+                          ],
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: 150,
@@ -359,11 +379,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        '${widget.prefs?.getString('instrument2')} - '
-                        'Octave ${widget.prefs?.getString('octave2')} - '
-                        '${widget.prefs?.getString('playingMode2')}',
-                        style: TextStyle(fontSize: 16),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          '${widget.prefs?.getString('instrument2')} - '
+                          'Octave ${widget.prefs?.getString('octave2')} - '
+                          '${widget.prefs?.getString('playingMode2')}',
+                          style: TextStyle(fontSize: 16),
+                        ),
                       ),
                     ],
                   ),
