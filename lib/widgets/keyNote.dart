@@ -291,11 +291,6 @@ class KeyNoteState extends State<KeyNote> {
                   Offset(1.1, -1.1),
                   Offset(-1.1, 1.1),
                   Offset(1.1, 1.1),
-                  // Additional positions for better coverage
-                  Offset(-1.3, -0.7),
-                  Offset(1.3, -0.7),
-                  Offset(-1.3, 0.7),
-                  Offset(1.3, 0.7)
                 ])
                   Positioned(
                     left: offset.dx,
