@@ -337,8 +337,8 @@ class KeyNoteState extends State<KeyNote> {
                     fontSize: 20,
                     foreground: Paint()
                       ..style = PaintingStyle.stroke
-                      ..strokeWidth = 3.5
-                      ..color = Colors.white,
+                      ..strokeWidth = 3.0
+                      ..color = Colors.black,
                     fontWeight: FontWeight.bold,
                     height: 1, // Ensure consistent line height
                   ),
@@ -348,7 +348,7 @@ class KeyNoteState extends State<KeyNote> {
                   getMidiNoteName(widget.startNote1 + widget.scale[widget.index]),
                   style: TextStyle(
                     fontSize: 20,
-                    color: Colors.black87,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     height: 1, // Ensure consistent line height
                   ),
