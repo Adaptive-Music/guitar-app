@@ -52,12 +52,12 @@ class KeyNoteState extends State<KeyNote> {
   static List<Map<String, dynamic>> symbolData = [
     {'symbol': '★', 'color': Colors.yellow, 'size': 28.0},  // star
     {'symbol': '▲', 'color': Colors.purple, 'size': 28.0},  // triangle
-    {'symbol': '♥', 'color': Colors.red, 'size': 28.0},     // heart
-    {'symbol': '◆', 'color': Colors.orange, 'size': 28.0},  // diamond
+    {'symbol': '♥', 'color': Colors.red, 'size': Platform.isAndroid? 20.0: 28.0},     // heart
+    {'symbol': '◆', 'color': Colors.orange, 'size': Platform.isAndroid? 33.0 : 28.0},  // diamond
     {'symbol': '■', 'color': Colors.blue, 'size': 28.0},    // square
-    {'symbol': '●', 'color': Colors.lightGreen, 'size': 28.0}, // circle
-    {'symbol': '🌙', 'color': Colors.yellow, 'size': 28.0},  // moon
-    {'symbol': '☀️', 'color': Colors.yellow, 'size': 28.0},  // sun
+    {'symbol': '●', 'color': Colors.lightGreen, 'size': Platform.isAndroid? 36.0 : 28.0}, // circle
+    {'symbol': '🌙', 'color': Colors.yellow, 'size': Platform.isAndroid? 20.0 : 28.0},  // moon
+    {'symbol': '☀️', 'color': Colors.yellow, 'size': Platform.isAndroid? 24.0 : 28.0},  // sun
   ];
 
   @override
