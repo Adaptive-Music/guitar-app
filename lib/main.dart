@@ -37,7 +37,7 @@ class _MyAppState extends State<MyApp> {
   late int sfID2;
 
   SharedPreferences? _prefs;
-  Instrument selectedInstrument = Instrument.values[0]; // Default value
+  Instrument selectedInstrument1 = Instrument.values[0]; // Default value
   Instrument selectedInstrument2 = Instrument.values[0];
 
   bool _sfLoading = true;
@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
     if (_prefs == null) return; // Don't load if prefs aren't ready
     
     String? instrumentName = _prefs?.getString('instrument');
-    selectedInstrument = instrumentName != null 
+    selectedInstrument1 = instrumentName != null 
         ? Instrument.values.firstWhere((e) => e.name == instrumentName)
         : Instrument.values[0];
 
@@ -62,8 +62,8 @@ class _MyAppState extends State<MyApp> {
 
     sfID1 = await _midi.loadSoundfont(
       path: 'assets/soundfonts/GeneralUserGS.sf2',
-      bank: selectedInstrument.bank,
-      program: selectedInstrument.program,
+      bank: selectedInstrument1.bank,
+      program: selectedInstrument1.program,
     );
 
     sfID2 = await _midi.loadSoundfont(
@@ -248,7 +248,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late int keyHarmony;
   late int octave1;
   late int octave2;
-  late List<int> scale;
+  late Scale scale;
+  late List<int> scaleIntervals;
   late String playingMode1;
   late String playingMode2;
   int frogVolume = 127;
@@ -268,14 +269,15 @@ class _HomeScreenState extends State<HomeScreen> {
       keyHarmony = KeyCenter.getKey(widget.prefs!.getString('keyHarmony')!);
       octave1 = Octave.getNum(widget.prefs!.getString('octave')!);
       octave2 = Octave.getNum(widget.prefs!.getString('octave2')!);
-      scale = Scale.getIntervals(widget.prefs!.getString('currentScale')!);
+      scale = Scale.getScale(widget.prefs!.getString('currentScale')!);
+      scaleIntervals = Scale.getIntervals(scale.name);
       playingMode1 = widget.prefs!.getString('playingMode')!;
       playingMode2 = widget.prefs!.getString('playingMode2')!;
     });
     print("Extracted - Key Harmony: $keyHarmony");
     print("Extracted - Octave: $octave1");
     print("Extracted - Octave2: $octave2");
-    print("Extracted - Scale: $scale");
+    print("Extracted - Scale: $scaleIntervals");
     print("Extracted - Playing Mode: $playingMode1");
     print("Extracted - Playing Mode2: $playingMode2");
 

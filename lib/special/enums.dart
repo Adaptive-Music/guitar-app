@@ -34,6 +34,12 @@ enum Scale {
         .firstWhere((scale) => scale.name == name)
         .intervals;
   }
+
+  // Static method to return scale by name
+  static Scale getScale(String name) {
+    return Scale.values
+        .firstWhere((scale) => scale.name == name);
+  }
 }
 
 

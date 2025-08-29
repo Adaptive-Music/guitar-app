@@ -15,7 +15,7 @@ class KeyBoard extends StatefulWidget {
   final MidiCommand midiCommand;
 
   final int keyHarmony;
-  final List<int> scale;
+  final Scale scale;
   final int octave1;
   final int octave2;
   final String playingMode1;
@@ -53,7 +53,7 @@ class _KeyBoardState extends State<KeyBoard> {
   void initState() {
     super.initState();
     keyNoteKeys = List.generate(
-      (widget.scale.length + 1) * 2,
+      (widget.scale.intervals.length + 1) * 2,
       (index) => GlobalKey<KeyNoteState>(),
     );
     initMidiListening();
@@ -71,7 +71,7 @@ class _KeyBoardState extends State<KeyBoard> {
   @override
   void didUpdateWidget(covariant KeyBoard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.scale.length != widget.scale.length) {
+    if (oldWidget.scale.intervals.length != widget.scale.intervals.length) {
       // Clear all existing touches and stop all notes
       _touchPositions.clear();
     for (var key in keyNoteKeys) {
@@ -80,7 +80,7 @@ class _KeyBoardState extends State<KeyBoard> {
       // Recreate keys for new scale length
       setState(() {
         keyNoteKeys = List.generate(
-          (widget.scale.length + 1) * 2,
+          (widget.scale.intervals.length + 1) * 2,
           (index) => GlobalKey<KeyNoteState>(),
         );
       });
@@ -202,7 +202,7 @@ class _KeyBoardState extends State<KeyBoard> {
       child: Row(
         children: [
           ...List.generate(
-            widget.scale.length > maxButtons ? maxButtons : widget.scale.length,
+            widget.scale.intervals.length > maxButtons ? maxButtons : widget.scale.intervals.length,
             (index) {
               return Expanded(
                 child: Padding(

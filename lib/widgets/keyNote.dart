@@ -11,7 +11,7 @@ class KeyNote extends StatefulWidget {
   final int startNote1;
   final int startNote2;
   final int index;
-  final List<int> scale;
+  final Scale scale;
 
   final String playingMode1;
   final String playingMode2;
@@ -158,7 +158,7 @@ class KeyNoteState extends State<KeyNote> {
   }
 
   void packNotes(int selection) {
-    if (widget.index >= widget.scale.length) {
+    if (widget.index >= widget.scale.intervals.length) {
       setState(() {
         if (selection == 1) {
           notes1 = [];
@@ -171,7 +171,7 @@ class KeyNoteState extends State<KeyNote> {
     
     int startNote = selection == 1 ? widget.startNote1 : widget.startNote2;
     String playingMode = selection == 1 ? widget.playingMode1 : widget.playingMode2;
-    int rootNote = startNote + widget.scale[widget.index];
+    int rootNote = startNote + widget.scale.intervals[widget.index];
 
     List<int> newNotes = [];
     if (playingMode == 'Single Note') {
@@ -192,13 +192,13 @@ class KeyNoteState extends State<KeyNote> {
       int startNoteForChord = selection == 1 ? widget.startNote1 : widget.startNote2;
       
       int thirdNote = widget.index > thirdPos
-          ? startNoteForChord + widget.scale[thirdPos] + 12
-          : startNoteForChord + widget.scale[thirdPos];
-      
+          ? startNoteForChord + widget.scale.intervals[thirdPos] + 12
+          : startNoteForChord + widget.scale.intervals[thirdPos];
+
       int fifthNote = widget.index > fifthPos
-          ? startNoteForChord + widget.scale[fifthPos] + 12
-          : startNoteForChord + widget.scale[fifthPos];
-          
+          ? startNoteForChord + widget.scale.intervals[fifthPos] + 12
+          : startNoteForChord + widget.scale.intervals[fifthPos];
+
       newNotes = [
         rootNote,
         thirdNote,
@@ -237,8 +237,12 @@ class KeyNoteState extends State<KeyNote> {
   }
 
   String getMidiNoteName(int midiNote) {
-    final noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    return noteNames[midiNote % 12];
+    final sharpNoteNames = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+    final flatNoteNames = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
+    
+
+
+    return sharpNoteNames[midiNote % 12];
   }
 
   @override
@@ -332,24 +336,24 @@ class KeyNoteState extends State<KeyNote> {
               children: [
                 // Outline for note name
                 Text(
-                  getMidiNoteName(widget.startNote1 + widget.scale[widget.index]),
+                  getMidiNoteName(widget.startNote1 + widget.scale.intervals[widget.index]),
                   style: TextStyle(
                     fontSize: 20,
                     foreground: Paint()
                       ..style = PaintingStyle.stroke
                       ..strokeWidth = 3.0
                       ..color = Colors.black,
-                    fontWeight: FontWeight.bold,
+                    // fontWeight: FontWeight.bold,
                     height: 1, // Ensure consistent line height
                   ),
                 ),
                 // Main note name
                 Text(
-                  getMidiNoteName(widget.startNote1 + widget.scale[widget.index]),
+                  getMidiNoteName(widget.startNote1 + widget.scale.intervals[widget.index]),
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                    // fontWeight: FontWeight.bold,
                     height: 1, // Ensure consistent line height
                   ),
                 ),
