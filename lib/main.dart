@@ -321,7 +321,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Text('🐸', style: TextStyle(fontSize: 20)),
+                            Image.asset(
+                              'assets/icon/icon.png',
+                              width: 24,
+                              height: 24,
+                            ),
                           ],
                         ),
                       ),
