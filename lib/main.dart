@@ -246,6 +246,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late int keyHarmony;
+  late KeyCenter keyCentre;
   late int octave1;
   late int octave2;
   late Scale scale;
@@ -267,6 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void extractSettings() {
     setState(() {
       keyHarmony = KeyCenter.getKey(widget.prefs!.getString('keyHarmony')!);
+      keyCentre = KeyCenter.values.firstWhere((key) => key.key == keyHarmony);
       octave1 = Octave.getNum(widget.prefs!.getString('octave')!);
       octave2 = Octave.getNum(widget.prefs!.getString('octave2')!);
       scale = Scale.getScale(widget.prefs!.getString('currentScale')!);
@@ -291,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text('${widget.prefs?.getString('keyHarmony')} ${widget.prefs?.getString('currentScale')}'),
+          title: Text('${keyCentre.getName(scale)} ${widget.prefs?.getString('currentScale')}'),
           actions: <Widget>[
             IconButton(
               icon: const Icon(Icons.settings),

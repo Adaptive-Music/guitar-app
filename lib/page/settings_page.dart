@@ -31,30 +31,13 @@ class _SettingsPageState extends State<SettingsPage> {
   late Instrument selectedInstrument;
   late Instrument selectedInstrument2;
 
-  List<String> selectionKeyHarmony = [
-    'C',
-    'C# / Db',
-    'D',
-    'D# / Eb',
-    'E',
-    'F',
-    'F# / Gb',
-    'G',
-    'G# / Ab',
-    'A',
-    'A# / Bb',
-    'B'
-  ];
+  // Use KeyCenter enum values for key harmony selection
+  List<String> get selectionKeyHarmony => KeyCenter.values.map((k) => k.name).toList();
   
   late List<String> selectionPlayingMode;
   
-  List<String> selectionScale = [
-    'Major',
-    'Minor',
-    'Harmonic Minor',
-    'Pentatonic Major',
-    'Pentatonic Minor'
-  ]; 
+  // Use Scale enum values for scale selection
+  List<String> get selectionScale => Scale.values.map((s) => s.name).toList();
   
   List<String> selectionOctave = ['2', '3', '4', '5', '6', '7'];
 
@@ -86,7 +69,10 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   loadSelections() {
-    if (selectedScale == 'Pentatonic Major' || selectedScale == 'Pentatonic Minor') {
+    // Get the Scale enum value from the selected scale name
+    final scale = Scale.values.firstWhere((s) => s.name == selectedScale);
+    
+    if (scale == Scale.pentatonicMajor || scale == Scale.pentatonicMinor) {
       setState(() {
         selectionPlayingMode = ['Single Note', 'Power Chord'];
         selectedPlayingMode = selectedPlayingMode == 'Triad Chord' ? 'Single Note' : selectedPlayingMode;

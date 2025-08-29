@@ -76,16 +76,16 @@ enum Scale {
 
 enum KeyCenter {
   cNat(name: 'C', key: 0),
-  cSh(name: 'C# / Db', key: 1),
+  cSh(name: 'C♯ / D♭', key: 1),
   dNat(name: 'D', key: 2),
-  dSh(name: 'D# / Eb', key: 3),
+  dSh(name: 'D♯ / E♭', key: 3),
   eNat(name: 'E', key: 4),
   fNat(name: 'F', key: 5),
-  fSh(name: 'F# / Gb', key: 6),
+  fSh(name: 'F♯ / G♭', key: 6),
   gNat(name: 'G', key: 7),
-  gSh(name: 'G# / Ab', key: 8),
+  gSh(name: 'G♯ / A♭', key: 8),
   aNat(name: 'A', key: 9),
-  aSh(name: 'A# / Bb', key: 10),
+  aSh(name: 'A♯ / B♭', key: 10),
   bNat(name: 'B', key: 11);
 
   const KeyCenter({
@@ -95,6 +95,16 @@ enum KeyCenter {
 
   final String name;
   final int key;
+
+  String getName(Scale scale) {
+    final sharpNoteNames = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+    final flatNoteNames = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
+    if (scale.shouldUseFlats(key)) {
+      return flatNoteNames[key % 12];
+    } else {
+      return sharpNoteNames[key % 12];
+    }
+  }
 
   static int getKey(String name) {
     return KeyCenter.values
