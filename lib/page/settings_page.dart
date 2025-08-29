@@ -223,7 +223,11 @@ class _SettingsPageState extends State<SettingsPage> {
                               // Frog Header
                               Row(
                                 children: [
-                                  Text('🐸', style: TextStyle(fontSize: 20)),
+                                  Image.asset(
+                                    'assets/icon/icon.png',
+                                    width: 24,
+                                    height: 24,
+                                  ),
                                   SizedBox(width: 8),
                                   Text(
                                     'Frog',
