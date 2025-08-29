@@ -121,16 +121,28 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
+        centerTitle: true,
+        automaticallyImplyLeading: false, // Disable default back button
         actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 4.0),
+            child: IconButton(
+              icon: Icon(Icons.close),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              tooltip: 'Cancel',
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: IconButton(
-              icon: Icon(Icons.save),
+              icon: Icon(Icons.check),
               onPressed: () {
                 saveSettings();
                 Navigator.pop(context);
               },
-              tooltip: 'Save Settings',
+              tooltip: 'Save and Close',
             ),
           ),
         ],
