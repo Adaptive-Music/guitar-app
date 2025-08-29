@@ -240,28 +240,11 @@ class KeyNoteState extends State<KeyNote> {
     final sharpNoteNames = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
     final flatNoteNames = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
     
-    // In music theory:
-    // Sharp keys: G, D, A, E, B (and their relative minors)
-    // Flat keys: F, B♭, E♭, A♭, D♭ (and their relative minors)
-    // C major / A minor uses neither
     final note = midiNote % 12;
     final scaleRoot = widget.startNote1 % 12;
     
-    // Determine if we should use flats based on the scale type and root note
-    bool useFlats = false;
-    
-    if (widget.scale == Scale.major) {
-      // For major scales, use flats if the root is F or has flats
-      useFlats = [5, 10, 3, 8, 1].contains(scaleRoot); // F, B♭, E♭, A♭, D♭
-    } else if (widget.scale == Scale.minor || widget.scale == Scale.harmonicMinor) {
-      // For minor scales, use flats if the relative major would use flats
-      // Relative major is 3 semitones up
-      final relativeMajor = (scaleRoot + 3) % 12;
-      useFlats = [5, 10, 3, 8, 1].contains(relativeMajor);
-    } else {
-      // For pentatonic scales, follow the same rules as their parent scales
-      useFlats = [5, 10, 3, 8, 1].contains(scaleRoot);
-    }
+    // Use the Scale enum's method to determine whether to use flats
+    bool useFlats = widget.scale.shouldUseFlats(scaleRoot);
 
     return useFlats ? flatNoteNames[note] : sharpNoteNames[note];
   }

@@ -40,6 +40,37 @@ enum Scale {
     return Scale.values
         .firstWhere((scale) => scale.name == name);
   }
+
+  // Determines if a key should use flats based on music theory conventions
+  bool shouldUseFlats(int rootNote) {
+    // Sharp keys: G(7), D(2), A(9), E(4), B(11)
+    // Flat keys: F(5), Bb(10), Eb(3), Ab(8), Db(1)
+    // C(0) uses neither
+    
+    final flatKeys = [5, 10, 3, 8, 1]; // F, Bb, Eb, Ab, Db
+    
+    switch (this) {
+      case Scale.major:
+        // For major scales, use flats if the root is F or has flats
+        return flatKeys.contains(rootNote);
+        
+      case Scale.minor:
+      case Scale.harmonicMinor:
+        // For minor scales, use flats if the relative major would use flats
+        // Relative major is 3 semitones up
+        final relativeMajor = (rootNote + 3) % 12;
+        return flatKeys.contains(relativeMajor);
+        
+      case Scale.pentatonicMajor:
+        // Follow the same rules as major scale
+        return flatKeys.contains(rootNote);
+        
+      case Scale.pentatonicMinor:
+        // Follow the same rules as minor scale
+        final relativeMajor = (rootNote + 3) % 12;
+        return flatKeys.contains(relativeMajor);
+    }
+  }
 }
 
 
