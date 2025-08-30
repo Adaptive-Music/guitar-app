@@ -326,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Image.asset(
-                              'assets/icon/icon.png',
+                              'assets/images/frog.png',
                               width: 24,
                               height: 24,
                             ),

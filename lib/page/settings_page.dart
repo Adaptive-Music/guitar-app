@@ -222,7 +222,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               Row(
                                 children: [
                                   Image.asset(
-                                    'assets/icon/icon.png',
+                                    'assets/images/frog.png',
                                     width: 24,
                                     height: 24,
                                   ),
