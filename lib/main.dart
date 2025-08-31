@@ -79,16 +79,27 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> connectMidiDevice() async {
     if (_midiConnecting) return;
-    if (selectedMidiDevice != null && selectedMidiDevice!.connected) {
-      print('MIDI device ${selectedMidiDevice!.name} is already connected.');
-      print(selectedMidiDevice!.connected);
-      return;
-    }
     setState(() {
       _midiConnecting = true;
     });
+    if (selectedMidiDevice != null) {
+      print(selectedMidiDevice!.name);
+      print(selectedMidiDevice!.connected);
+    }
     final newMidiDevices = await _midi_cmd.devices;
     print('Found MIDI devices: $newMidiDevices');
+    if (newMidiDevices != null && !newMidiDevices.contains(selectedMidiDevice)) {
+      print('Previously selected MIDI device no longer available');
+      selectedMidiDevice = null;
+    }
+    if (selectedMidiDevice != null && selectedMidiDevice!.connected) {
+      print('MIDI device ${selectedMidiDevice!.name} is already connected.');
+      print(selectedMidiDevice!.connected);
+      setState(() {
+        _midiConnecting = false;
+      });
+      return;
+    }
     for (var device in newMidiDevices!) {
       if (
         device.name.contains("Teensy") || 
