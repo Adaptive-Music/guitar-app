@@ -41,7 +41,7 @@ class _MyAppState extends State<MyApp> {
   Instrument selectedInstrument2 = Instrument.values[0];
 
   bool _sfLoading = true;
-  bool _midiCmdLoading = true;
+  bool _midiConnecting = false;
   bool _prefLoading = true;
 
   List<MidiDevice>? midiDevices = [];
@@ -77,28 +77,49 @@ class _MyAppState extends State<MyApp> {
     });  
   }
 
-  Future<void> setMidiDevices() async {
-    final newMidiDevices = await _midi_cmd.devices;
-    
+  Future<void> connectMidiDevice() async {
+    if (_midiConnecting) return;
+    if (selectedMidiDevice != null && selectedMidiDevice!.connected) {
+      print('MIDI device ${selectedMidiDevice!.name} is already connected.');
+      print(selectedMidiDevice!.connected);
+      return;
+    }
     setState(() {
-      midiDevices = newMidiDevices;
-      _midiCmdLoading = false;
+      _midiConnecting = true;
     });
-  }
-
-  void selectMidiDevice() async {
-    for (var device in midiDevices!) {
+    final newMidiDevices = await _midi_cmd.devices;
+    print('Found MIDI devices: $newMidiDevices');
+    for (var device in newMidiDevices!) {
       if (
         device.name.contains("Teensy") || 
         device.name.contains("MIDI") ||
         (device.name.contains("Zoe") && !Platform.isAndroid)) {
+        print(device.name);
+        if(device.connected) {
+          print('Device ${device.name} is already connected.');
+          selectedMidiDevice = device;
+          setState(() {
+            _midiConnecting = false;
+          });
+          return;
+        }
         await _midi_cmd.connectToDevice(device);
         print('Connected to ${device.name}.');
-        print(midiDevices);
+        selectedMidiDevice = device;
+        testLEDs(2);
         break;
       }
     }
-  testLEDs(2);
+    if (selectedMidiDevice == null || !selectedMidiDevice!.connected) {
+      print('No suitable MIDI device found or connection failed.');
+      selectedMidiDevice = null;
+    }
+    setState(() {
+      _midiConnecting = false;
+    });
+  }
+
+  void selectMidiDevice() async {
   }
 
   /// Cycle through the LEDs on the connected MIDI device.
@@ -130,8 +151,12 @@ class _MyAppState extends State<MyApp> {
     _prefs = await SharedPreferences.getInstance();
     await _checkPrefs();
     await loadSoundFont(); // Move soundfont loading here
-    await setMidiDevices();
-    selectMidiDevice();
+    await connectMidiDevice();
+    _midi_cmd.onMidiSetupChanged?.listen((data) async {
+      // Handle MIDI setup changes
+      await connectMidiDevice();
+    });
+    // selectMidiDevice();
     setState(() {
       _prefLoading = false;
       print('Pref loaded');
@@ -217,7 +242,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false, // Removes the debug banner
       home: Builder(
         builder: (context) {
-          if (_sfLoading || _prefLoading || _midiCmdLoading) {
+          if (_sfLoading || _prefLoading || _midiConnecting) {
           // Show a loading screen while waiting for async task to complete
             return Scaffold(
               body: Text('Loading...'),
