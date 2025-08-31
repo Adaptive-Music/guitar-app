@@ -144,6 +144,10 @@ class _KeyBoardState extends State<KeyBoard> {
 
         // Determine which frog button has been pressed (0-7)
         int index = note == 72 ? 7 : Scale.major.intervals.indexOf(note - 60);
+        if (index < 0 || index >= keyNoteKeys.length) {
+          print("Note $note is out of range for the current scale.");
+          return; // Ignore notes outside the expected range
+        }
         if ((status & 0xF0) == 0x90 && velocity > 0) {
           keyNoteKeys[index].currentState?.playNote();
           // widget.midiController
