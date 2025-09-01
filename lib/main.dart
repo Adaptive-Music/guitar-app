@@ -83,8 +83,8 @@ class _MyAppState extends State<MyApp> {
       _midiConnecting = true;
     });
     if (selectedMidiDevice != null) {
-      print(selectedMidiDevice!.name);
-      print(selectedMidiDevice!.connected);
+      print('Device: ${selectedMidiDevice!.name}');
+      print('Connected: ${selectedMidiDevice!.connected}');
     }
     final newMidiDevices = await _midi_cmd.devices;
     print('Found MIDI devices: $newMidiDevices');
@@ -369,42 +369,47 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Frog volume control
-                  Opacity(
-                    opacity: widget.selectedMidiDevice == null ? 0.2 : 1.0,
-                    child: Row(
-                      children: [
-                        Expanded(
+                  Row(
+                    children: [
+                      Expanded(
                         flex: 1,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Image.asset(
-                              'assets/images/frog.png',
-                              width: 24,
-                              height: 24,
+                            Opacity(
+                              opacity: widget.selectedMidiDevice == null ? 0.5 : 1.0,
+                              child: Image.asset(
+                                'assets/images/frog.png',
+                                width: 24,
+                                height: 24,
+                              ),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(width: 8),
-                      SizedBox(
-                        width: 150,
-                        child: Slider(
-                          value: frogVolume / 127,
-                          min: 0,
-                          max: 1,
-                          onChanged: (value) {
-                            setState(() {
-                              frogVolume = (value * 127).round();
-                            });
-                          },
+                      Opacity(
+                        opacity: widget.selectedMidiDevice == null ? 0.2 : 1.0,
+                        child: SizedBox(
+                          width: 150,
+                          child: Slider(
+                            value: frogVolume / 127,
+                            min: 0,
+                            max: 1,
+                            onChanged: (value) {
+                              setState(() {
+                                frogVolume = (value * 127).round();
+                              });
+                            },
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         flex: 2,
                         child: Text(
+                          widget.selectedMidiDevice == null ?
+                          'Baby Tad not connected' :
                           '${widget.prefs?.getString('instrument')} - '
                           'Octave ${widget.prefs?.getString('octave')} - '
                           '${widget.prefs?.getString('playingMode')}',
@@ -412,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ],
-                  )),
+                  ),
                   const SizedBox(height: 2),
                   // App volume control
                   Row(
