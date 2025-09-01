@@ -377,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Opacity(
-                              opacity: widget.selectedMidiDevice == null ? 0.5 : 1.0,
+                              opacity: widget.selectedMidiDevice == null ? 0.2 : 1.0,
                               child: Image.asset(
                                 'assets/images/frog.png',
                                 width: 24,
