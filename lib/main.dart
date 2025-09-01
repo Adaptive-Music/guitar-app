@@ -259,7 +259,14 @@ class _MyAppState extends State<MyApp> {
               body: Text('Loading...'),
             );
           }
-        return HomeScreen(prefs: _prefs, sfID1: sfID1, sfID2: sfID2, midiController: _midi, midiCommand: _midi_cmd);
+        return HomeScreen(
+          prefs: _prefs, 
+          sfID1: sfID1, 
+          sfID2: sfID2, 
+          midiController: _midi, 
+          midiCommand: _midi_cmd,
+          selectedMidiDevice: selectedMidiDevice,
+        );
         }, 
       ),
     );
@@ -273,7 +280,16 @@ class HomeScreen extends StatefulWidget {
   final int sfID2;
   final MidiPro midiController;
   final MidiCommand midiCommand;
-  const HomeScreen({super.key, required this.sfID1, required this.sfID2, required this.midiController, required this.prefs, required this.midiCommand});
+  final MidiDevice? selectedMidiDevice;
+  const HomeScreen({
+    super.key, 
+    required this.sfID1, 
+    required this.sfID2, 
+    required this.midiController, 
+    required this.prefs, 
+    required this.midiCommand,
+    required this.selectedMidiDevice,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -354,9 +370,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Frog volume control
-                  Row(
-                    children: [
-                      Expanded(
+                  Opacity(
+                    opacity: widget.selectedMidiDevice == null ? 0.2 : 1.0,
+                    child: Row(
+                      children: [
+                        Expanded(
                         flex: 1,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
@@ -394,7 +412,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ],
-                  ),
+                  )),
                   const SizedBox(height: 2),
                   // App volume control
                   Row(
