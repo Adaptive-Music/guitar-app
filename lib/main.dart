@@ -103,7 +103,7 @@ class _MyAppState extends State<MyApp> {
     for (var device in newMidiDevices!) {
       if (
         device.name.contains("Teensy") || 
-        device.name.contains("MIDI") ||
+        // device.name.contains("MIDI") ||
         (device.name.contains("Zoe") && !Platform.isAndroid)) {
         print(device.name);
         if(device.connected) {
@@ -409,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         flex: 2,
                         child: Text(
                           widget.selectedMidiDevice == null ?
-                          'Baby Tad not connected' :
+                          'Instrument not connected' :
                           '${widget.prefs?.getString('instrument')} - '
                           'Octave ${widget.prefs?.getString('octave')} - '
                           '${widget.prefs?.getString('playingMode')}',
