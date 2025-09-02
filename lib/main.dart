@@ -87,7 +87,10 @@ class _MyAppState extends State<MyApp> {
       print('Connected: ${selectedMidiDevice!.connected}');
     }
     final newMidiDevices = await _midi_cmd.devices;
-    print('Found MIDI devices: $newMidiDevices');
+    print('Found MIDI devices:');
+    for (var device in newMidiDevices ?? []) {
+      print(' - ${device.name} (connected: ${device.connected})');
+    } 
     if (newMidiDevices != null && !newMidiDevices.contains(selectedMidiDevice)) {
       print('Previously selected MIDI device no longer available');
       selectedMidiDevice = null;
@@ -108,20 +111,22 @@ class _MyAppState extends State<MyApp> {
         print(device.name);
         if(device.connected) {
           print('Device ${device.name} is already connected.');
-          selectedMidiDevice = device;
           setState(() {
+            selectedMidiDevice = device;
             _midiConnecting = false;
           });
           return;
         }
         await _midi_cmd.connectToDevice(device);
         print('Connected to ${device.name}.');
-        selectedMidiDevice = device;
+        setState(() {
+          selectedMidiDevice = device;
+        });
         testLEDs(2);
         break;
       }
     }
-    if (selectedMidiDevice == null || !selectedMidiDevice!.connected) {
+    if (selectedMidiDevice == null) {
       print('No suitable MIDI device found or connection failed.');
       selectedMidiDevice = null;
     }
