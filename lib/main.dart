@@ -108,7 +108,7 @@ class _MyAppState extends State<MyApp> {
         device.name.contains("Teensy") || 
         // device.name.contains("MIDI") ||
         (device.name.contains("Zoe") && !Platform.isAndroid)) {
-        print(device.name);
+        print('Connecting to device: ${device.name}');
         if(device.connected) {
           print('Device ${device.name} is already connected.');
           setState(() {
@@ -135,8 +135,6 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void selectMidiDevice() async {
-  }
 
   /// Cycle through the LEDs on the connected MIDI device.
   Future<void> testLEDs(int cycles) async {
@@ -149,19 +147,20 @@ class _MyAppState extends State<MyApp> {
         sendNoteOff(i);
       }
     }
-  
   }
   
-  void sendNoteOn(note) {
 
+  void sendNoteOn(note) {
     final noteOn = Uint8List.fromList([0x90, note, 100]);
     _midi_cmd.sendData(noteOn);
   }
+
 
   void sendNoteOff(note) {
     final noteOff = Uint8List.fromList([0x80, note, 0]);
     _midi_cmd.sendData(noteOff);
   }
+
 
   Future<void> _initPrefs() async {
     _prefs = await SharedPreferences.getInstance();
@@ -178,7 +177,6 @@ class _MyAppState extends State<MyApp> {
       print('Pref loaded');
     }); 
   }
-
 
 
   _checkPrefs() async {
@@ -239,13 +237,17 @@ class _MyAppState extends State<MyApp> {
     _initPrefs(); // Only call _initPrefs, which will handle loadSoundFont
     
     // Enable wakelock to prevent screen timeout
-    WakelockPlus.enable();
+    if (Platform.isAndroid || Platform.isIOS) {
+      WakelockPlus.enable();
+    }
   }
   
   @override
   void dispose() {
     // Disable wakelock when the app is closed
-    WakelockPlus.disable();
+    if (Platform.isAndroid || Platform.isIOS) {
+      WakelockPlus.disable();
+    }
     super.dispose();
   }
 
