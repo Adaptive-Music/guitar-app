@@ -252,26 +252,29 @@ class _SettingsPageState extends State<SettingsPage> {
                         // Frog settings column
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               // Frog Header
-                              Row(
-                                children: [
-                                  Image.asset(
-                                    'assets/images/frog.png',
-                                    width: 24,
-                                    height: 24,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Frog',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green[800],
+                              Container(
+                                height: 32, // Fixed height for alignment
+                                child: Row(
+                                  children: [
+                                    Image.asset(
+                                      'assets/images/frog.png',
+                                      width: 24,
+                                      height: 24,
                                     ),
-                                  ),
-                                ],
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Frog',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green[800],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               SizedBox(height: 8),
                               
@@ -319,25 +322,29 @@ class _SettingsPageState extends State<SettingsPage> {
                               ),
                               SizedBox(height: 8),
                               
-                              DropdownButtonFormField<String>(
-                                decoration: InputDecoration(
-                                  labelText: 'Play Mode',
-                                  contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
-                                  isDense: true,
-                                ),
-                                value: selectedPlayingMode,
-                                isExpanded: true,
-                                items: selectionPlayingMode
-                                    .map((value) => DropdownMenuItem(
+                              Text('Play Mode', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                              SizedBox(height: 4),
+                              SegmentedButton<String>(
+                                segments: selectionPlayingMode
+                                    .map((value) => ButtonSegment<String>(
                                           value: value,
-                                          child: Text(value, style: TextStyle(fontSize: 14)),
+                                          label: Text(value,
+                                                    style: TextStyle(fontSize: 13)),
+                                          icon: SizedBox.shrink(),
                                         ))
                                     .toList(),
-                                onChanged: (newValue) {
+                                selected: {selectedPlayingMode},
+                                onSelectionChanged: (Set<String> newSelection) {
                                   setState(() {
-                                    selectedPlayingMode = newValue!;
+                                    selectedPlayingMode = newSelection.first;
                                   });
                                 },
+                                style: ButtonStyle(
+                                  visualDensity: VisualDensity.compact,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
+                                ),
+                                showSelectedIcon: false,
                               ),
                             ],
                           ),
@@ -348,22 +355,25 @@ class _SettingsPageState extends State<SettingsPage> {
                         // App settings column
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               // App Header
-                              Row(
-                                children: [
-                                  Text('📱', style: TextStyle(fontSize: 20)),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'App',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue[800],
+                              Container(
+                                height: 32, // Fixed height for alignment
+                                child: Row(
+                                  children: [
+                                    Text('📱', style: TextStyle(fontSize: 20)),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'App',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue[800],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                               SizedBox(height: 8),
                               
@@ -411,25 +421,29 @@ class _SettingsPageState extends State<SettingsPage> {
                               ),
                               SizedBox(height: 8),
                               
-                              DropdownButtonFormField<String>(
-                                decoration: InputDecoration(
-                                  labelText: 'Play Mode',
-                                  contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
-                                  isDense: true,
-                                ),
-                                value: selectedPlayingMode2,
-                                isExpanded: true,
-                                items: selectionPlayingMode
-                                    .map((value) => DropdownMenuItem(
+                              Text('Play Mode', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                              SizedBox(height: 4),
+                              SegmentedButton<String>(
+                                segments: selectionPlayingMode
+                                    .map((value) => ButtonSegment<String>(
                                           value: value,
-                                          child: Text(value, style: TextStyle(fontSize: 14)),
+                                          label: Text(value,
+                                                    style: TextStyle(fontSize: 13)),
+                                          icon: SizedBox.shrink(),
                                         ))
                                     .toList(),
-                                onChanged: (newValue) {
+                                selected: {selectedPlayingMode2},
+                                onSelectionChanged: (Set<String> newSelection) {
                                   setState(() {
-                                    selectedPlayingMode2 = newValue!;
+                                    selectedPlayingMode2 = newSelection.first;
                                   });
                                 },
+                                style: ButtonStyle(
+                                  visualDensity: VisualDensity.compact,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
+                                ),
+                                showSelectedIcon: false,
                               ),
                             ],
                           ),
