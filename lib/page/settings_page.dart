@@ -123,6 +123,36 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
+  // Build a minus button with a vertical divider on its right edge
+  Widget _buildMinusBtn(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        border: Border(
+          right: BorderSide(color: cs.outline, width: 1),
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Icon(Icons.remove, color: cs.primary, size: 18),
+    );
+  }
+
+  // Build a plus button with a vertical divider on its left edge
+  Widget _buildPlusBtn(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        border: Border(
+          left: BorderSide(color: cs.outline, width: 1),
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Icon(Icons.add, color: cs.primary, size: 18),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -325,11 +355,39 @@ class _SettingsPageState extends State<SettingsPage> {
                                     ),
                                     decoration: QtyDecorationProps(
                                       orientation: ButtonOrientation.horizontal,
-                                      isBordered: true,
-                                      borderShape: BorderShapeBtn.square,
+                                      isBordered: false,
+                                      borderShape: BorderShapeBtn.none,
                                       qtyStyle: QtyStyle.classic,
                                       btnColor: Theme.of(context).colorScheme.primary,
-                                      fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                      fillColor: Colors.white,
+                                      minusBtn: SizedBox(width: 36, height: 32, child: _buildMinusBtn(context)),
+                                      plusBtn: SizedBox(width: 36, height: 32, child: _buildPlusBtn(context)),
+                                      minusButtonConstrains: BoxConstraints.tightFor(width: 36, height: 32),
+                                      plusButtonConstrains: BoxConstraints.tightFor(width: 36, height: 32),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.outline,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.outline,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
+                                      ),
+                                      disabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.outline,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -438,11 +496,39 @@ class _SettingsPageState extends State<SettingsPage> {
                                     ),
                                     decoration: QtyDecorationProps(
                                       orientation: ButtonOrientation.horizontal,
-                                      isBordered: true,
-                                      borderShape: BorderShapeBtn.square,
+                                      isBordered: false,
+                                      borderShape: BorderShapeBtn.none,
                                       qtyStyle: QtyStyle.classic,
                                       btnColor: Theme.of(context).colorScheme.primary,
-                                      fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                      fillColor: Colors.white,
+                                      minusBtn: SizedBox(width: 36, height: 32, child: _buildMinusBtn(context)),
+                                      plusBtn: SizedBox(width: 36, height: 32, child: _buildPlusBtn(context)),
+                                      minusButtonConstrains: BoxConstraints.tightFor(width: 36, height: 32),
+                                      plusButtonConstrains: BoxConstraints.tightFor(width: 36, height: 32),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.outline,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.outline,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
+                                      ),
+                                      disabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.outline,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
