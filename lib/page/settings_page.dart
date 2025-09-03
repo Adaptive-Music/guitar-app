@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/special/enums.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:input_quantity/input_quantity.dart';
 
 class SettingsPage extends StatefulWidget {
   final int sfID1;
@@ -53,7 +54,6 @@ class _SettingsPageState extends State<SettingsPage> {
   // Use Scale enum values for scale selection
   List<String> get selectionScale => Scale.values.map((s) => s.name).toList();
   
-  List<String> selectionOctave = ['2', '3', '4', '5', '6', '7'];
 
   extractSettings() {
     selectedKeyHarmony = widget.prefs!.getString('keyHarmony')!;
@@ -301,24 +301,38 @@ class _SettingsPageState extends State<SettingsPage> {
                               ),
                               SizedBox(height: 8),
                               
-                              DropdownButtonFormField<String>(
-                                decoration: InputDecoration(
-                                  labelText: 'Octave',
-                                  contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
-                                  isDense: true,
-                                ),
-                                value: selectedOctave,
-                                items: selectionOctave
-                                    .map((value) => DropdownMenuItem(
-                                          value: value,
-                                          child: Text(value, style: TextStyle(fontSize: 14)),
-                                        ))
-                                    .toList(),
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    selectedOctave = newValue!;
-                                  });
-                                },
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 4.0),
+                                    child: Text('Octave', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                                  ),
+                                  InputQty.int(
+                                    minVal: 2,
+                                    maxVal: 7,
+                                    initVal: int.tryParse(selectedOctave) ?? 4,
+                                    steps: 1,
+                                    onQtyChanged: (val) {
+                                      setState(() {
+                                        selectedOctave = val.toString();
+                                      });
+                                    },
+                                    qtyFormProps: QtyFormProps(
+                                      enableTyping: false,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    decoration: QtyDecorationProps(
+                                      orientation: ButtonOrientation.horizontal,
+                                      isBordered: true,
+                                      borderShape: BorderShapeBtn.square,
+                                      qtyStyle: QtyStyle.classic,
+                                      btnColor: Theme.of(context).colorScheme.primary,
+                                      fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                    ),
+                                  ),
+                                ],
                               ),
                               SizedBox(height: 8),
                               
@@ -400,24 +414,38 @@ class _SettingsPageState extends State<SettingsPage> {
                               ),
                               SizedBox(height: 8),
                               
-                              DropdownButtonFormField<String>(
-                                decoration: InputDecoration(
-                                  labelText: 'Octave',
-                                  contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
-                                  isDense: true,
-                                ),
-                                value: selectedOctave2,
-                                items: selectionOctave
-                                    .map((value) => DropdownMenuItem(
-                                          value: value,
-                                          child: Text(value, style: TextStyle(fontSize: 14)),
-                                        ))
-                                    .toList(),
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    selectedOctave2 = newValue!;
-                                  });
-                                },
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 4.0),
+                                    child: Text('Octave', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                                  ),
+                                  InputQty.int(
+                                    minVal: 2,
+                                    maxVal: 7,
+                                    initVal: int.tryParse(selectedOctave2) ?? 4,
+                                    steps: 1,
+                                    onQtyChanged: (val) {
+                                      setState(() {
+                                        selectedOctave2 = val.toString();
+                                      });
+                                    },
+                                    qtyFormProps: QtyFormProps(
+                                      enableTyping: false,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    decoration: QtyDecorationProps(
+                                      orientation: ButtonOrientation.horizontal,
+                                      isBordered: true,
+                                      borderShape: BorderShapeBtn.square,
+                                      qtyStyle: QtyStyle.classic,
+                                      btnColor: Theme.of(context).colorScheme.primary,
+                                      fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                    ),
+                                  ),
+                                ],
                               ),
                               SizedBox(height: 8),
                               
