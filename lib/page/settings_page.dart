@@ -31,8 +31,22 @@ class _SettingsPageState extends State<SettingsPage> {
   late Instrument selectedInstrument;
   late Instrument selectedInstrument2;
 
-  // Use KeyCenter enum values for key harmony selection
-  List<String> get selectionKeyHarmony => KeyCenter.values.map((k) => k.name).toList();
+  // Get the appropriate key name based on the scale
+  String getKeyName(KeyCenter keyCenter) {
+    final scale = Scale.values.firstWhere((s) => s.name == selectedScale);
+    int keyValue = keyCenter.key;
+    bool useFlats = scale.shouldUseFlats(keyValue);
+    
+    // For natural notes, return as is
+    if (!keyCenter.name.contains('/')) return keyCenter.name;
+    
+    // For accidentals, split and return appropriate version
+    final parts = keyCenter.name.split('/');
+    return useFlats ? parts[1] : parts[0];
+  }
+
+  // Use KeyCenter enum values for key harmony selection with appropriate accidentals
+  List<String> get selectionKeyHarmony => KeyCenter.values.map((k) => getKeyName(k)).toList();
   
   late List<String> selectionPlayingMode;
   
@@ -161,47 +175,69 @@ class _SettingsPageState extends State<SettingsPage> {
                     Row(
                       children: [
                         Expanded(
-                          child: DropdownButtonFormField<String>(
-                            decoration: InputDecoration(
-                              labelText: 'Key',
-                              contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
-                              isDense: true,
-                            ),
-                            value: selectedKeyHarmony,
-                            items: selectionKeyHarmony
-                                .map((value) => DropdownMenuItem(
-                                      value: value,
-                                      child: Text(value, style: TextStyle(fontSize: 14)),
-                                    ))
-                                .toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                selectedKeyHarmony = newValue!;
-                              });
-                            },
+                          flex: 6, // Give key selector more space
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text('Key', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                              SizedBox(height: 4),
+                              SegmentedButton<String>(
+                                segments: KeyCenter.values
+                                    .map((k) => ButtonSegment<String>(
+                                          value: k.name,
+                                          label: Text(getKeyName(k), style: TextStyle(fontSize: 13)),
+                                          // Disable the selection icon
+                                          icon: SizedBox.shrink(),
+                                        ))
+                                    .toList(),
+                                selected: {selectedKeyHarmony},
+                                onSelectionChanged: (Set<String> newSelection) {
+                                  setState(() {
+                                    selectedKeyHarmony = newSelection.first;
+                                  });
+                                },
+                                style: ButtonStyle(
+                                  visualDensity: VisualDensity.compact,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
+                                ),
+                                showSelectedIcon: false,
+                              ),
+                            ],
                           ),
                         ),
                         SizedBox(width: 12),
                         Expanded(
-                          child: DropdownButtonFormField<String>(
-                            decoration: InputDecoration(
-                              labelText: 'Scale',
-                              contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
-                              isDense: true,
-                            ),
-                            value: selectedScale,
-                            items: selectionScale
-                                .map((value) => DropdownMenuItem(
-                                      value: value,
-                                      child: Text(value, style: TextStyle(fontSize: 14)),
-                                    ))
-                                .toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                selectedScale = newValue!;
-                              });
-                              loadSelections();
-                            },
+                          flex: 4, // Scale selector takes less space
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text('Scale', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                              SizedBox(height: 4),
+                              SegmentedButton<String>(
+                                segments: selectionScale
+                                    .map((value) => ButtonSegment<String>(
+                                          value: value,
+                                          label: Text(value.replaceAll('Harmonic', 'Harm.').replaceAll('Pentatonic', 'Pent.'), style: TextStyle(fontSize: 13)),
+                                          // Disable the selection icon
+                                          icon: SizedBox.shrink(),
+                                        ))
+                                    .toList(),
+                                selected: {selectedScale},
+                                onSelectionChanged: (Set<String> newSelection) {
+                                  setState(() {
+                                    selectedScale = newSelection.first;
+                                  });
+                                  loadSelections();
+                                },
+                                style: ButtonStyle(
+                                  visualDensity: VisualDensity.compact,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
+                                ),
+                                showSelectedIcon: false,
+                              ),
+                            ],
                           ),
                         ),
                       ],

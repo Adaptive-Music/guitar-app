@@ -76,16 +76,16 @@ enum Scale {
 
 enum KeyCenter {
   cNat(name: 'C', key: 0),
-  cSh(name: 'C♯ / D♭', key: 1),
+  cSh(name: 'C♯/D♭', key: 1),
   dNat(name: 'D', key: 2),
-  dSh(name: 'D♯ / E♭', key: 3),
+  dSh(name: 'D♯/E♭', key: 3),
   eNat(name: 'E', key: 4),
   fNat(name: 'F', key: 5),
-  fSh(name: 'F♯ / G♭', key: 6),
+  fSh(name: 'F♯/G♭', key: 6),
   gNat(name: 'G', key: 7),
-  gSh(name: 'G♯ / A♭', key: 8),
+  gSh(name: 'G♯/A♭', key: 8),
   aNat(name: 'A', key: 9),
-  aSh(name: 'A♯ / B♭', key: 10),
+  aSh(name: 'A♯/B♭', key: 10),
   bNat(name: 'B', key: 11);
 
   const KeyCenter({
