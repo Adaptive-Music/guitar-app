@@ -365,25 +365,25 @@ class _SettingsPageState extends State<SettingsPage> {
                                       minusButtonConstrains: BoxConstraints.tightFor(width: 36, height: 32),
                                       plusButtonConstrains: BoxConstraints.tightFor(width: 36, height: 32),
                                       border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(20),
                                         borderSide: BorderSide(
                                           color: Theme.of(context).colorScheme.outline,
                                         ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(20),
                                         borderSide: BorderSide(
                                           color: Theme.of(context).colorScheme.outline,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(20),
                                         borderSide: BorderSide(
                                           color: Theme.of(context).colorScheme.primary,
                                         ),
                                       ),
                                       disabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(20),
                                         borderSide: BorderSide(
                                           color: Theme.of(context).colorScheme.outline,
                                         ),
@@ -506,25 +506,25 @@ class _SettingsPageState extends State<SettingsPage> {
                                       minusButtonConstrains: BoxConstraints.tightFor(width: 36, height: 32),
                                       plusButtonConstrains: BoxConstraints.tightFor(width: 36, height: 32),
                                       border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(20),
                                         borderSide: BorderSide(
                                           color: Theme.of(context).colorScheme.outline,
                                         ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(20),
                                         borderSide: BorderSide(
                                           color: Theme.of(context).colorScheme.outline,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(20),
                                         borderSide: BorderSide(
                                           color: Theme.of(context).colorScheme.primary,
                                         ),
                                       ),
                                       disabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(20),
                                         borderSide: BorderSide(
                                           color: Theme.of(context).colorScheme.outline,
                                         ),
