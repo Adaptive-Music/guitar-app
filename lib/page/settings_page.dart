@@ -153,6 +153,90 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildGlobalSettings(BuildContext context) {
+    final isTall = MediaQuery.of(context).size.aspectRatio < (16 / 9);
+
+    final keySelector = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Key', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        SizedBox(height: 4),
+        SegmentedButton<String>(
+          segments: KeyCenter.values
+              .map((k) => ButtonSegment<String>(
+                    value: k.name,
+                    label: Text(getKeyName(k), style: TextStyle(fontSize: 13)),
+                    // Disable the selection icon
+                    icon: SizedBox.shrink(),
+                  ))
+              .toList(),
+          selected: {selectedKeyHarmony},
+          onSelectionChanged: (Set<String> newSelection) {
+            setState(() {
+              selectedKeyHarmony = newSelection.first;
+            });
+          },
+          style: ButtonStyle(
+            visualDensity: VisualDensity.compact,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
+          ),
+          showSelectedIcon: false,
+        ),
+      ],
+    );
+
+    final scaleSelector = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Scale', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        SizedBox(height: 4),
+        SegmentedButton<String>(
+          segments: selectionScale
+              .map((value) => ButtonSegment<String>(
+                    value: value,
+                    label: Text(isTall ? value : value.replaceAll('Harmonic', 'Harm.').replaceAll('Pentatonic', 'Pent.'), style: TextStyle(fontSize: 13)),
+                    // Disable the selection icon
+                    icon: SizedBox.shrink(),
+                  ))
+              .toList(),
+          selected: {selectedScale},
+          onSelectionChanged: (Set<String> newSelection) {
+            setState(() {
+              selectedScale = newSelection.first;
+            });
+            loadSelections();
+          },
+          style: ButtonStyle(
+            visualDensity: VisualDensity.compact,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
+          ),
+          showSelectedIcon: false,
+        ),
+      ],
+    );
+
+    if (isTall) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          keySelector,
+          SizedBox(height: 12),
+          scaleSelector,
+        ],
+      );
+    } else {
+      return Row(
+        children: [
+          Expanded(flex: 6, child: keySelector),
+          SizedBox(width: 12),
+          Expanded(flex: 4, child: scaleSelector),
+        ],
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -202,76 +286,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Global settings row
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 6, // Give key selector more space
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text('Key', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                              SizedBox(height: 4),
-                              SegmentedButton<String>(
-                                segments: KeyCenter.values
-                                    .map((k) => ButtonSegment<String>(
-                                          value: k.name,
-                                          label: Text(getKeyName(k), style: TextStyle(fontSize: 13)),
-                                          // Disable the selection icon
-                                          icon: SizedBox.shrink(),
-                                        ))
-                                    .toList(),
-                                selected: {selectedKeyHarmony},
-                                onSelectionChanged: (Set<String> newSelection) {
-                                  setState(() {
-                                    selectedKeyHarmony = newSelection.first;
-                                  });
-                                },
-                                style: ButtonStyle(
-                                  visualDensity: VisualDensity.compact,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
-                                ),
-                                showSelectedIcon: false,
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          flex: 4, // Scale selector takes less space
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text('Scale', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                              SizedBox(height: 4),
-                              SegmentedButton<String>(
-                                segments: selectionScale
-                                    .map((value) => ButtonSegment<String>(
-                                          value: value,
-                                          label: Text(value.replaceAll('Harmonic', 'Harm.').replaceAll('Pentatonic', 'Pent.'), style: TextStyle(fontSize: 13)),
-                                          // Disable the selection icon
-                                          icon: SizedBox.shrink(),
-                                        ))
-                                    .toList(),
-                                selected: {selectedScale},
-                                onSelectionChanged: (Set<String> newSelection) {
-                                  setState(() {
-                                    selectedScale = newSelection.first;
-                                  });
-                                  loadSelections();
-                                },
-                                style: ButtonStyle(
-                                  visualDensity: VisualDensity.compact,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
-                                ),
-                                showSelectedIcon: false,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                    _buildGlobalSettings(context),
                     
                     Divider(height: 16),
                     
@@ -422,7 +437,15 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                         ),
                         
-                        SizedBox(width: 12), // Space between columns
+                        // Vertical divider between frog and app settings
+                        Container(
+                          height: 300, // Adjust height as needed
+                          child: VerticalDivider(
+                            thickness: 1,
+                            width: 24,
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                        ),
                         
                         // App settings column
                         Expanded(
