@@ -153,12 +153,20 @@ enum Instrument {
   woodBlock(bank: 0, program: 115),
   acousticGuitar(bank: 0, program: 25),
   electricGuitar(bank: 0, program: 29),
+  bass(bank: 0, program: 33),
+  slapBass(bank: 0, program: 36),
   flute(bank: 0, program: 73),
   trumpet(bank: 0, program: 56),
   saxophone(bank: 0, program: 64),
   clarinet(bank: 0, program: 71),
+  accordion(bank: 0, program: 21),
+  harmonica(bank: 0, program: 22),
   drums(bank: 120, program: 0),
   choir(bank: 0, program: 52),
+  sitar(bank: 0, program: 104),
+  shamisen(bank: 0, program: 106),
+  kalimba(bank: 0, program: 108),
+  bell( bank: 0, program: 112),
   dog(bank: 1, program: 123),;
   
   const Instrument({
