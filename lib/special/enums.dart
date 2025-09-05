@@ -143,7 +143,12 @@ enum Octave {
 
 enum Instrument {
   piano(bank: 0, program: 2),
+  polysynth(bank: 0, program: 90),
+  marimba(bank: 0, program: 12),
+  organ(bank: 0, program: 19),
   violin(bank: 0, program: 40),
+  harp(bank: 0, program: 46),
+  woodBlock(bank: 0, program: 115),
   acousticGuitar(bank: 0, program: 25),
   electricGuitar(bank: 0, program: 29),
   flute(bank: 0, program: 73),
