@@ -144,17 +144,20 @@ enum Octave {
 enum Instrument {
   piano(bank: 0, program: 2),
   celeste(bank: 0, program: 8),
-  synthesiser(bank: 0, program: 89),
+  synthPad(bank: 0, program: 88),
   vibraphone(bank: 0, program: 11),
   organ(bank: 0, program: 19),
   violin(bank: 0, program: 40),
+  cello(bank: 0, program: 42),
   harp(bank: 0, program: 46),
   woodBlock(bank: 0, program: 115),
   acousticGuitar(bank: 0, program: 25),
   electricGuitar(bank: 0, program: 29),
   flute(bank: 0, program: 73),
-  saxophone(bank: 0, program: 64),
   trumpet(bank: 0, program: 56),
+  saxophone(bank: 0, program: 64),
+  clarinet(bank: 0, program: 71),
+  drums(bank: 120, program: 0),
   choir(bank: 0, program: 52),
   dog(bank: 1, program: 123),;
   
