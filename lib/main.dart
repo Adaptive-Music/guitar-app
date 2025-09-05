@@ -416,7 +416,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         flex: 2,
                         child: Text(
                           widget.selectedMidiDevice == null ?
-                          'Instrument not connected' :
+                          'Not connected' :
                           '${widget.prefs?.getString('instrument')} - '
                           'Octave ${widget.prefs?.getString('octave')} - '
                           '${widget.prefs?.getString('playingMode')}',
