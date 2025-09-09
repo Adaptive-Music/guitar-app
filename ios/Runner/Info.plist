@@ -32,6 +32,10 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>TadBuddy needs Bluetooth access to connect to MIDI devices and controllers</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>TadBuddy needs Bluetooth access to connect to MIDI devices and controllers</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
