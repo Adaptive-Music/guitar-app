@@ -20,6 +20,13 @@ TadBuddy supports devices running Android, iOS, and MacOS.
 
 * To guide the frog user, the app user presses the button with the appropriate note. This causes the matching button on the frog to light up (only the chest buttons 1-6 have LEDs).
 
+* The colour of each button on the app indicates its status:
+  * Blue - normal
+  * Yellow - pressed by app user
+  * Orange - pressed by frog user
+  * Green - pressed by both app and frog user
 
+## Demo Video
+[![Demonstration video of TadBuddy app](http://img.youtube.com/vi/g8NShAZokX4/hqdefault.jpg)](http://www.youtube.com/watch?v=g8NShAZokX4)
 
 
