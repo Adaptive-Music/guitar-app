@@ -16,7 +16,7 @@ TadBuddy supports devices running Android, iOS, and MacOS.
 
 * If the Frogophone is not detected, the text on the screen will indicate so, and it will await connection.
 
-* Use the settings screen to choose the key to play in, and instrument/octave/playing mode for both the frog and app users.
+* Use the settings screen to choose the key to play in, and instrument/octave/playing mode for both the frog and app users. Press the tick to save  your changes, or the cross to discard them.
 
 * Button presses on both frog and app will play the note with the selected instrument.
 
