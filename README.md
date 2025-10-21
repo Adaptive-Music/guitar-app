@@ -1,36 +1,9 @@
-# TadBuddy
+# Guitar App
 
-A companion app for the Frogophone.
-Allows parent/carer/educator to control LEDs on the Frogophone using the on screen buttons in TadBuddy, to prompt user to press the matching buttons.
-Button presses on both the Frogophone and the app cause the app to play appropriate notes.
-TadBuddy supports devices running Android, iOS, and MacOS.
+This is a Flutter app to help play guitar one handed.
 
+The app allows user to choose what chord to play
 
-## Instructions
+It takes MIDI input from a Fishman TriplePlay Connect pickup to determine when strings are played.
 
-* Before starting up TadBuddy, please ensure Frogophone is set to the default C Major scale.
-
-* A suitable USB adaptor/hub may be required to connect the Frogophone to your device.
-
-* On app startup, Frogophone's LEDs will cycle sequentially twice, to indicate successful connection.
-
-* If the Frogophone is not detected, the text on the screen will indicate so, and it will await connection.
-
-* Use gear button to go to the settings screen. Here, you can choose the key to play in, and instrument/octave/playing mode for both the frog and app users. Press the tick to save  your changes, or the cross to discard them.
-
-* Button presses on both frog and app will play the note with the selected instrument.
-
-* Volume for both frog and app can be adjusted on the main screen.
-
-* To guide the frog user, the app user presses the button with the appropriate note. This causes the matching button on the frog to light up (only the chest buttons 1-6 have LEDs).
-
-* The colour of each button on the app indicates its status:
-  * Blue - normal
-  * Yellow - pressed by app user
-  * Orange - pressed by frog user
-  * Green - pressed by both app and frog user
-
-## Demo Video
-[![Demonstration video of TadBuddy app](http://img.youtube.com/vi/g8NShAZokX4/hqdefault.jpg)](http://www.youtube.com/watch?v=g8NShAZokX4)
-
-
+It then plays notes from the currently selected chord.
