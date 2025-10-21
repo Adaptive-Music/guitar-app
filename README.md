@@ -8,11 +8,15 @@ TadBuddy supports devices running Android, iOS, and MacOS.
 
 ## Instructions
 
-* Before starting up TadBuddy, please ensure Frogophone is set to the default C Major scale, and plugged into the device. A USB adaptor may be required to suit your device.
+* Before starting up TadBuddy, please ensure Frogophone is set to the default C Major scale.
+
+* A suitable USB adaptor/hub may be required to connect the Frogophone to your device.
 
 * On app startup, Frogophone's LEDs will cycle sequentially twice, to indicate successful connection.
 
-* Use the settings screen to choose the key to play in, and instrument/octave/playing mode for both the frog and app users.
+* If the Frogophone is not detected, the text on the screen will indicate so, and it will await connection.
+
+* Use gear button to go to the settings screen. Here, you can choose the key to play in, and instrument/octave/playing mode for both the frog and app users. Press the tick to save  your changes, or the cross to discard them.
 
 * Button presses on both frog and app will play the note with the selected instrument.
 
@@ -20,6 +24,13 @@ TadBuddy supports devices running Android, iOS, and MacOS.
 
 * To guide the frog user, the app user presses the button with the appropriate note. This causes the matching button on the frog to light up (only the chest buttons 1-6 have LEDs).
 
+* The colour of each button on the app indicates its status:
+  * Blue - normal
+  * Yellow - pressed by app user
+  * Orange - pressed by frog user
+  * Green - pressed by both app and frog user
 
+## Demo Video
+[![Demonstration video of TadBuddy app](http://img.youtube.com/vi/g8NShAZokX4/hqdefault.jpg)](http://www.youtube.com/watch?v=g8NShAZokX4)
 
 
