@@ -31,16 +31,6 @@ class GuitarStringsState extends State<GuitarStrings> {
         _activeStrings[stringNumber] = true;
         _activationTimes[stringNumber] = DateTime.now();
       });
-
-      // Auto-fade after 500ms
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
-          setState(() {
-            _activeStrings[stringNumber] = false;
-            _activationTimes[stringNumber] = null;
-          });
-        }
-      });
     }
   }
 

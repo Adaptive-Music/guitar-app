@@ -147,6 +147,10 @@ class _MyAppState extends State<MyApp> {
         if ((status & 0xF0) == 0x90 && velocity > 0) {
           // Note On
           _guitarStringsKey.currentState?.illuminateString(stringNumber);
+        } else if ((status & 0xF0) == 0x80 ||
+            ((status & 0xF0) == 0x90 && velocity == 0)) {
+          // Note Off (either explicit 0x80 or Note On with velocity 0)
+          _guitarStringsKey.currentState?.turnOffString(stringNumber);
         }
 
         // int index = note == 72 ? 7 : Scale.major.intervals.indexOf(note - 60);
