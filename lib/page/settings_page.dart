@@ -5,16 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:input_quantity/input_quantity.dart';
 
 class SettingsPage extends StatefulWidget {
-  final int sfID1;
-  final int sfID2;
+  final int sfID;
   final SharedPreferences? prefs;
 
-  const SettingsPage({
-    super.key, 
-    required this.prefs, 
-    required this.sfID1, 
-    required this.sfID2
-  });
+  const SettingsPage({super.key, required this.prefs, required this.sfID});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -25,57 +19,47 @@ class _SettingsPageState extends State<SettingsPage> {
 
   late String selectedKeyHarmony;
   late String selectedPlayingMode;
-  late String selectedPlayingMode2;
   late String selectedScale;
   late String selectedOctave;
-  late String selectedOctave2;
   late Instrument selectedInstrument;
-  late Instrument selectedInstrument2;
 
   // Get the appropriate key name based on the scale
   String getKeyName(KeyCenter keyCenter) {
     final scale = Scale.values.firstWhere((s) => s.name == selectedScale);
     int keyValue = keyCenter.key;
     bool useFlats = scale.shouldUseFlats(keyValue);
-    
+
     // For natural notes, return as is
     if (!keyCenter.name.contains('/')) return keyCenter.name;
-    
+
     // For accidentals, split and return appropriate version
     final parts = keyCenter.name.split('/');
     return useFlats ? parts[1] : parts[0];
   }
 
   // Use KeyCenter enum values for key harmony selection with appropriate accidentals
-  List<String> get selectionKeyHarmony => KeyCenter.values.map((k) => getKeyName(k)).toList();
-  
+  List<String> get selectionKeyHarmony =>
+      KeyCenter.values.map((k) => getKeyName(k)).toList();
+
   late List<String> selectionPlayingMode;
-  
+
   // Use Scale enum values for scale selection
   List<String> get selectionScale => Scale.values.map((s) => s.name).toList();
-  
 
   extractSettings() {
     selectedKeyHarmony = widget.prefs!.getString('keyHarmony')!;
     selectedScale = widget.prefs!.getString('currentScale')!;
     selectedOctave = widget.prefs!.getString('octave')!;
-    selectedOctave2 = widget.prefs!.getString('octave2')!;
     selectedPlayingMode = widget.prefs!.getString('playingMode')!;
-    selectedPlayingMode2 = widget.prefs!.getString('playingMode2')!;
     selectedInstrument = Instrument.values
         .firstWhere((e) => e.name == widget.prefs!.getString('instrument')!);
-    selectedInstrument2 = Instrument.values
-        .firstWhere((e) => e.name == widget.prefs!.getString('instrument2')!);
-    
+
     print("Key Harmony: $selectedKeyHarmony");
     print("Scale: $selectedScale");
     print("Octave: $selectedOctave");
-    print("Octave2: $selectedOctave2");
     print("Instrument: $selectedInstrument");
-    print("Instrument2: $selectedInstrument2");
     print("Playing Mode: $selectedPlayingMode");
-    print("Playing Mode2: $selectedPlayingMode2");
-    
+
     setState(() {
       prefLoaded = true;
       print('Pref Loaded');
@@ -85,17 +69,18 @@ class _SettingsPageState extends State<SettingsPage> {
   loadSelections() {
     // Get the Scale enum value from the selected scale name
     final scale = Scale.values.firstWhere((s) => s.name == selectedScale);
-    
+
     if (scale == Scale.pentatonicMajor || scale == Scale.pentatonicMinor) {
       setState(() {
         selectionPlayingMode = ['Single Note', 'Power Chord'];
-        selectedPlayingMode = selectedPlayingMode == 'Triad Chord' ? 'Single Note' : selectedPlayingMode;
-        selectedPlayingMode2 = selectedPlayingMode2 == 'Triad Chord' ? 'Single Note' : selectedPlayingMode2;
+        selectedPlayingMode = selectedPlayingMode == 'Triad Chord'
+            ? 'Single Note'
+            : selectedPlayingMode;
       });
     } else {
       setState(() {
         selectionPlayingMode = ['Single Note', 'Triad Chord', 'Power Chord'];
-      });  
+      });
     }
   }
 
@@ -104,21 +89,14 @@ class _SettingsPageState extends State<SettingsPage> {
       widget.prefs?.setString('keyHarmony', selectedKeyHarmony);
       widget.prefs?.setString('currentScale', selectedScale);
       widget.prefs?.setString('octave', selectedOctave);
-      widget.prefs?.setString('octave2', selectedOctave2);
       widget.prefs?.setString('playingMode', selectedPlayingMode);
-      widget.prefs?.setString('playingMode2', selectedPlayingMode2);
       widget.prefs?.setString('instrument', selectedInstrument.name);
-      widget.prefs?.setString('instrument2', selectedInstrument2.name);
-      
+
       MidiPro().selectInstrument(
-          sfId: widget.sfID1,
+          sfId: widget.sfID,
           bank: selectedInstrument.bank,
           program: selectedInstrument.program);
-      MidiPro().selectInstrument(
-          sfId: widget.sfID2,
-          bank: selectedInstrument2.bank,
-          program: selectedInstrument2.program);
-          
+
       print('settings saved');
     });
   }
@@ -159,7 +137,8 @@ class _SettingsPageState extends State<SettingsPage> {
     final keySelector = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Key', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        Text('Key',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
         SizedBox(height: 4),
         SegmentedButton<String>(
           segments: KeyCenter.values
@@ -179,7 +158,8 @@ class _SettingsPageState extends State<SettingsPage> {
           style: ButtonStyle(
             visualDensity: VisualDensity.compact,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
+            padding:
+                MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
           ),
           showSelectedIcon: false,
         ),
@@ -189,13 +169,20 @@ class _SettingsPageState extends State<SettingsPage> {
     final scaleSelector = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Scale', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        Text('Scale',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
         SizedBox(height: 4),
         SegmentedButton<String>(
           segments: selectionScale
               .map((value) => ButtonSegment<String>(
                     value: value,
-                    label: Text(isTall ? value : value.replaceAll('Harmonic', 'Harm.').replaceAll('Pentatonic', 'Pent.'), style: TextStyle(fontSize: 13)),
+                    label: Text(
+                        isTall
+                            ? value
+                            : value
+                                .replaceAll('Harmonic', 'Harm.')
+                                .replaceAll('Pentatonic', 'Pent.'),
+                        style: TextStyle(fontSize: 13)),
                     // Disable the selection icon
                     icon: SizedBox.shrink(),
                   ))
@@ -210,7 +197,8 @@ class _SettingsPageState extends State<SettingsPage> {
           style: ButtonStyle(
             visualDensity: VisualDensity.compact,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
+            padding:
+                MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
           ),
           showSelectedIcon: false,
         ),
@@ -287,307 +275,137 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     // Global settings row
                     _buildGlobalSettings(context),
-                    
+
                     Divider(height: 16),
-                    
-                    // Settings columns
-                    Row(
+
+                    // Instrument settings
+                    DropdownButtonFormField<Instrument>(
+                      decoration: InputDecoration(
+                        labelText: 'Instrument',
+                        contentPadding: EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 10.0),
+                        isDense: true,
+                      ),
+                      initialValue: selectedInstrument,
+                      isExpanded: true,
+                      items: Instrument.values
+                          .map((instrument) => DropdownMenuItem(
+                                value: instrument,
+                                child: Text(instrument.name,
+                                    style: TextStyle(fontSize: 14)),
+                              ))
+                          .toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedInstrument = newValue!;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 12),
+
+                    // Octave
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Frog settings column
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // Frog Header
-                              Container(
-                                height: 32, // Fixed height for alignment
-                                child: Row(
-                                  children: [
-                                    Image.asset(
-                                      'assets/images/frog.png',
-                                      width: 24,
-                                      height: 24,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Frog',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green[800],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              
-                              // Frog settings
-                              DropdownButtonFormField<Instrument>(
-                                decoration: InputDecoration(
-                                  labelText: 'Instrument',
-                                  contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
-                                  isDense: true,
-                                ),
-                                initialValue: selectedInstrument,
-                                isExpanded: true,
-                                items: Instrument.values
-                                    .map((instrument) => DropdownMenuItem(
-                                          value: instrument,
-                                          child: Text(instrument.name, style: TextStyle(fontSize: 14)),
-                                        ))
-                                    .toList(),
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    selectedInstrument = newValue!;
-                                  });
-                                },
-                              ),
-                              SizedBox(height: 8),
-                              
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 4.0),
-                                    child: Text('Octave', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                                  ),
-                                  InputQty.int(
-                                    minVal: 2,
-                                    maxVal: 7,
-                                    initVal: int.tryParse(selectedOctave) ?? 4,
-                                    steps: 1,
-                                    onQtyChanged: (val) {
-                                      setState(() {
-                                        selectedOctave = val.toString();
-                                      });
-                                    },
-                                    qtyFormProps: QtyFormProps(
-                                      enableTyping: false,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                    decoration: QtyDecorationProps(
-                                      orientation: ButtonOrientation.horizontal,
-                                      isBordered: false,
-                                      borderShape: BorderShapeBtn.none,
-                                      qtyStyle: QtyStyle.classic,
-                                      btnColor: Theme.of(context).colorScheme.primary,
-                                      fillColor: Theme.of(context).colorScheme.surface,
-                                      minusBtn: SizedBox(width: 36, height: 32, child: _buildMinusBtn(context)),
-                                      plusBtn: SizedBox(width: 36, height: 32, child: _buildPlusBtn(context)),
-                                      minusButtonConstrains: BoxConstraints.tightFor(width: 36, height: 32),
-                                      plusButtonConstrains: BoxConstraints.tightFor(width: 36, height: 32),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                        borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.outline,
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                        borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.outline,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                        borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.primary,
-                                        ),
-                                      ),
-                                      disabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                        borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.outline,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 8),
-                              
-                              Text('Play Mode', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                              SizedBox(height: 4),
-                              SegmentedButton<String>(
-                                segments: selectionPlayingMode
-                                    .map((value) => ButtonSegment<String>(
-                                          value: value,
-                                          label: Text(value,
-                                                    style: TextStyle(fontSize: 13)),
-                                          icon: SizedBox.shrink(),
-                                        ))
-                                    .toList(),
-                                selected: {selectedPlayingMode},
-                                onSelectionChanged: (Set<String> newSelection) {
-                                  setState(() {
-                                    selectedPlayingMode = newSelection.first;
-                                  });
-                                },
-                                style: ButtonStyle(
-                                  visualDensity: VisualDensity.compact,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
-                                ),
-                                showSelectedIcon: false,
-                              ),
-                            ],
-                          ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4.0),
+                          child: Text('Octave',
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w500)),
                         ),
-                        
-                        // Vertical divider between frog and app settings
-                        Container(
-                          height: 300, // Adjust height as needed
-                          child: VerticalDivider(
-                            thickness: 1,
-                            width: 24,
-                            color: Theme.of(context).colorScheme.outline,
+                        InputQty.int(
+                          minVal: 2,
+                          maxVal: 7,
+                          initVal: int.tryParse(selectedOctave) ?? 4,
+                          steps: 1,
+                          onQtyChanged: (val) {
+                            setState(() {
+                              selectedOctave = val.toString();
+                            });
+                          },
+                          qtyFormProps: QtyFormProps(
+                            enableTyping: false,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 14),
                           ),
-                        ),
-                        
-                        // App settings column
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // App Header
-                              Container(
-                                height: 32, // Fixed height for alignment
-                                child: Row(
-                                  children: [
-                                    Text('📱', style: TextStyle(fontSize: 20)),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'App',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.blue[800],
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                          decoration: QtyDecorationProps(
+                            orientation: ButtonOrientation.horizontal,
+                            isBordered: false,
+                            borderShape: BorderShapeBtn.none,
+                            qtyStyle: QtyStyle.classic,
+                            btnColor: Theme.of(context).colorScheme.primary,
+                            fillColor: Theme.of(context).colorScheme.surface,
+                            minusBtn: SizedBox(
+                                width: 36,
+                                height: 32,
+                                child: _buildMinusBtn(context)),
+                            plusBtn: SizedBox(
+                                width: 36,
+                                height: 32,
+                                child: _buildPlusBtn(context)),
+                            minusButtonConstrains:
+                                BoxConstraints.tightFor(width: 36, height: 32),
+                            plusButtonConstrains:
+                                BoxConstraints.tightFor(width: 36, height: 32),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide(
+                                color: Theme.of(context).colorScheme.outline,
                               ),
-                              SizedBox(height: 8),
-                              
-                              // App settings
-                              DropdownButtonFormField<Instrument>(
-                                decoration: InputDecoration(
-                                  labelText: 'Instrument',
-                                  contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
-                                  isDense: true,
-                                ),
-                                initialValue: selectedInstrument2,
-                                isExpanded: true,
-                                items: Instrument.values
-                                    .map((instrument) => DropdownMenuItem(
-                                          value: instrument,
-                                          child: Text(instrument.name, style: TextStyle(fontSize: 14)),
-                                        ))
-                                    .toList(),
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    selectedInstrument2 = newValue!;
-                                  });
-                                },
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide(
+                                color: Theme.of(context).colorScheme.outline,
                               ),
-                              SizedBox(height: 8),
-                              
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 4.0),
-                                    child: Text('Octave', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                                  ),
-                                  InputQty.int(
-                                    minVal: 2,
-                                    maxVal: 7,
-                                    initVal: int.tryParse(selectedOctave2) ?? 4,
-                                    steps: 1,
-                                    onQtyChanged: (val) {
-                                      setState(() {
-                                        selectedOctave2 = val.toString();
-                                      });
-                                    },
-                                    qtyFormProps: QtyFormProps(
-                                      enableTyping: false,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                    decoration: QtyDecorationProps(
-                                      orientation: ButtonOrientation.horizontal,
-                                      isBordered: false,
-                                      borderShape: BorderShapeBtn.none,
-                                      qtyStyle: QtyStyle.classic,
-                                      btnColor: Theme.of(context).colorScheme.primary,
-                                      fillColor: Theme.of(context).colorScheme.surface,
-                                      minusBtn: SizedBox(width: 36, height: 32, child: _buildMinusBtn(context)),
-                                      plusBtn: SizedBox(width: 36, height: 32, child: _buildPlusBtn(context)),
-                                      minusButtonConstrains: BoxConstraints.tightFor(width: 36, height: 32),
-                                      plusButtonConstrains: BoxConstraints.tightFor(width: 36, height: 32),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                        borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.outline,
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                        borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.outline,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                        borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.primary,
-                                        ),
-                                      ),
-                                      disabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                        borderSide: BorderSide(
-                                          color: Theme.of(context).colorScheme.outline,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide(
+                                color: Theme.of(context).colorScheme.primary,
                               ),
-                              SizedBox(height: 8),
-                              
-                              Text('Play Mode', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                              SizedBox(height: 4),
-                              SegmentedButton<String>(
-                                segments: selectionPlayingMode
-                                    .map((value) => ButtonSegment<String>(
-                                          value: value,
-                                          label: Text(value,
-                                                    style: TextStyle(fontSize: 13)),
-                                          icon: SizedBox.shrink(),
-                                        ))
-                                    .toList(),
-                                selected: {selectedPlayingMode2},
-                                onSelectionChanged: (Set<String> newSelection) {
-                                  setState(() {
-                                    selectedPlayingMode2 = newSelection.first;
-                                  });
-                                },
-                                style: ButtonStyle(
-                                  visualDensity: VisualDensity.compact,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 3)),
-                                ),
-                                showSelectedIcon: false,
+                            ),
+                            disabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide(
+                                color: Theme.of(context).colorScheme.outline,
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    
+                    SizedBox(height: 12),
+
+                    // Play Mode
+                    Text('Play Mode',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w500)),
+                    SizedBox(height: 4),
+                    SegmentedButton<String>(
+                      segments: selectionPlayingMode
+                          .map((value) => ButtonSegment<String>(
+                                value: value,
+                                label:
+                                    Text(value, style: TextStyle(fontSize: 13)),
+                                icon: SizedBox.shrink(),
+                              ))
+                          .toList(),
+                      selected: {selectedPlayingMode},
+                      onSelectionChanged: (Set<String> newSelection) {
+                        setState(() {
+                          selectedPlayingMode = newSelection.first;
+                        });
+                      },
+                      style: ButtonStyle(
+                        visualDensity: VisualDensity.compact,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        padding: MaterialStateProperty.all(
+                            EdgeInsets.symmetric(horizontal: 3)),
+                      ),
+                      showSelectedIcon: false,
+                    ),
+
                     // Commented out sections preserved but not active
                     // SizedBox(height: 16),
                     // DropdownButtonFormField<String>(

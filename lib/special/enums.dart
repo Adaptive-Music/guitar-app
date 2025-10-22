@@ -1,24 +1,11 @@
 enum Scale {
-  major(
-    name: 'Major', 
-    intervals: [0, 2, 4, 5, 7, 9, 11, 12]
-    ),
-  minor(
-    name: 'Minor', 
-    intervals: [0, 2, 3, 5, 7, 8, 10, 12]
-    ),
-  harmonicMinor(
-    name: 'Harmonic Minor', 
-    intervals: [0, 2, 3, 5, 7, 8, 11, 12]
-    ),
+  major(name: 'Major', intervals: [0, 2, 4, 5, 7, 9, 11, 12]),
+  minor(name: 'Minor', intervals: [0, 2, 3, 5, 7, 8, 10, 12]),
+  harmonicMinor(name: 'Harmonic Minor', intervals: [0, 2, 3, 5, 7, 8, 11, 12]),
   pentatonicMinor(
-    name: 'Pentatonic Minor', 
-    intervals: [0, 3, 5, 7, 10, 12, 15, 17]
-    ),
+      name: 'Pentatonic Minor', intervals: [0, 3, 5, 7, 10, 12, 15, 17]),
   pentatonicMajor(
-    name: 'Pentatonic Major', 
-    intervals: [0, 4, 5, 7, 11, 12, 16, 17]
-    );
+      name: 'Pentatonic Major', intervals: [0, 4, 5, 7, 11, 12, 16, 17]);
 
   const Scale({
     required this.name,
@@ -30,15 +17,12 @@ enum Scale {
 
   // Static method to find intervals by name
   static List<int> getIntervals(String name) {
-    return Scale.values
-        .firstWhere((scale) => scale.name == name)
-        .intervals;
+    return Scale.values.firstWhere((scale) => scale.name == name).intervals;
   }
 
   // Static method to return scale by name
   static Scale getScale(String name) {
-    return Scale.values
-        .firstWhere((scale) => scale.name == name);
+    return Scale.values.firstWhere((scale) => scale.name == name);
   }
 
   // Determines if a key should use flats based on music theory conventions
@@ -46,25 +30,25 @@ enum Scale {
     // Sharp keys: G(7), D(2), A(9), E(4), B(11)
     // Flat keys: F(5), Bb(10), Eb(3), Ab(8), Db(1)
     // C(0) uses neither
-    
+
     final flatKeys = [5, 10, 3, 8, 1]; // F, Bb, Eb, Ab, Db
-    
+
     switch (this) {
       case Scale.major:
         // For major scales, use flats if the root is F or has flats
         return flatKeys.contains(rootNote);
-        
+
       case Scale.minor:
       case Scale.harmonicMinor:
         // For minor scales, use flats if the relative major would use flats
         // Relative major is 3 semitones up
         final relativeMajor = (rootNote + 3) % 12;
         return flatKeys.contains(relativeMajor);
-        
+
       case Scale.pentatonicMajor:
         // Follow the same rules as major scale
         return flatKeys.contains(rootNote);
-        
+
       case Scale.pentatonicMinor:
         // Follow the same rules as minor scale
         final relativeMajor = (rootNote + 3) % 12;
@@ -72,7 +56,6 @@ enum Scale {
     }
   }
 }
-
 
 enum KeyCenter {
   cNat(name: 'C', key: 0),
@@ -97,8 +80,34 @@ enum KeyCenter {
   final int key;
 
   String getName(Scale scale) {
-    final sharpNoteNames = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
-    final flatNoteNames = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
+    final sharpNoteNames = [
+      'C',
+      'C♯',
+      'D',
+      'D♯',
+      'E',
+      'F',
+      'F♯',
+      'G',
+      'G♯',
+      'A',
+      'A♯',
+      'B'
+    ];
+    final flatNoteNames = [
+      'C',
+      'D♭',
+      'D',
+      'E♭',
+      'E',
+      'F',
+      'G♭',
+      'G',
+      'A♭',
+      'A',
+      'B♭',
+      'B'
+    ];
     if (scale.shouldUseFlats(key)) {
       return flatNoteNames[key % 12];
     } else {
@@ -113,11 +122,9 @@ enum KeyCenter {
   }
 }
 
-
-
 enum Octave {
   zero(name: '0', number: 12),
-  one(name: '1', number:24),
+  one(name: '1', number: 24),
   two(name: '2', number: 36),
   three(name: '3', number: 48),
   four(name: '4', number: 60),
@@ -135,9 +142,7 @@ enum Octave {
   final int number;
 
   static int getNum(String name) {
-    return Octave.values
-        .firstWhere((octave) => octave.name == name)
-        .number;
+    return Octave.values.firstWhere((octave) => octave.name == name).number;
   }
 }
 
@@ -166,9 +171,10 @@ enum Instrument {
   sitar(bank: 0, program: 104),
   shamisen(bank: 0, program: 106),
   kalimba(bank: 0, program: 108),
-  bell( bank: 0, program: 112),
-  dog(bank: 1, program: 123),;
-  
+  bell(bank: 0, program: 112),
+  dog(bank: 1, program: 123),
+  ;
+
   const Instrument({
     required this.bank,
     required this.program,
@@ -179,7 +185,8 @@ enum Instrument {
 
   String get name {
     String last = toString().split('.').last;
-    last = last.replaceAllMapped(RegExp(r'([a-z])([A-Z])'), (Match m) => '${m[1]} ${m[2]}');
+    last = last.replaceAllMapped(
+        RegExp(r'([a-z])([A-Z])'), (Match m) => '${m[1]} ${m[2]}');
     return last[0].toUpperCase() + last.substring(1);
   }
 }

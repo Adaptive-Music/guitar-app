@@ -9,15 +9,13 @@ import 'package:flutter_application_1/special/enums.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Force Portrait Mode
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight, 
+    DeviceOrientation.landscapeRight,
   ]);
 
   runApp(MyApp());
@@ -33,12 +31,10 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final MidiPro _midi = MidiPro();
   final MidiCommand _midi_cmd = MidiCommand();
-  late int sfID1;
-  late int sfID2;
+  late int sfID;
 
   SharedPreferences? _prefs;
-  Instrument selectedInstrument1 = Instrument.values[0]; // Default value
-  Instrument selectedInstrument2 = Instrument.values[0];
+  Instrument selectedInstrument = Instrument.values[0]; // Default value
 
   bool _sfLoading = true;
   bool _midiConnecting = false;
@@ -49,32 +45,21 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> loadSoundFont() async {
     if (_prefs == null) return; // Don't load if prefs aren't ready
-    
+
     String? instrumentName = _prefs?.getString('instrument');
-    selectedInstrument1 = instrumentName != null 
+    selectedInstrument = instrumentName != null
         ? Instrument.values.firstWhere((e) => e.name == instrumentName)
         : Instrument.values[0];
 
-    String? instrument2Name = _prefs?.getString('instrument2');
-    selectedInstrument2 = instrument2Name != null
-        ? Instrument.values.firstWhere((e) => e.name == instrument2Name)
-        : Instrument.values[0];
-
-    sfID1 = await _midi.loadSoundfont(
+    sfID = await _midi.loadSoundfont(
       path: 'assets/soundfonts/GeneralUserGS.sf2',
-      bank: selectedInstrument1.bank,
-      program: selectedInstrument1.program,
-    );
-
-    sfID2 = await _midi.loadSoundfont(
-      path: 'assets/soundfonts/GeneralUserGS.sf2',
-      bank: selectedInstrument2.bank,
-      program: selectedInstrument2.program,
+      bank: selectedInstrument.bank,
+      program: selectedInstrument.program,
     );
 
     setState(() {
       _sfLoading = false;
-    });  
+    });
   }
 
   Future<void> connectMidiDevice() async {
@@ -90,8 +75,9 @@ class _MyAppState extends State<MyApp> {
     print('Found MIDI devices:');
     for (var device in newMidiDevices ?? []) {
       print(' - ${device.name} (connected: ${device.connected})');
-    } 
-    if (newMidiDevices != null && !newMidiDevices.contains(selectedMidiDevice)) {
+    }
+    if (newMidiDevices != null &&
+        !newMidiDevices.contains(selectedMidiDevice)) {
       print('Previously selected MIDI device no longer available');
       selectedMidiDevice = null;
     }
@@ -106,7 +92,7 @@ class _MyAppState extends State<MyApp> {
     for (var device in newMidiDevices!) {
       if (device.name.contains("TP Guitar")) {
         print('Connecting to device: ${device.name}');
-        if(device.connected) {
+        if (device.connected) {
           print('Device ${device.name} is already connected.');
           setState(() {
             selectedMidiDevice = device;
@@ -132,7 +118,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-    void initMidiListening() async {
+  void initMidiListening() async {
     // Connect to a device first
     // Example: connectToDevice(device) where 'device' is from midiCommand.devices
 
@@ -147,7 +133,8 @@ class _MyAppState extends State<MyApp> {
         int note = data.length > 1 ? data[1] : 0;
         int velocity = data.length > 2 ? data[2] : 0;
 
-        print("Received MIDI message: status=$status, note=$note, velocity=$velocity");
+        print(
+            "Received MIDI message: status=$status, note=$note, velocity=$velocity");
 
         // Determine which string based on note number
         int stringNumber = getStringNumberFromNote(note);
@@ -170,29 +157,31 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-
-int getStringNumberFromNote(int note) {
-  // Should work with standard or Open C tuning
-  if (note < 42) return 0;
-  else if (note < 47) return 1;
-  else if (note < 53) return 2;
-  else if (note < 58) return 3;
-  else if (note < 63) return 4;
-  else return 5;
+  int getStringNumberFromNote(int note) {
+    // Should work with standard or Open C tuning
+    if (note < 42)
+      return 0;
+    else if (note < 47)
+      return 1;
+    else if (note < 53)
+      return 2;
+    else if (note < 58)
+      return 3;
+    else if (note < 63)
+      return 4;
+    else
+      return 5;
   }
-
 
   void sendNoteOn(note) {
     final noteOn = Uint8List.fromList([0x90, note, 100]);
     _midi_cmd.sendData(noteOn);
   }
 
-
   void sendNoteOff(note) {
     final noteOff = Uint8List.fromList([0x80, note, 0]);
     _midi_cmd.sendData(noteOff);
   }
-
 
   Future<void> _initPrefs() async {
     _prefs = await SharedPreferences.getInstance();
@@ -207,15 +196,14 @@ int getStringNumberFromNote(int note) {
     setState(() {
       _prefLoading = false;
       print('Pref loaded');
-    }); 
+    });
   }
-
 
   _checkPrefs() async {
     if (_prefs?.getString('keyHarmony') == null) {
       await _prefs?.setString('keyHarmony', 'C');
     }
-    
+
     if (_prefs?.getString('currentScale') == null) {
       _prefs?.setString('currentScale', 'Major');
     }
@@ -224,24 +212,12 @@ int getStringNumberFromNote(int note) {
       _prefs?.setString('octave', '4');
     }
 
-    if (_prefs?.getString('octave2') == null) {
-      _prefs?.setString('octave2', '4');
-    }
-
     if (_prefs?.getString('instrument') == null) {
       _prefs?.setString('instrument', Instrument.values[0].name);
     }
 
-    if (_prefs?.getString('instrument2') == null) {
-      _prefs?.setString('instrument2', Instrument.values[0].name);
-    }
-
     if (_prefs?.getString('playingMode') == null) {
       _prefs?.setString('playingMode', 'Single Note');
-    }
-
-    if (_prefs?.getString('playingMode2') == null) {
-      _prefs?.setString('playingMode2', 'Single Note');
     }
 
     // if (_prefs?.getString('visuals') == null) {
@@ -267,13 +243,13 @@ int getStringNumberFromNote(int note) {
   void initState() {
     super.initState();
     _initPrefs(); // Only call _initPrefs, which will handle loadSoundFont
-    
+
     // Enable wakelock to prevent screen timeout
     if (Platform.isAndroid || Platform.isIOS) {
       WakelockPlus.enable();
     }
   }
-  
+
   @override
   void dispose() {
     // Disable wakelock when the app is closed
@@ -283,8 +259,6 @@ int getStringNumberFromNote(int note) {
     super.dispose();
   }
 
-    
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -293,39 +267,35 @@ int getStringNumberFromNote(int note) {
       home: Builder(
         builder: (context) {
           if (_sfLoading || _prefLoading || _midiConnecting) {
-          // Show a loading screen while waiting for async task to complete
+            // Show a loading screen while waiting for async task to complete
             return Scaffold(
               body: Text('Loading...'),
             );
           }
-        return HomeScreen(
-          prefs: _prefs, 
-          sfID1: sfID1, 
-          sfID2: sfID2, 
-          midiController: _midi, 
-          midiCommand: _midi_cmd,
-          selectedMidiDevice: selectedMidiDevice,
-        );
-        }, 
+          return HomeScreen(
+            prefs: _prefs,
+            sfID1: sfID,
+            midiController: _midi,
+            midiCommand: _midi_cmd,
+            selectedMidiDevice: selectedMidiDevice,
+          );
+        },
       ),
     );
   }
 }
 
-
 class HomeScreen extends StatefulWidget {
   final SharedPreferences? prefs;
   final int sfID1;
-  final int sfID2;
   final MidiPro midiController;
   final MidiCommand midiCommand;
   final MidiDevice? selectedMidiDevice;
   const HomeScreen({
-    super.key, 
-    required this.sfID1, 
-    required this.sfID2, 
-    required this.midiController, 
-    required this.prefs, 
+    super.key,
+    required this.sfID1,
+    required this.midiController,
+    required this.prefs,
     required this.midiCommand,
     required this.selectedMidiDevice,
   });
@@ -334,24 +304,20 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-
 class _HomeScreenState extends State<HomeScreen> {
   late int keyHarmony;
   late KeyCenter keyCentre;
-  late int octave1;
-  late int octave2;
+  late int octave;
   late Scale scale;
   late List<int> scaleIntervals;
   late String playingMode1;
-  late String playingMode2;
   int frogVolume = 127;
-  int appVolume = 127;
 
   @override
   void initState() {
     super.initState();
     extractSettings();
-    
+
     // Make sure wakelock is still enabled when this screen is shown
     WakelockPlus.enable();
   }
@@ -360,165 +326,114 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       keyHarmony = KeyCenter.getKey(widget.prefs!.getString('keyHarmony')!);
       keyCentre = KeyCenter.values.firstWhere((key) => key.key == keyHarmony);
-      octave1 = Octave.getNum(widget.prefs!.getString('octave')!);
-      octave2 = Octave.getNum(widget.prefs!.getString('octave2')!);
+      octave = Octave.getNum(widget.prefs!.getString('octave')!);
       scale = Scale.getScale(widget.prefs!.getString('currentScale')!);
       scaleIntervals = Scale.getIntervals(scale.name);
       playingMode1 = widget.prefs!.getString('playingMode')!;
-      playingMode2 = widget.prefs!.getString('playingMode2')!;
     });
     print("Extracted - Key Harmony: $keyHarmony");
-    print("Extracted - Octave: $octave1");
-    print("Extracted - Octave2: $octave2");
+    print("Extracted - Octave: $octave");
     print("Extracted - Scale: $scaleIntervals");
     print("Extracted - Playing Mode: $playingMode1");
-    print("Extracted - Playing Mode2: $playingMode2");
 
     print('Settings extracted');
   }
 
   @override
-
-  
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text('${keyCentre.getName(scale)} ${widget.prefs?.getString('currentScale')}'),
-          actions: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.settings),
-              tooltip: 'Go to Settings',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                 MaterialPageRoute(builder: (context) => SettingsPage(prefs: widget.prefs, sfID1: widget.sfID1, sfID2: widget.sfID2, )),
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+            '${keyCentre.getName(scale)} ${widget.prefs?.getString('currentScale')}'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Go to Settings',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        SettingsPage(prefs: widget.prefs, sfID: widget.sfID1)),
               ).then((value) {
                 extractSettings();
               });
-              },
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            // Volume controls
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Volume control
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Expanded(
-                        flex: 1,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Opacity(
-                              opacity: widget.selectedMidiDevice == null ? 0.2 : 1.0,
-                              child: Image.asset(
-                                'assets/images/frog.png',
-                                width: 24,
-                                height: 24,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
                       Opacity(
                         opacity: widget.selectedMidiDevice == null ? 0.2 : 1.0,
-                        child: SizedBox(
-                          width: 150,
-                          child: Slider(
-                            value: frogVolume / 127,
-                            min: 0,
-                            max: 1,
-                            onChanged: (value) {
-                              setState(() {
-                                frogVolume = (value * 127).round();
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          widget.selectedMidiDevice == null ?
-                          'Not connected' :
-                          '${widget.prefs?.getString('instrument')} - '
-                          'Octave ${widget.prefs?.getString('octave')} - '
-                          '${widget.prefs?.getString('playingMode')}',
-                          style: TextStyle(fontSize: 16),
+                        child: Image.asset(
+                          'assets/images/frog.png',
+                          width: 24,
+                          height: 24,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 2),
-                  // App volume control
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text('📱', style: TextStyle(fontSize: 20)),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        width: 150,
-                        child: Slider(
-                          value: appVolume / 127,
-                          min: 0,
-                          max: 1,
-                          onChanged: (value) {
-                            setState(() {
-                              appVolume = (value * 127).round();
-                            });
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          '${widget.prefs?.getString('instrument2')} - '
-                          'Octave ${widget.prefs?.getString('octave2')} - '
-                          '${widget.prefs?.getString('playingMode2')}',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ],
+                ),
+                const SizedBox(width: 8),
+                Opacity(
+                  opacity: widget.selectedMidiDevice == null ? 0.2 : 1.0,
+                  child: SizedBox(
+                    width: 150,
+                    child: Slider(
+                      value: frogVolume / 127,
+                      min: 0,
+                      max: 1,
+                      onChanged: (value) {
+                        setState(() {
+                          frogVolume = (value * 127).round();
+                        });
+                      },
+                    ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    widget.selectedMidiDevice == null
+                        ? 'Not connected'
+                        : '${widget.prefs?.getString('instrument')} - '
+                            'Octave ${widget.prefs?.getString('octave')} - '
+                            '${widget.prefs?.getString('playingMode')}',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ],
             ),
-            // Keyboard
-            Expanded(
-              child: KeyBoard(
-                keyHarmony: keyHarmony, 
-                octave1: octave1, 
-                octave2: octave2, 
-                scale: scale,
-                sfID1: widget.sfID1, 
-                sfID2: widget.sfID2, 
-                midiController: widget.midiController, 
-                midiCommand: widget.midiCommand, 
-                playingMode1: playingMode1, 
-                playingMode2: playingMode2,
-                frogVolume: frogVolume,
-                appVolume: appVolume
-              ),
+          ),
+          // Keyboard
+          Expanded(
+            child: KeyBoard(
+              keyHarmony: keyHarmony,
+              octave1: octave,
+              scale: scale,
+              sfID1: widget.sfID1,
+              midiController: widget.midiController,
+              midiCommand: widget.midiCommand,
+              playingMode1: playingMode1,
+              frogVolume: frogVolume,
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
   }
 }
-

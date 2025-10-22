@@ -10,33 +10,25 @@ import 'dart:math';
 
 class KeyBoard extends StatefulWidget {
   final int sfID1;
-  final int sfID2;
   final MidiPro midiController;
   final MidiCommand midiCommand;
 
   final int keyHarmony;
   final Scale scale;
   final int octave1;
-  final int octave2;
   final String playingMode1;
-  final String playingMode2;
   final int frogVolume;
-  final int appVolume;
 
-  const KeyBoard({
-      super.key,
+  const KeyBoard(
+      {super.key,
       required this.keyHarmony,
       required this.octave1,
-      required this.octave2,
       required this.scale,
       required this.sfID1,
-      required this.sfID2,
       required this.midiController,
       required this.midiCommand,
       required this.playingMode1,
-      required this.playingMode2,
-      required this.frogVolume,
-      required this.appVolume});
+      required this.frogVolume});
 
   @override
   State<KeyBoard> createState() => _KeyBoardState();
@@ -74,8 +66,8 @@ class _KeyBoardState extends State<KeyBoard> {
     if (oldWidget.scale.intervals.length != widget.scale.intervals.length) {
       // Clear all existing touches and stop all notes
       _touchPositions.clear();
-    for (var key in keyNoteKeys) {
-        key.currentState?.ledOff();
+      for (var key in keyNoteKeys) {
+        key.currentState?.stopNote();
       }
       // Recreate keys for new scale length
       setState(() {
@@ -98,14 +90,14 @@ class _KeyBoardState extends State<KeyBoard> {
   void launchConfetti(int pointer) async {
     final OverlayState? overlay = Overlay.of(context);
     if (overlay == null) return;
-    
+
     final RenderBox renderBox = overlay.context.findRenderObject() as RenderBox;
     final Size size = renderBox.size;
     final fontSize = 50.0;
-    
+
     while (_touchPositions.keys.contains(pointer)) {
       final position = _touchPositions[pointer]!;
-      
+
       Confetti.launch(
         context,
         options: _confettiOptions.copyWith(
@@ -113,13 +105,11 @@ class _KeyBoardState extends State<KeyBoard> {
           y: (position.dy - fontSize / 2) / size.height,
         ),
         particleBuilder: (index) => Emoji(
-          emoji: _musicEmojis[_random.nextInt(_musicEmojis.length)],
-          textStyle: TextStyle(
-            color: defaultColors[_random.nextInt(defaultColors.length)],
-            fontSize: 50,
-            height: 1.1
-          )
-        ),
+            emoji: _musicEmojis[_random.nextInt(_musicEmojis.length)],
+            textStyle: TextStyle(
+                color: defaultColors[_random.nextInt(defaultColors.length)],
+                fontSize: 50,
+                height: 1.1)),
       );
       await Future.delayed(const Duration(milliseconds: 50));
     }
@@ -141,7 +131,8 @@ class _KeyBoardState extends State<KeyBoard> {
         int note = data.length > 1 ? data[1] : 0;
         int velocity = data.length > 2 ? data[2] : 0;
 
-        print("Received MIDI message: status=$status, note=$note, velocity=$velocity");
+        print(
+            "Received MIDI message: status=$status, note=$note, velocity=$velocity");
 
         // Determine which frog button has been pressed (0-7)
         int index = note == 72 ? 7 : Scale.major.intervals.indexOf(note - 60);
@@ -154,7 +145,8 @@ class _KeyBoardState extends State<KeyBoard> {
           // widget.midiController
           // .playNote(key: note, velocity: 100, sfId: widget.sfID);
           print("Index: $index, Note On: $note with velocity $velocity");
-        } else if ((status & 0xF0) == 0x80 || ((status & 0xF0) == 0x90 && velocity == 0)) {
+        } else if ((status & 0xF0) == 0x80 ||
+            ((status & 0xF0) == 0x90 && velocity == 0)) {
           keyNoteKeys[index].currentState?.stopNote();
           print("Index: $index, Note Off: $note");
         }
@@ -194,43 +186,39 @@ class _KeyBoardState extends State<KeyBoard> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
         child: Column(children: [
-          buildButtonRow(widget.octave1 + widget.keyHarmony, widget.octave2 + widget.keyHarmony, 0),
+          buildButtonRow(widget.octave1 + widget.keyHarmony, 0),
           // buildButtonRow(widget.octave - 12 + widget.keyHarmony, widget.scale.length + 1),
         ]),
       ),
     );
   }
 
-  Widget buildButtonRow(int startNote1, int startNote2, int keyOffset) {
+  Widget buildButtonRow(int startNote1, int keyOffset) {
     int maxButtons = ((keyNoteKeys.length) ~/ 2) - 1;
     return Expanded(
       child: Row(
         children: [
           ...List.generate(
-            widget.scale.intervals.length > maxButtons ? maxButtons : widget.scale.intervals.length,
-            (index) {
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: SizedBox.expand(
-                      child: KeyNote(
-                          key: keyNoteKeys[keyOffset + index],
-                          startNote1: startNote1,
-                          startNote2: startNote2,
-                          index: index,
-                          scale: widget.scale,
-                          playingMode1: widget.playingMode1,
-                          playingMode2: widget.playingMode2,
-                          sfID1: widget.sfID1,
-                          sfID2: widget.sfID2,
-                          midiController: widget.midiController,
-                          midiCommand: widget.midiCommand,
-                          frogVolume: widget.frogVolume,
-                          appVolume: widget.appVolume)),
-                ),
-              );
-            }
-          ),
+              widget.scale.intervals.length > maxButtons
+                  ? maxButtons
+                  : widget.scale.intervals.length, (index) {
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: SizedBox.expand(
+                    child: KeyNote(
+                        key: keyNoteKeys[keyOffset + index],
+                        startNote1: startNote1,
+                        index: index,
+                        scale: widget.scale,
+                        playingMode1: widget.playingMode1,
+                        sfID1: widget.sfID1,
+                        midiController: widget.midiController,
+                        midiCommand: widget.midiCommand,
+                        frogVolume: widget.frogVolume)),
+              ),
+            );
+          }),
         ],
       ),
     );

@@ -7,34 +7,26 @@ import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 
 class KeyNote extends StatefulWidget {
   final int startNote1;
-  final int startNote2;
   final int index;
   final Scale scale;
 
   final String playingMode1;
-  final String playingMode2;
 
   final int sfID1;
-  final int sfID2;
   final MidiPro midiController;
   final MidiCommand midiCommand;
   final int frogVolume;
-  final int appVolume;
 
-  const KeyNote({
-      super.key,
+  const KeyNote(
+      {super.key,
       required this.startNote1,
-      required this.startNote2,
       required this.sfID1,
-      required this.sfID2,
       required this.midiController,
       required this.midiCommand,
       required this.playingMode1,
-      required this.playingMode2,
       required this.index,
       required this.scale,
-      required this.frogVolume,
-      required this.appVolume});
+      required this.frogVolume});
 
   @override
   State<KeyNote> createState() => KeyNoteState();
@@ -42,27 +34,44 @@ class KeyNote extends StatefulWidget {
 
 class KeyNoteState extends State<KeyNote> {
   List<int> notes1 = [];
-  List<int> notes2 = [];
   late Rect bounds;
-  bool isLedOn = false; // When key pressed on app, frog LED lights up
   bool isPlayingSound = false; // When frog button pressed, sound is played
 
   static List<Map<String, dynamic>> symbolData = [
-    {'symbol': '★', 'color': Colors.yellow, 'size': 28.0},  // star
-    {'symbol': '▲', 'color': Colors.purple, 'size': 28.0},  // triangle
-    {'symbol': '♥', 'color': Colors.red, 'size': Platform.isAndroid? 20.0: 28.0},     // heart
-    {'symbol': '◆', 'color': Colors.orange, 'size': Platform.isAndroid? 33.0 : 28.0},  // diamond
-    {'symbol': '■', 'color': Colors.blue, 'size': 28.0},    // square
-    {'symbol': '●', 'color': Colors.lightGreen, 'size': Platform.isAndroid? 36.0 : 28.0}, // circle
-    {'symbol': '🌙', 'color': Colors.yellow, 'size': Platform.isAndroid? 20.0 : 28.0},  // moon
-    {'symbol': '☀️', 'color': Colors.yellow, 'size': Platform.isAndroid? 24.0 : 28.0},  // sun
+    {'symbol': '★', 'color': Colors.yellow, 'size': 28.0}, // star
+    {'symbol': '▲', 'color': Colors.purple, 'size': 28.0}, // triangle
+    {
+      'symbol': '♥',
+      'color': Colors.red,
+      'size': Platform.isAndroid ? 20.0 : 28.0
+    }, // heart
+    {
+      'symbol': '◆',
+      'color': Colors.orange,
+      'size': Platform.isAndroid ? 33.0 : 28.0
+    }, // diamond
+    {'symbol': '■', 'color': Colors.blue, 'size': 28.0}, // square
+    {
+      'symbol': '●',
+      'color': Colors.lightGreen,
+      'size': Platform.isAndroid ? 36.0 : 28.0
+    }, // circle
+    {
+      'symbol': '🌙',
+      'color': Colors.yellow,
+      'size': Platform.isAndroid ? 20.0 : 28.0
+    }, // moon
+    {
+      'symbol': '☀️',
+      'color': Colors.yellow,
+      'size': Platform.isAndroid ? 24.0 : 28.0
+    }, // sun
   ];
 
   @override
   void initState() {
     super.initState();
-    packNotes(1);
-    packNotes(2);
+    packNotes();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       updateBounds();
     });
@@ -82,21 +91,23 @@ class KeyNoteState extends State<KeyNote> {
     bool isTouched = touchPositions.values.any((position) {
       return bounds.contains(position);
     });
-    if (isTouched && !isLedOn) {
-      ledOn();
+    if (isTouched && !isPlayingSound) {
+      playNote();
       print('Button ${widget.index} touched');
-    } else if (!isTouched && isLedOn) {
-      ledOff();
+    } else if (!isTouched && isPlayingSound) {
+      stopNote();
       print('Button ${widget.index} released');
     }
-
   }
 
   void playNote() {
+    HapticFeedback.mediumImpact(); // Add haptic feedback
+    // Send LED note on with frog volume for LED brightness
+    sendNoteOn(60 + Scale.major.intervals[widget.index]);
     print("Playing notes: $notes1 with volume: ${widget.frogVolume}");
     for (var i = 0; i < notes1.length; i++) {
-      widget.midiController
-          .playNote(key: notes1[i], velocity: widget.frogVolume, sfId: widget.sfID1);
+      widget.midiController.playNote(
+          key: notes1[i], velocity: widget.frogVolume, sfId: widget.sfID1);
     }
     setState(() {
       isPlayingSound = true;
@@ -104,6 +115,7 @@ class KeyNoteState extends State<KeyNote> {
   }
 
   void stopNote() {
+    sendNoteOff(60 + Scale.major.intervals[widget.index]);
     print("Stopping notes: $notes1");
     for (var i = 0; i < notes1.length; i++) {
       widget.midiController.stopNote(key: notes1[i], sfId: widget.sfID1);
@@ -112,36 +124,6 @@ class KeyNoteState extends State<KeyNote> {
       isPlayingSound = false;
     });
   }
-
-
-  void ledOn() {
-    HapticFeedback.mediumImpact();  // Add haptic feedback
-    // Send LED note on with frog volume for LED brightness
-    sendNoteOn(60 + Scale.major.intervals[widget.index]);
-    for (var i = 0; i < notes2.length; i++) {
-      widget.midiController
-          .playNote(key: notes2[i], velocity: widget.appVolume, sfId: widget.sfID2);
-    }
-    print("Playing notes $notes2 with volume: ${widget.appVolume}");
-    setState(() {
-      isLedOn = true;
-    });
-  }
-
-  void ledOff() {
-    // widget.midiController.stopNote(key: notes[i], sfId: widget.sfID);
-    sendNoteOff(60 + Scale.major.intervals[widget.index]);
-    for (var i = 0; i < notes2.length; i++) {
-      widget.midiController.stopNote(key: notes2[i], sfId: widget.sfID2);
-    }
-    print("Stopping notes $notes2");
-    setState(() {
-      isLedOn = false;
-    });
-  }
-
-
-  
 
   void sendNoteOn(note) {
     final noteOn = Uint8List.fromList([0x90, note, widget.frogVolume]);
@@ -155,27 +137,23 @@ class KeyNoteState extends State<KeyNote> {
     print(note);
   }
 
-  void packNotes(int selection) {
+  void packNotes() {
     if (widget.index >= widget.scale.intervals.length) {
       setState(() {
-        if (selection == 1) {
-          notes1 = [];
-        } else {
-          notes2 = [];
-        }
+        notes1 = [];
       });
       return;
     }
-    
-    int startNote = selection == 1 ? widget.startNote1 : widget.startNote2;
-    String playingMode = selection == 1 ? widget.playingMode1 : widget.playingMode2;
+
+    int startNote = widget.startNote1;
+    String playingMode = widget.playingMode1;
     int rootNote = startNote + widget.scale.intervals[widget.index];
 
     List<int> newNotes = [];
     if (playingMode == 'Single Note') {
       newNotes = [rootNote];
     } else if (playingMode == 'Power Chord') {
-      int fifthNote = rootNote + 7;  // Perfect fifth is 7 semitones
+      int fifthNote = rootNote + 7; // Perfect fifth is 7 semitones
       int upperRoot = rootNote + 12;
       newNotes = [
         rootNote,
@@ -186,9 +164,9 @@ class KeyNoteState extends State<KeyNote> {
       // Triad Chord
       int thirdPos = (widget.index + 2) % 7;
       int fifthPos = (widget.index + 4) % 7;
-      
-      int startNoteForChord = selection == 1 ? widget.startNote1 : widget.startNote2;
-      
+
+      int startNoteForChord = widget.startNote1;
+
       int thirdNote = widget.index > thirdPos
           ? startNoteForChord + widget.scale.intervals[thirdPos] + 12
           : startNoteForChord + widget.scale.intervals[thirdPos];
@@ -204,13 +182,9 @@ class KeyNoteState extends State<KeyNote> {
         rootNote + 12,
       ];
     }
-    
+
     setState(() {
-      if (selection == 1) {
-        notes1 = newNotes;
-      } else {
-        notes2 = newNotes;
-      }
+      notes1 = newNotes;
     });
 
     // print("Key - Scale: ${widget.scale}");
@@ -222,25 +196,47 @@ class KeyNoteState extends State<KeyNote> {
   void didUpdateWidget(covariant KeyNote oldWidget) {
     super.didUpdateWidget(oldWidget);
     if ((oldWidget.playingMode1 != widget.playingMode1) ||
-        (oldWidget.playingMode2 != widget.playingMode2) ||
         (oldWidget.startNote1 != widget.startNote1) ||
-        (oldWidget.startNote2 != widget.startNote2) ||
         (oldWidget.index != widget.index) ||
         (oldWidget.scale != widget.scale) ||
-        (oldWidget.sfID1 != widget.sfID1) ||
-        (oldWidget.sfID2 != widget.sfID2)) {
-      packNotes(1);
-      packNotes(2);
+        (oldWidget.sfID1 != widget.sfID1)) {
+      packNotes();
     }
   }
 
   String getMidiNoteName(int midiNote) {
-    final sharpNoteNames = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
-    final flatNoteNames = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
-    
+    final sharpNoteNames = [
+      'C',
+      'C♯',
+      'D',
+      'D♯',
+      'E',
+      'F',
+      'F♯',
+      'G',
+      'G♯',
+      'A',
+      'A♯',
+      'B'
+    ];
+    final flatNoteNames = [
+      'C',
+      'D♭',
+      'D',
+      'E♭',
+      'E',
+      'F',
+      'G♭',
+      'G',
+      'A♭',
+      'A',
+      'B♭',
+      'B'
+    ];
+
     final note = midiNote % 12;
     final scaleRoot = widget.startNote1 % 12;
-    
+
     // Use the Scale enum's method to determine whether to use flats
     bool useFlats = widget.scale.shouldUseFlats(scaleRoot);
 
@@ -254,17 +250,18 @@ class KeyNoteState extends State<KeyNote> {
       updateBounds();
     });
     // Get the symbol data for this button
-    final symbolInfo = widget.index < symbolData.length 
-        ? symbolData[widget.index] 
-        : {'symbol': '●', 'color': Colors.grey, 'size': 24.0}; // fallback for any extra buttons
+    final symbolInfo = widget.index < symbolData.length
+        ? symbolData[widget.index]
+        : {
+            'symbol': '●',
+            'color': Colors.grey,
+            'size': 24.0
+          }; // fallback for any extra buttons
 
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor:
-          isPlayingSound && isLedOn ? Colors.lightGreenAccent :
-          isPlayingSound ? Colors.orangeAccent :
-          isLedOn ? Colors.yellowAccent :
-          Colors.lightBlue,
+            isPlayingSound ? Colors.yellowAccent : Colors.lightBlue,
         padding: EdgeInsets.zero, // Ensures no extra padding
         splashFactory: NoSplash.splashFactory,
         side: BorderSide(
@@ -338,7 +335,8 @@ class KeyNoteState extends State<KeyNote> {
               children: [
                 // Outline for note name
                 Text(
-                  getMidiNoteName(widget.startNote1 + widget.scale.intervals[widget.index]),
+                  getMidiNoteName(
+                      widget.startNote1 + widget.scale.intervals[widget.index]),
                   style: TextStyle(
                     fontSize: 20,
                     foreground: Paint()
@@ -351,7 +349,8 @@ class KeyNoteState extends State<KeyNote> {
                 ),
                 // Main note name
                 Text(
-                  getMidiNoteName(widget.startNote1 + widget.scale.intervals[widget.index]),
+                  getMidiNoteName(
+                      widget.startNote1 + widget.scale.intervals[widget.index]),
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.white,
