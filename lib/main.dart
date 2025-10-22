@@ -104,10 +104,7 @@ class _MyAppState extends State<MyApp> {
       return;
     }
     for (var device in newMidiDevices!) {
-      if (
-        device.name.contains("Teensy") || 
-        // device.name.contains("MIDI") ||
-        (device.name.contains("Zoe") && !Platform.isAndroid)) {
+      if (device.name.contains("TP Guitar")) {
         print('Connecting to device: ${device.name}');
         if(device.connected) {
           print('Device ${device.name} is already connected.');
@@ -118,11 +115,11 @@ class _MyAppState extends State<MyApp> {
           return;
         }
         await _midi_cmd.connectToDevice(device);
+        initMidiListening();
         print('Connected to ${device.name}.');
         setState(() {
           selectedMidiDevice = device;
         });
-        testLEDs(2);
         break;
       }
     }
@@ -135,20 +132,55 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+    void initMidiListening() async {
+    // Connect to a device first
+    // Example: connectToDevice(device) where 'device' is from midiCommand.devices
 
-  /// Cycle through the LEDs on the connected MIDI device.
-  Future<void> testLEDs(int cycles) async {
-    List<int> notes = [60, 62, 64, 65, 67, 69];
-    
-    for (int i = 0; i < cycles; i++) {
-      for (int i in notes) {
-        sendNoteOn(i);
-        await Future.delayed(Duration(milliseconds: 100));
-        sendNoteOff(i);
+    // Listen for incoming MIDI data
+    _midi_cmd.onMidiDataReceived?.listen((MidiPacket packet) {
+      // packet.data is a Uint8List containing raw MIDI bytes
+      Uint8List data = packet.data;
+
+      // Example: interpret a Note On (0x90) message
+      if (data.isNotEmpty) {
+        int status = data[0];
+        int note = data.length > 1 ? data[1] : 0;
+        int velocity = data.length > 2 ? data[2] : 0;
+
+        print("Received MIDI message: status=$status, note=$note, velocity=$velocity");
+
+        // Determine which string based on note number
+        int stringNumber = getStringNumberFromNote(note);
+        print("String Number: $stringNumber");
+        // int index = note == 72 ? 7 : Scale.major.intervals.indexOf(note - 60);
+        // if (index < 0 || index >= keyNoteKeys.length) {
+        //   print("Note $note is out of range for the current scale.");
+        //   return; // Ignore notes outside the expected range
+        // }
+        // if ((status & 0xF0) == 0x90 && velocity > 0) {
+        //   keyNoteKeys[index].currentState?.playNote();
+        //   // widget.midiController
+        //   // .playNote(key: note, velocity: 100, sfId: widget.sfID);
+        //   print("Index: $index, Note On: $note with velocity $velocity");
+        // } else if ((status & 0xF0) == 0x80 || ((status & 0xF0) == 0x90 && velocity == 0)) {
+        //   keyNoteKeys[index].currentState?.stopNote();
+        //   print("Index: $index, Note Off: $note");
+        // }
       }
-    }
+    });
   }
-  
+
+
+int getStringNumberFromNote(int note) {
+  // Should work with standard or Open C tuning
+  if (note < 42) return 0;
+  else if (note < 47) return 1;
+  else if (note < 53) return 2;
+  else if (note < 58) return 3;
+  else if (note < 63) return 4;
+  else return 5;
+  }
+
 
   void sendNoteOn(note) {
     final noteOn = Uint8List.fromList([0x90, note, 100]);

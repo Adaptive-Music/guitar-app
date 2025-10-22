@@ -126,6 +126,7 @@ class _KeyBoardState extends State<KeyBoard> {
   }
 
   void initMidiListening() async {
+    return;
     // Connect to a device first
     // Example: connectToDevice(device) where 'device' is from midiCommand.devices
 
