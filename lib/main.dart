@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/page/settings_page.dart';
 import 'package:flutter_application_1/widgets/KeyBoard.dart';
+import 'package:flutter_application_1/widgets/guitar_strings.dart';
 import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 import 'package:flutter_application_1/special/enums.dart';
@@ -32,6 +33,8 @@ class _MyAppState extends State<MyApp> {
   final MidiPro _midi = MidiPro();
   final MidiCommand _midi_cmd = MidiCommand();
   late int sfID;
+  final GlobalKey<GuitarStringsState> _guitarStringsKey =
+      GlobalKey<GuitarStringsState>();
 
   SharedPreferences? _prefs;
   Instrument selectedInstrument = Instrument.values[0]; // Default value
@@ -139,6 +142,13 @@ class _MyAppState extends State<MyApp> {
         // Determine which string based on note number
         int stringNumber = getStringNumberFromNote(note);
         print("String Number: $stringNumber");
+
+        // Illuminate the corresponding guitar string on Note On
+        if ((status & 0xF0) == 0x90 && velocity > 0) {
+          // Note On
+          _guitarStringsKey.currentState?.illuminateString(stringNumber);
+        }
+
         // int index = note == 72 ? 7 : Scale.major.intervals.indexOf(note - 60);
         // if (index < 0 || index >= keyNoteKeys.length) {
         //   print("Note $note is out of range for the current scale.");
@@ -278,6 +288,7 @@ class _MyAppState extends State<MyApp> {
             midiController: _midi,
             midiCommand: _midi_cmd,
             selectedMidiDevice: selectedMidiDevice,
+            guitarStringsKey: _guitarStringsKey,
           );
         },
       ),
@@ -291,6 +302,8 @@ class HomeScreen extends StatefulWidget {
   final MidiPro midiController;
   final MidiCommand midiCommand;
   final MidiDevice? selectedMidiDevice;
+  final GlobalKey<GuitarStringsState> guitarStringsKey;
+
   const HomeScreen({
     super.key,
     required this.sfID1,
@@ -298,6 +311,7 @@ class HomeScreen extends StatefulWidget {
     required this.prefs,
     required this.midiCommand,
     required this.selectedMidiDevice,
+    required this.guitarStringsKey,
   });
 
   @override
@@ -419,6 +433,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+          // Guitar Strings Visualization
+          GuitarStrings(key: widget.guitarStringsKey),
           // Keyboard
           Expanded(
             child: KeyBoard(
