@@ -145,8 +145,7 @@ class _MyAppState extends State<MyApp> {
         int note = data.length > 1 ? data[1] : 0;
         int velocity = data.length > 2 ? data[2] : 0;
 
-        print(
-            "Received MIDI message: status=$status, note=$note, velocity=$velocity");
+        print("Received MIDI message: status=$status, note=$note, velocity=$velocity");
 
         // Determine which string based on note number
         int stringNumber = getStringNumberFromNote(note);
@@ -168,21 +167,6 @@ class _MyAppState extends State<MyApp> {
           int chordNote = chords[currentChord].notes[stringNumber];
           _midi.stopNote(key: chordNote, sfId: sfID);
         }
-
-        // int index = note == 72 ? 7 : Scale.major.intervals.indexOf(note - 60);
-        // if (index < 0 || index >= keyNoteKeys.length) {
-        //   print("Note $note is out of range for the current scale.");
-        //   return; // Ignore notes outside the expected range
-        // }
-        // if ((status & 0xF0) == 0x90 && velocity > 0) {
-        //   keyNoteKeys[index].currentState?.playNote();
-        //   // widget.midiController
-        //   // .playNote(key: note, velocity: 100, sfId: widget.sfID);
-        //   print("Index: $index, Note On: $note with velocity $velocity");
-        // } else if ((status & 0xF0) == 0x80 || ((status & 0xF0) == 0x90 && velocity == 0)) {
-        //   keyNoteKeys[index].currentState?.stopNote();
-        //   print("Index: $index, Note Off: $note");
-        // }
       }
     });
   }
@@ -359,38 +343,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late int keyHarmony;
-  late KeyCenter keyCentre;
-  late int octave;
-  late Scale scale;
-  late List<int> scaleIntervals;
-  late String playingMode1;
-  int frogVolume = 127;
-
   @override
   void initState() {
     super.initState();
-    extractSettings();
 
     // Make sure wakelock is still enabled when this screen is shown
     WakelockPlus.enable();
-  }
-
-  void extractSettings() {
-    setState(() {
-      keyHarmony = KeyCenter.getKey(widget.prefs!.getString('keyHarmony')!);
-      keyCentre = KeyCenter.values.firstWhere((key) => key.key == keyHarmony);
-      octave = Octave.getNum(widget.prefs!.getString('octave')!);
-      scale = Scale.getScale(widget.prefs!.getString('currentScale')!);
-      scaleIntervals = Scale.getIntervals(scale.name);
-      playingMode1 = widget.prefs!.getString('playingMode')!;
-    });
-    print("Extracted - Key Harmony: $keyHarmony");
-    print("Extracted - Octave: $octave");
-    print("Extracted - Scale: $scaleIntervals");
-    print("Extracted - Playing Mode: $playingMode1");
-
-    print('Settings extracted');
   }
 
   @override
@@ -411,9 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(
                     builder: (context) =>
                         SettingsPage(prefs: widget.prefs, sfID: widget.sfID1)),
-              ).then((value) {
-                extractSettings();
-              });
+              );
             },
           ),
         ],
