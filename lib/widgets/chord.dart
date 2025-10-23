@@ -6,6 +6,10 @@ class Chord {
   Chord(this.rootKey, this.type) : notes = _buildChordNotes(rootKey, type);
   final KeyCenter rootKey;
   final ChordType type;
+
+  String getName() {
+    return '${rootKey.name} ${type.name}';
+  }
   
   static _buildChordNotes(KeyCenter rootKey, ChordType type) {
     final int root = rootKey.key;

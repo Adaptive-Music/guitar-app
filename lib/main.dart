@@ -309,9 +309,15 @@ class _MyAppState extends State<MyApp> {
             selectedMidiDevice: selectedMidiDevice,
             guitarStringsKey: _guitarStringsKey,
             currentChord: chords[currentChord],
+            chordList: chords,
             onChangeChord: () {
               setState(() {
                 currentChord = (currentChord + 1) % chords.length;
+              });
+            },
+            onSelectChord: (int index) {
+              setState(() {
+                currentChord = index;
               });
             },
           );
@@ -330,6 +336,8 @@ class HomeScreen extends StatefulWidget {
   final GlobalKey<GuitarStringsState> guitarStringsKey;
   final Chord currentChord;
   final VoidCallback onChangeChord;
+  final List<Chord> chordList;
+  final Function(int) onSelectChord;
 
   const HomeScreen({
     super.key,
@@ -341,6 +349,8 @@ class HomeScreen extends StatefulWidget {
     required this.guitarStringsKey,
     required this.currentChord,
     required this.onChangeChord,
+    required this.chordList,
+    required this.onSelectChord,
   });
 
   @override
@@ -456,8 +466,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         : '${widget.prefs?.getString('instrument')} - '
                             'Octave ${widget.prefs?.getString('octave')} - '
                             '${widget.prefs?.getString('playingMode')} - '
-                            '${widget.currentChord.rootKey.getName(scale)} '
-                            '${widget.currentChord.type.name}',
+                            '${widget.currentChord.getName()}',
                     style: TextStyle(fontSize: 16),
                   ),
                 ),
@@ -466,9 +475,55 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           // Guitar Strings Visualization
           GuitarStrings(key: widget.guitarStringsKey),
-          // Keyboard
+          // Keyboard and Chord List
           Expanded(
-            child: ElevatedButton(onPressed: changeChord, child: Text('Change Chord'))
+            child: Row(
+              children: [
+                // Big Button
+                Expanded(
+                  flex: 3,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: changeChord, 
+                      child: Text(
+                        widget.currentChord.getName(),
+                        style: TextStyle(fontSize: 32),
+                      ),
+                    ),
+                  ),
+                ),
+                // Chord List
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    color: Colors.grey[900],
+                    child: ListView.builder(
+                      itemCount: widget.chordList.length,
+                      itemBuilder: (context, index) {
+                        final chord = widget.chordList[index];
+                        final isSelected = chord.rootKey == widget.currentChord.rootKey && 
+                                          chord.type == widget.currentChord.type;
+                        return Container(
+                          color: isSelected ? Colors.blue : Colors.transparent,
+                          child: ListTile(
+                            title: Text(
+                              chord.getName(),
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.grey[400],
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                            onTap: () => widget.onSelectChord(index),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
