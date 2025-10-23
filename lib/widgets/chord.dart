@@ -11,6 +11,12 @@ class Chord {
     final int root = rootKey.key;
     
     // Define the intervals for each chord type (root, third, fifth)
+    int third = type == ChordType.major ? 4 : 3;
+    int fifth = type == ChordType.diminished ? 6 : 7;
+
+    List<int> chordNotes = [root, root + fifth, root + 12, root + third + 12, root + fifth + 12, root + 24];
+    return chordNotes.map((note) => note + 36).toList();
+
     final triadIntervals = switch (type) {
       ChordType.major => [0, 4, 7],        // Major: root, major 3rd, perfect 5th
       ChordType.minor => [0, 3, 7],        // Minor: root, minor 3rd, perfect 5th

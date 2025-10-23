@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/page/settings_page.dart';
-import 'package:flutter_application_1/widgets/KeyBoard.dart';
 import 'package:flutter_application_1/widgets/chord.dart';
 import 'package:flutter_application_1/widgets/guitar_strings.dart';
 import 'package:flutter_midi_command/flutter_midi_command.dart';
@@ -39,7 +38,14 @@ class _MyAppState extends State<MyApp> {
 
   SharedPreferences? _prefs;
   Instrument selectedInstrument = Instrument.values[0]; // Default value
-  Chord currentChord = Chord(KeyCenter.cNat, ChordType.major);
+  int currentChord = 0;
+  List <Chord> chords = [
+    Chord(KeyCenter.cNat, ChordType.major),
+    Chord(KeyCenter.fNat, ChordType.major),
+    Chord(KeyCenter.gNat, ChordType.major),
+    Chord(KeyCenter.aNat, ChordType.minor),
+  ];
+
 
   bool _sfLoading = true;
   bool _midiConnecting = false;
@@ -150,7 +156,7 @@ class _MyAppState extends State<MyApp> {
           // Note On
           _guitarStringsKey.currentState?.illuminateString(stringNumber);
           // Play the MIDI note from the current chord
-          int chordNote = currentChord.notes[stringNumber];
+          int chordNote = chords[currentChord].notes[stringNumber];
           _midi.playNote(key: chordNote, velocity: velocity, sfId: sfID);
           
         } else if ((status & 0xF0) == 0x80 ||
@@ -158,7 +164,7 @@ class _MyAppState extends State<MyApp> {
           // Note Off (either explicit 0x80 or Note On with velocity 0)
           _guitarStringsKey.currentState?.turnOffString(stringNumber);
           // Stop the MIDI note from the current chord
-          int chordNote = currentChord.notes[stringNumber];
+          int chordNote = chords[currentChord].notes[stringNumber];
           _midi.stopNote(key: chordNote, sfId: sfID);
         }
 
@@ -302,7 +308,12 @@ class _MyAppState extends State<MyApp> {
             midiCommand: _midi_cmd,
             selectedMidiDevice: selectedMidiDevice,
             guitarStringsKey: _guitarStringsKey,
-            currentChord: currentChord,
+            currentChord: chords[currentChord],
+            onChangeChord: () {
+              setState(() {
+                currentChord = (currentChord + 1) % chords.length;
+              });
+            },
           );
         },
       ),
@@ -318,6 +329,7 @@ class HomeScreen extends StatefulWidget {
   final MidiDevice? selectedMidiDevice;
   final GlobalKey<GuitarStringsState> guitarStringsKey;
   final Chord currentChord;
+  final VoidCallback onChangeChord;
 
   const HomeScreen({
     super.key,
@@ -328,6 +340,7 @@ class HomeScreen extends StatefulWidget {
     required this.selectedMidiDevice,
     required this.guitarStringsKey,
     required this.currentChord,
+    required this.onChangeChord,
   });
 
   @override
@@ -442,7 +455,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ? 'Not connected'
                         : '${widget.prefs?.getString('instrument')} - '
                             'Octave ${widget.prefs?.getString('octave')} - '
-                            '${widget.prefs?.getString('playingMode')}',
+                            '${widget.prefs?.getString('playingMode')} - '
+                            '${widget.currentChord.rootKey.getName(scale)} '
+                            '${widget.currentChord.type.name}',
                     style: TextStyle(fontSize: 16),
                   ),
                 ),
@@ -453,19 +468,14 @@ class _HomeScreenState extends State<HomeScreen> {
           GuitarStrings(key: widget.guitarStringsKey),
           // Keyboard
           Expanded(
-            child: KeyBoard(
-              keyHarmony: keyHarmony,
-              octave1: octave,
-              scale: scale,
-              sfID1: widget.sfID1,
-              midiController: widget.midiController,
-              midiCommand: widget.midiCommand,
-              playingMode1: playingMode1,
-              frogVolume: frogVolume,
-            ),
+            child: ElevatedButton(onPressed: changeChord, child: Text('Change Chord'))
           ),
         ],
       ),
     );
+  }
+
+  void changeChord() {
+    widget.onChangeChord();
   }
 }
