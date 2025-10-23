@@ -451,24 +451,30 @@ class _SettingsPageState extends State<SettingsPage> {
                                 
                                 // Key selector
                                 Expanded(
-                                  flex: 2,
-                                  child: DropdownButtonFormField<String>(
-                                    decoration: InputDecoration(
-                                      labelText: 'Key',
-                                      contentPadding: EdgeInsets.symmetric(
-                                          vertical: 8.0, horizontal: 10.0),
-                                      isDense: true,
+                                  flex: 3,
+                                  child: SegmentedButton<String>(
+                                    showSelectedIcon: false,
+                                    style: ButtonStyle(
+                                      padding: WidgetStateProperty.all(
+                                        EdgeInsets.symmetric(horizontal: 4),
+                                      ),
                                     ),
-                                    value: chords[index]['key'],
-                                    items: KeyCenter.values
-                                        .map((k) => DropdownMenuItem(
-                                              value: k.name,
-                                              child: Text(k.name,
-                                                  style: TextStyle(fontSize: 14)),
-                                            ))
+                                    segments: KeyCenter.values
+                                        .map((k) {
+                                          // Get just the sharp name (first part before /)
+                                          final displayName = k.name.contains('/') 
+                                              ? k.name.split('/')[0]
+                                              : k.name;
+                                          return ButtonSegment<String>(
+                                            value: k.name,
+                                            label: Text(displayName,
+                                                style: TextStyle(fontSize: 11)),
+                                          );
+                                        })
                                         .toList(),
-                                    onChanged: (newValue) {
-                                      updateChord(index, newValue!,
+                                    selected: {chords[index]['key']!},
+                                    onSelectionChanged: (Set<String> newSelection) {
+                                      updateChord(index, newSelection.first,
                                           chords[index]['type']!);
                                     },
                                   ),
@@ -478,24 +484,41 @@ class _SettingsPageState extends State<SettingsPage> {
                                 // Type selector
                                 Expanded(
                                   flex: 2,
-                                  child: DropdownButtonFormField<String>(
-                                    decoration: InputDecoration(
-                                      labelText: 'Type',
-                                      contentPadding: EdgeInsets.symmetric(
-                                          vertical: 8.0, horizontal: 10.0),
-                                      isDense: true,
+                                  child: SegmentedButton<String>(
+                                    showSelectedIcon: false,
+                                    style: ButtonStyle(
+                                      padding: WidgetStateProperty.all(
+                                        EdgeInsets.symmetric(horizontal: 4),
+                                      ),
                                     ),
-                                    value: chords[index]['type'],
-                                    items: ChordType.values
-                                        .map((t) => DropdownMenuItem(
-                                              value: t.name,
-                                              child: Text(t.name,
-                                                  style: TextStyle(fontSize: 14)),
-                                            ))
+                                    segments: ChordType.values
+                                        .map((t) {
+                                          // Abbreviate chord type names
+                                          String abbrev;
+                                          switch (t.name) {
+                                            case 'major':
+                                              abbrev = 'Maj';
+                                              break;
+                                            case 'minor':
+                                              abbrev = 'Min';
+                                              break;
+                                            case 'diminished':
+                                              abbrev = 'Dim';
+                                              break;
+                                            default:
+                                              abbrev = t.name;
+                                          }
+                                          return ButtonSegment<String>(
+                                            value: t.name,
+                                            label: Text(abbrev,
+                                                style: TextStyle(fontSize: 12)),
+                                          );
+                                        })
                                         .toList(),
-                                    onChanged: (newValue) {
+                                    selected: {chords[index]['type']!},
+                                    onSelectionChanged: (Set<String> newSelection) {
                                       updateChord(index, chords[index]['key']!,
-                                          newValue!);
+                                          newSelection.first);
                                     },
                                   ),
                                 ),
