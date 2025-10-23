@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/page/settings_page.dart';
 import 'package:flutter_application_1/widgets/KeyBoard.dart';
+import 'package:flutter_application_1/widgets/chord.dart';
 import 'package:flutter_application_1/widgets/guitar_strings.dart';
 import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
@@ -38,6 +39,7 @@ class _MyAppState extends State<MyApp> {
 
   SharedPreferences? _prefs;
   Instrument selectedInstrument = Instrument.values[0]; // Default value
+  Chord currentChord = Chord(KeyCenter.cNat, ChordType.major);
 
   bool _sfLoading = true;
   bool _midiConnecting = false;
@@ -147,10 +149,17 @@ class _MyAppState extends State<MyApp> {
         if ((status & 0xF0) == 0x90 && velocity > 0) {
           // Note On
           _guitarStringsKey.currentState?.illuminateString(stringNumber);
+          // Play the MIDI note from the current chord
+          int chordNote = currentChord.notes[stringNumber];
+          _midi.playNote(key: chordNote, velocity: velocity, sfId: sfID);
+          
         } else if ((status & 0xF0) == 0x80 ||
             ((status & 0xF0) == 0x90 && velocity == 0)) {
           // Note Off (either explicit 0x80 or Note On with velocity 0)
           _guitarStringsKey.currentState?.turnOffString(stringNumber);
+          // Stop the MIDI note from the current chord
+          int chordNote = currentChord.notes[stringNumber];
+          _midi.stopNote(key: chordNote, sfId: sfID);
         }
 
         // int index = note == 72 ? 7 : Scale.major.intervals.indexOf(note - 60);
@@ -293,6 +302,7 @@ class _MyAppState extends State<MyApp> {
             midiCommand: _midi_cmd,
             selectedMidiDevice: selectedMidiDevice,
             guitarStringsKey: _guitarStringsKey,
+            currentChord: currentChord,
           );
         },
       ),
@@ -307,6 +317,7 @@ class HomeScreen extends StatefulWidget {
   final MidiCommand midiCommand;
   final MidiDevice? selectedMidiDevice;
   final GlobalKey<GuitarStringsState> guitarStringsKey;
+  final Chord currentChord;
 
   const HomeScreen({
     super.key,
@@ -316,6 +327,7 @@ class HomeScreen extends StatefulWidget {
     required this.midiCommand,
     required this.selectedMidiDevice,
     required this.guitarStringsKey,
+    required this.currentChord,
   });
 
   @override

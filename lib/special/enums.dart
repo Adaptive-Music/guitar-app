@@ -190,3 +190,11 @@ enum Instrument {
     return last[0].toUpperCase() + last.substring(1);
   }
 }
+
+
+enum ChordType {
+  major,
+  minor,
+  diminished,
+}
+
