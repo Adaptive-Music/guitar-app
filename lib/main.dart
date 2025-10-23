@@ -41,6 +41,7 @@ class _MyAppState extends State<MyApp> {
   Instrument selectedInstrument = Instrument.values[0]; // Default value
   int currentChord = 0;
   List<Chord> chords = [];
+  String currentProgressionName = '';
 
   bool _sfLoading = true;
   bool _midiConnecting = false;
@@ -264,7 +265,7 @@ class _MyAppState extends State<MyApp> {
 
   void _loadChords() {
     // Load from the new progression system
-    final currentProgressionName = _prefs?.getString('currentProgressionName') ?? 'Default';
+    currentProgressionName = _prefs?.getString('currentProgressionName') ?? 'Default';
     final progressionsJson = _prefs?.getString('savedProgressions');
     
     List<Map<String, String>> chordMaps = [];
@@ -354,6 +355,7 @@ class _MyAppState extends State<MyApp> {
             currentChord: chords.isNotEmpty ? chords[currentChord] : Chord(KeyCenter.cNat, ChordType.major),
             currentChordIndex: currentChord,
             chordList: chords,
+            currentProgressionName: currentProgressionName,
             onChangeChord: () {
               setState(() {
                 if (chords.isNotEmpty) {
@@ -403,6 +405,7 @@ class HomeScreen extends StatefulWidget {
   final List<Chord> chordList;
   final Function(int) onSelectChord;
   final VoidCallback onChordsUpdated;
+  final String currentProgressionName;
 
   const HomeScreen({
     super.key,
@@ -418,6 +421,7 @@ class HomeScreen extends StatefulWidget {
     required this.chordList,
     required this.onSelectChord,
     required this.onChordsUpdated,
+    required this.currentProgressionName,
   });
 
   @override
@@ -438,9 +442,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(widget.selectedMidiDevice == null
-            ? 'Not connected'
-            : 'Connected'),
+        title: Text(widget.currentProgressionName),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.settings),
