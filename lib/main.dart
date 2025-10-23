@@ -326,21 +326,30 @@ class _MyAppState extends State<MyApp> {
             onChangeChord: () {
               setState(() {
                 if (chords.isNotEmpty) {
+                  // Stop all notes from current chord before switching
+                  for (int note in chords[currentChord].notes) {
+                    _midi.stopNote(key: note, sfId: sfID);
+                  }
                   currentChord = (currentChord + 1) % chords.length;
                 }
               });
             },
             onSelectChord: (int index) {
               setState(() {
+                // Stop all notes from current chord before switching
+                if (chords.isNotEmpty && currentChord < chords.length) {
+                  for (int note in chords[currentChord].notes) {
+                    _midi.stopNote(key: note, sfId: sfID);
+                  }
+                }
                 currentChord = index;
               });
             },
             onChordsUpdated: () {
               setState(() {
                 _loadChords();
-                if (currentChord >= chords.length) {
-                  currentChord = chords.isNotEmpty ? chords.length - 1 : 0;
-                }
+                // Reset to first chord when returning from settings
+                currentChord = 0;
               });
             },
           );
