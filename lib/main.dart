@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/page/settings_page.dart';
@@ -262,22 +263,52 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _loadChords() {
-    final chordStrings = _prefs?.getStringList('chords') ?? [];
-    chords = chordStrings.map((chordStr) {
-      final parts = chordStr.split(':');
-      if (parts.length != 2) return Chord(KeyCenter.cNat, ChordType.major);
-      
+    // Load from the new progression system
+    final currentProgressionName = _prefs?.getString('currentProgressionName') ?? 'Default';
+    final progressionsJson = _prefs?.getString('savedProgressions');
+    
+    List<Map<String, String>> chordMaps = [];
+    
+    if (progressionsJson != null) {
+      final decoded = json.decode(progressionsJson) as Map<String, dynamic>;
+      if (decoded.containsKey(currentProgressionName)) {
+        final progression = decoded[currentProgressionName] as List;
+        chordMaps = progression.map((chord) {
+          return {
+            'key': chord['key'] as String,
+            'type': chord['type'] as String,
+          };
+        }).toList();
+      }
+    }
+    
+    // Fallback to old 'chords' key for backwards compatibility (only if no progressions found)
+    if (chordMaps.isEmpty) {
+      final chordStrings = _prefs?.getStringList('chords') ?? [];
+      chordMaps = chordStrings.map((chordStr) {
+        final parts = chordStr.split(':');
+        return {
+          'key': parts.length > 0 ? parts[0] : 'C',
+          'type': parts.length > 1 ? parts[1] : 'major',
+        };
+      }).toList();
+    }
+    
+    // Convert to Chord objects
+    chords = chordMaps.map((chordMap) {
       final keyCenter = KeyCenter.values.firstWhere(
-        (k) => k.name == parts[0],
+        (k) => k.name == chordMap['key'],
         orElse: () => KeyCenter.cNat,
       );
       final chordType = ChordType.values.firstWhere(
-        (t) => t.name == parts[1],
+        (t) => t.name == chordMap['type'],
         orElse: () => ChordType.major,
       );
       
       return Chord(keyCenter, chordType);
     }).toList();
+    
+    print('Loaded ${chords.length} chords from progression: $currentProgressionName');
   }
 
   @override

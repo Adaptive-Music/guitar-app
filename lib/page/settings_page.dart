@@ -46,26 +46,30 @@ class _SettingsPageState extends State<SettingsPage> {
       savedProgressions = {};
     }
 
-    // Load current chords (for backwards compatibility)
-    final chordStrings = widget.prefs!.getStringList('chords') ?? [];
-    if (chordStrings.isNotEmpty && !savedProgressions.containsKey('Default')) {
-      savedProgressions['Default'] = chordStrings.map((chordStr) {
-        final parts = chordStr.split(':');
-        return {
-          'key': parts.length > 0 ? parts[0] : 'C',
-          'type': parts.length > 1 ? parts[1] : 'major',
-        };
-      }).toList();
-    }
-
-    // Ensure we have at least one progression
+    // Only create Default progression if this is truly first launch (no saved progressions at all)
     if (savedProgressions.isEmpty) {
-      savedProgressions['Default'] = [
-        {'key': 'C', 'type': 'major'},
-        {'key': 'F', 'type': 'major'},
-        {'key': 'G', 'type': 'major'},
-        {'key': 'A', 'type': 'minor'},
-      ];
+      // Check if there's old 'chords' data from before the progression system
+      final chordStrings = widget.prefs!.getStringList('chords') ?? [];
+      if (chordStrings.isNotEmpty) {
+        // Migrate old data to Default progression (one-time migration)
+        savedProgressions['Default'] = chordStrings.map((chordStr) {
+          final parts = chordStr.split(':');
+          return {
+            'key': parts.length > 0 ? parts[0] : 'C',
+            'type': parts.length > 1 ? parts[1] : 'major',
+          };
+        }).toList();
+        // Clear old key so we don't migrate again
+        widget.prefs!.remove('chords');
+      } else {
+        // True first launch - create default progression
+        savedProgressions['Default'] = [
+          {'key': 'C', 'type': 'major'},
+          {'key': 'F', 'type': 'major'},
+          {'key': 'G', 'type': 'major'},
+          {'key': 'A', 'type': 'minor'},
+        ];
+      }
     }
 
     // Load current progression
@@ -97,10 +101,6 @@ class _SettingsPageState extends State<SettingsPage> {
     await widget.prefs?.setString('savedProgressions', progressionsJson);
     await widget.prefs?.setString('currentProgressionName', currentProgressionName);
 
-    // Also save to 'chords' for backwards compatibility
-    final chordStrings = chords.map((chord) => '${chord['key']}:${chord['type']}').toList();
-    await widget.prefs?.setStringList('chords', chordStrings);
-
     MidiPro().selectInstrument(
         sfId: widget.sfID,
         bank: selectedInstrument.bank,
@@ -108,7 +108,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
     print('settings saved');
     print('Saved progression: $currentProgressionName');
-    print('Saved chords: $chordStrings');
   }
 
   void addChord() {
@@ -132,10 +131,14 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void loadProgression(String name) {
+    print('Loading progression: $name');
+    print('Available progressions: ${savedProgressions.keys}');
+    print('Progression chords: ${savedProgressions[name]}');
     setState(() {
       currentProgressionName = name;
       chords = List.from(savedProgressions[name]!);
     });
+    print('Loaded chords: $chords');
   }
 
   void createNewProgression() async {
