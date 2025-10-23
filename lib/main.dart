@@ -39,13 +39,7 @@ class _MyAppState extends State<MyApp> {
   SharedPreferences? _prefs;
   Instrument selectedInstrument = Instrument.values[0]; // Default value
   int currentChord = 0;
-  List <Chord> chords = [
-    Chord(KeyCenter.cNat, ChordType.major),
-    Chord(KeyCenter.fNat, ChordType.major),
-    Chord(KeyCenter.gNat, ChordType.major),
-    Chord(KeyCenter.aNat, ChordType.minor),
-  ];
-
+  List<Chord> chords = [];
 
   bool _sfLoading = true;
   bool _midiConnecting = false;
@@ -234,6 +228,20 @@ class _MyAppState extends State<MyApp> {
       _prefs?.setString('playingMode', 'Single Note');
     }
 
+    // Initialize default chords if not set
+    if (_prefs?.getStringList('chords') == null) {
+      final defaultChords = [
+        'C:major',
+        'F:major',
+        'G:major',
+        'A:minor',
+      ];
+      await _prefs?.setStringList('chords', defaultChords);
+    }
+
+    // Load chords from preferences
+    _loadChords();
+
     // if (_prefs?.getString('visuals') == null) {
     //   _prefs?.setString('visuals', 'Grid');
     // }
@@ -251,6 +259,25 @@ class _MyAppState extends State<MyApp> {
     // print("Symbols: ${_prefs?.getString('symbols')}");
 
     // print('checkPrefs called');
+  }
+
+  void _loadChords() {
+    final chordStrings = _prefs?.getStringList('chords') ?? [];
+    chords = chordStrings.map((chordStr) {
+      final parts = chordStr.split(':');
+      if (parts.length != 2) return Chord(KeyCenter.cNat, ChordType.major);
+      
+      final keyCenter = KeyCenter.values.firstWhere(
+        (k) => k.name == parts[0],
+        orElse: () => KeyCenter.cNat,
+      );
+      final chordType = ChordType.values.firstWhere(
+        (t) => t.name == parts[1],
+        orElse: () => ChordType.major,
+      );
+      
+      return Chord(keyCenter, chordType);
+    }).toList();
   }
 
   @override
@@ -293,16 +320,27 @@ class _MyAppState extends State<MyApp> {
             midiCommand: _midi_cmd,
             selectedMidiDevice: selectedMidiDevice,
             guitarStringsKey: _guitarStringsKey,
-            currentChord: chords[currentChord],
+            currentChord: chords.isNotEmpty ? chords[currentChord] : Chord(KeyCenter.cNat, ChordType.major),
+            currentChordIndex: currentChord,
             chordList: chords,
             onChangeChord: () {
               setState(() {
-                currentChord = (currentChord + 1) % chords.length;
+                if (chords.isNotEmpty) {
+                  currentChord = (currentChord + 1) % chords.length;
+                }
               });
             },
             onSelectChord: (int index) {
               setState(() {
                 currentChord = index;
+              });
+            },
+            onChordsUpdated: () {
+              setState(() {
+                _loadChords();
+                if (currentChord >= chords.length) {
+                  currentChord = chords.isNotEmpty ? chords.length - 1 : 0;
+                }
               });
             },
           );
@@ -320,9 +358,11 @@ class HomeScreen extends StatefulWidget {
   final MidiDevice? selectedMidiDevice;
   final GlobalKey<GuitarStringsState> guitarStringsKey;
   final Chord currentChord;
+  final int currentChordIndex;
   final VoidCallback onChangeChord;
   final List<Chord> chordList;
   final Function(int) onSelectChord;
+  final VoidCallback onChordsUpdated;
 
   const HomeScreen({
     super.key,
@@ -333,9 +373,11 @@ class HomeScreen extends StatefulWidget {
     required this.selectedMidiDevice,
     required this.guitarStringsKey,
     required this.currentChord,
+    required this.currentChordIndex,
     required this.onChangeChord,
     required this.chordList,
     required this.onSelectChord,
+    required this.onChordsUpdated,
   });
 
   @override
@@ -369,7 +411,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(
                     builder: (context) =>
                         SettingsPage(prefs: widget.prefs, sfID: widget.sfID1)),
-              );
+              ).then((_) {
+                widget.onChordsUpdated();
+              });
             },
           ),
         ],
@@ -406,8 +450,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemCount: widget.chordList.length,
                       itemBuilder: (context, index) {
                         final chord = widget.chordList[index];
-                        final isSelected = chord.rootKey == widget.currentChord.rootKey && 
-                                          chord.type == widget.currentChord.type;
+                        final isSelected = index == widget.currentChordIndex;
                         return Container(
                           color: isSelected ? Colors.blue : Colors.transparent,
                           child: ListTile(
