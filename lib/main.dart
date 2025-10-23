@@ -101,7 +101,8 @@ class _MyAppState extends State<MyApp> {
       return;
     }
     for (var device in newMidiDevices!) {
-      if (device.name.contains("TP Guitar")) {
+      if (device.name.contains("TP Guitar") ||
+          device.name.contains("MIDI Connector")) {
         print('Connecting to device: ${device.name}');
         if (device.connected) {
           print('Device ${device.name} is already connected.');
@@ -397,8 +398,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(
-            '${keyCentre.getName(scale)} ${widget.prefs?.getString('currentScale')}'),
+        title: Text(widget.selectedMidiDevice == null
+            ? 'Not connected'
+            : 'Connected'),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.settings),
@@ -418,61 +420,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          // Volume control
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Opacity(
-                        opacity: widget.selectedMidiDevice == null ? 0.2 : 1.0,
-                        child: Image.asset(
-                          'assets/images/frog.png',
-                          width: 24,
-                          height: 24,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Opacity(
-                  opacity: widget.selectedMidiDevice == null ? 0.2 : 1.0,
-                  child: SizedBox(
-                    width: 150,
-                    child: Slider(
-                      value: frogVolume / 127,
-                      min: 0,
-                      max: 1,
-                      onChanged: (value) {
-                        setState(() {
-                          frogVolume = (value * 127).round();
-                        });
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    widget.selectedMidiDevice == null
-                        ? 'Not connected'
-                        : '${widget.prefs?.getString('instrument')} - '
-                            'Octave ${widget.prefs?.getString('octave')} - '
-                            '${widget.prefs?.getString('playingMode')} - '
-                            '${widget.currentChord.getName()}',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-              ],
-            ),
-          ),
           // Guitar Strings Visualization
           GuitarStrings(key: widget.guitarStringsKey),
           // Keyboard and Chord List
