@@ -21,6 +21,7 @@ class _SettingsPageState extends State<SettingsPage> {
   late List<Map<String, String>> chords;
   late Map<String, List<Map<String, String>>> savedProgressions;
   late String currentProgressionName;
+  int? selectedChordIndex;
 
   extractSettings() {
     selectedInstrument = Instrument.values
@@ -113,6 +114,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void addChord() {
     setState(() {
       chords.add({'key': 'C', 'type': 'major'});
+      selectedChordIndex = chords.length - 1; // Select the newly added chord
     });
   }
 
@@ -120,6 +122,14 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       if (chords.length > 1) {
         chords.removeAt(index);
+        // Update selection
+        if (selectedChordIndex != null) {
+          if (selectedChordIndex == index) {
+            selectedChordIndex = index > 0 ? index - 1 : 0;
+          } else if (selectedChordIndex! > index) {
+            selectedChordIndex = selectedChordIndex! - 1;
+          }
+        }
       }
     });
   }
@@ -130,6 +140,27 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
+  void reorderChords(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final chord = chords.removeAt(oldIndex);
+      chords.insert(newIndex, chord);
+      
+      // Update selection to follow the moved chord
+      if (selectedChordIndex == oldIndex) {
+        selectedChordIndex = newIndex;
+      } else if (selectedChordIndex != null) {
+        if (oldIndex < selectedChordIndex! && newIndex >= selectedChordIndex!) {
+          selectedChordIndex = selectedChordIndex! - 1;
+        } else if (oldIndex > selectedChordIndex! && newIndex <= selectedChordIndex!) {
+          selectedChordIndex = selectedChordIndex! + 1;
+        }
+      }
+    });
+  }
+
   void loadProgression(String name) {
     print('Loading progression: $name');
     print('Available progressions: ${savedProgressions.keys}');
@@ -137,6 +168,7 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       currentProgressionName = name;
       chords = List.from(savedProgressions[name]!);
+      selectedChordIndex = chords.isNotEmpty ? 0 : null; // Select first chord
     });
     print('Loaded chords: $chords');
   }
@@ -337,6 +369,14 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     extractSettings();
+    // Select first chord by default
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (chords.isNotEmpty && selectedChordIndex == null) {
+        setState(() {
+          selectedChordIndex = 0;
+        });
+      }
+    });
   }
 
   @override
@@ -373,112 +413,115 @@ class _SettingsPageState extends State<SettingsPage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+          // Top section: Instrument and Progression settings
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Instrument settings
+                DropdownButtonFormField<Instrument>(
+                  decoration: InputDecoration(
+                    labelText: 'Instrument',
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 10.0),
+                    isDense: true,
+                  ),
+                  value: selectedInstrument,
+                  isExpanded: true,
+                  items: Instrument.values
+                      .map((instrument) => DropdownMenuItem(
+                            value: instrument,
+                            child: Text(instrument.name,
+                                style: TextStyle(fontSize: 14)),
+                          ))
+                      .toList(),
+                  onChanged: (newValue) {
+                    setState(() {
+                      selectedInstrument = newValue!;
+                    });
+                  },
+                ),
+                SizedBox(height: 16),
+                
+                // Progression Management Section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Instrument settings
-                    DropdownButtonFormField<Instrument>(
-                      decoration: InputDecoration(
-                        labelText: 'Instrument',
-                        contentPadding: EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 10.0),
-                        isDense: true,
-                      ),
-                      initialValue: selectedInstrument,
-                      isExpanded: true,
-                      items: Instrument.values
-                          .map((instrument) => DropdownMenuItem(
-                                value: instrument,
-                                child: Text(instrument.name,
-                                    style: TextStyle(fontSize: 14)),
-                              ))
-                          .toList(),
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedInstrument = newValue!;
-                        });
-                      },
-                    ),
-                    SizedBox(height: 24),
-                    
-                    // Progression Management Section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Chord Progressions',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold)),
-                        PopupMenuButton<String>(
-                          icon: Icon(Icons.more_vert),
-                          onSelected: (value) {
-                            switch (value) {
-                              case 'new':
-                                createNewProgression();
-                                break;
-                              case 'rename':
-                                renameProgression();
-                                break;
-                              case 'duplicate':
-                                duplicateProgression();
-                                break;
-                              case 'delete':
-                                deleteProgression();
-                                break;
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            PopupMenuItem(value: 'new', child: Row(children: [Icon(Icons.add), SizedBox(width: 8), Text('New')])),
-                            PopupMenuItem(value: 'rename', child: Row(children: [Icon(Icons.edit), SizedBox(width: 8), Text('Rename')])),
-                            PopupMenuItem(value: 'duplicate', child: Row(children: [Icon(Icons.copy), SizedBox(width: 8), Text('Duplicate')])),
-                            PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete, color: Colors.red), SizedBox(width: 8), Text('Delete', style: TextStyle(color: Colors.red))])),
-                          ],
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: 'Progression',
+                          contentPadding: EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 10.0),
+                          isDense: true,
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    
-                    // Progression selector
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Active Progression',
-                        contentPadding: EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 10.0),
-                        isDense: true,
+                        value: currentProgressionName,
+                        isExpanded: true,
+                        items: savedProgressions.keys
+                            .map((name) => DropdownMenuItem(
+                                  value: name,
+                                  child: Text(name, style: TextStyle(fontSize: 14)),
+                                ))
+                            .toList(),
+                        onChanged: (newValue) {
+                          if (newValue != null) {
+                            loadProgression(newValue);
+                          }
+                        },
                       ),
-                      value: currentProgressionName,
-                      isExpanded: true,
-                      items: savedProgressions.keys
-                          .map((name) => DropdownMenuItem(
-                                value: name,
-                                child: Text(name, style: TextStyle(fontSize: 14)),
-                              ))
-                          .toList(),
-                      onChanged: (newValue) {
-                        if (newValue != null) {
-                          loadProgression(newValue);
+                    ),
+                    PopupMenuButton<String>(
+                      icon: Icon(Icons.more_vert),
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'new':
+                            createNewProgression();
+                            break;
+                          case 'rename':
+                            renameProgression();
+                            break;
+                          case 'duplicate':
+                            duplicateProgression();
+                            break;
+                          case 'delete':
+                            deleteProgression();
+                            break;
                         }
                       },
+                      itemBuilder: (context) => [
+                        PopupMenuItem(value: 'new', child: Row(children: [Icon(Icons.add), SizedBox(width: 8), Text('New')])),
+                        PopupMenuItem(value: 'rename', child: Row(children: [Icon(Icons.edit), SizedBox(width: 8), Text('Rename')])),
+                        PopupMenuItem(value: 'duplicate', child: Row(children: [Icon(Icons.copy), SizedBox(width: 8), Text('Duplicate')])),
+                        PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete, color: Colors.red), SizedBox(width: 8), Text('Delete', style: TextStyle(color: Colors.red))])),
+                      ],
                     ),
-                    SizedBox(height: 16),
-                    
-                    // Chord editing section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Chords',
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w500)),
-                        Row(
+                  ],
+                ),
+              ],
+            ),
+          ),
+          
+          Divider(height: 1),
+          
+          // Main content: Chord list on left, selectors on right
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Left side: Reorderable chord list
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            IconButton(
-                              icon: Icon(Icons.info_outline),
-                              onPressed: _showChordTypeInfo,
-                              tooltip: 'Chord type info',
-                            ),
+                            Text('Chords',
+                                style: TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w600)),
                             IconButton(
                               icon: Icon(Icons.add_circle),
                               onPressed: addChord,
@@ -486,105 +529,183 @@ class _SettingsPageState extends State<SettingsPage> {
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    
-                    // List of chords
-                    ...List.generate(chords.length, (index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              children: [
-                                // Chord number
-                                Container(
-                                  width: 30,
-                                  child: Text('${index + 1}.',
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold)),
+                      ),
+                      Expanded(
+                        child: ReorderableListView.builder(
+                          itemCount: chords.length,
+                          onReorder: reorderChords,
+                          itemBuilder: (context, index) {
+                            final chord = chords[index];
+                            final isSelected = selectedChordIndex == index;
+                            final keyCenter = KeyCenter.values.firstWhere(
+                              (k) => k.name == chord['key'],
+                              orElse: () => KeyCenter.cNat,
+                            );
+                            final chordType = ChordType.values.firstWhere(
+                              (t) => t.name == chord['type'],
+                              orElse: () => ChordType.major,
+                            );
+                            
+                            return Container(
+                              key: ValueKey('$index-${chord['key']}-${chord['type']}'),
+                              decoration: BoxDecoration(
+                                color: isSelected 
+                                    ? keyCenter.color.withOpacity(0.3)
+                                    : Colors.transparent,
+                                border: isSelected
+                                    ? Border.all(color: Colors.black, width: 3)
+                                    : Border(
+                                        bottom: BorderSide(
+                                          color: Colors.grey[300]!,
+                                          width: 1,
+                                        ),
+                                      ),
+                              ),
+                              child: ListTile(
+                                leading: Text(
+                                  '${index + 1}.',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                                SizedBox(width: 8),
+                                title: Text(
+                                  '${chord['key']} ${chordType.displayName}',
+                                  style: TextStyle(
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                                trailing: Icon(Icons.drag_handle),
+                                onTap: () {
+                                  setState(() {
+                                    selectedChordIndex = index;
+                                  });
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                VerticalDivider(width: 1),
+                
+                // Right side: Chord selectors
+                Expanded(
+                  flex: 3,
+                  child: selectedChordIndex == null
+                      ? Center(child: Text('Select a chord to edit'))
+                      : SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Edit Chord ${selectedChordIndex! + 1}',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(Icons.delete),
+                                          onPressed: chords.length > 1
+                                              ? () => removeChord(selectedChordIndex!)
+                                              : null,
+                                          tooltip: 'Remove chord',
+                                          color: Colors.red,
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.info_outline),
+                                          onPressed: _showChordTypeInfo,
+                                          tooltip: 'Chord type info',
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 16),
                                 
                                 // Key selector
-                                Expanded(
-                                  flex: 3,
-                                  child: SegmentedButton<String>(
-                                    showSelectedIcon: false,
-                                    style: ButtonStyle(
-                                      padding: WidgetStateProperty.all(
-                                        EdgeInsets.symmetric(horizontal: 4),
-                                      ),
+                                Text('Key',
+                                    style: TextStyle(
+                                        fontSize: 14, fontWeight: FontWeight.w500)),
+                                SizedBox(height: 8),
+                                SegmentedButton<String>(
+                                  showSelectedIcon: false,
+                                  style: ButtonStyle(
+                                    padding: WidgetStateProperty.all(
+                                      EdgeInsets.symmetric(horizontal: 4),
                                     ),
-                                    segments: KeyCenter.values
-                                        .map((k) {
-                                          // Get just the sharp name (first part before /)
-                                          final displayName = k.name.contains('/') 
-                                              ? k.name.split('/')[0]
-                                              : k.name;
-                                          return ButtonSegment<String>(
-                                            value: k.name,
-                                            label: Text(displayName,
-                                                style: TextStyle(fontSize: 11)),
-                                          );
-                                        })
-                                        .toList(),
-                                    selected: {chords[index]['key']!},
-                                    onSelectionChanged: (Set<String> newSelection) {
-                                      updateChord(index, newSelection.first,
-                                          chords[index]['type']!);
-                                    },
                                   ),
+                                  segments: KeyCenter.values
+                                      .map((k) {
+                                        final displayName = k.name.contains('/') 
+                                            ? k.name.split('/')[0]
+                                            : k.name;
+                                        return ButtonSegment<String>(
+                                          value: k.name,
+                                          label: Text(displayName,
+                                              style: TextStyle(fontSize: 11)),
+                                        );
+                                      })
+                                      .toList(),
+                                  selected: {chords[selectedChordIndex!]['key']!},
+                                  onSelectionChanged: (Set<String> newSelection) {
+                                    updateChord(
+                                      selectedChordIndex!,
+                                      newSelection.first,
+                                      chords[selectedChordIndex!]['type']!,
+                                    );
+                                  },
                                 ),
-                                SizedBox(width: 8),
+                                SizedBox(height: 24),
                                 
                                 // Type selector
-                                Expanded(
-                                  flex: 2,
-                                  child: SegmentedButton<String>(
-                                    showSelectedIcon: false,
-                                    style: ButtonStyle(
-                                      padding: WidgetStateProperty.all(
-                                        EdgeInsets.symmetric(horizontal: 4),
-                                      ),
+                                Text('Chord Type',
+                                    style: TextStyle(
+                                        fontSize: 14, fontWeight: FontWeight.w500)),
+                                SizedBox(height: 8),
+                                SegmentedButton<String>(
+                                  showSelectedIcon: false,
+                                  style: ButtonStyle(
+                                    padding: WidgetStateProperty.all(
+                                      EdgeInsets.symmetric(horizontal: 4),
                                     ),
-                                    segments: ChordType.values
-                                        .map((t) => ButtonSegment<String>(
-                                              value: t.name,
-                                              label: Text(
-                                                t.symbol,
-                                                style: TextStyle(fontSize: 12),
-                                              ),
-                                            ))
-                                        .toList(),
-                                    selected: {chords[index]['type']!},
-                                    onSelectionChanged: (Set<String> newSelection) {
-                                      updateChord(index, chords[index]['key']!,
-                                          newSelection.first);
-                                    },
                                   ),
-                                ),
-                                
-                                // Delete button
-                                IconButton(
-                                  icon: Icon(Icons.delete, size: 20),
-                                  onPressed: chords.length > 1
-                                      ? () => removeChord(index)
-                                      : null,
-                                  tooltip: 'Remove',
+                                  segments: ChordType.values
+                                      .map((t) => ButtonSegment<String>(
+                                            value: t.name,
+                                            label: Text(
+                                              t.symbol,
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                          ))
+                                      .toList(),
+                                  selected: {chords[selectedChordIndex!]['type']!},
+                                  onSelectionChanged: (Set<String> newSelection) {
+                                    updateChord(
+                                      selectedChordIndex!,
+                                      chords[selectedChordIndex!]['key']!,
+                                      newSelection.first,
+                                    );
+                                  },
                                 ),
                               ],
                             ),
                           ),
                         ),
-                      );
-                    }),
-                  ],
                 ),
-              ),
+              ],
             ),
           ),
         ],
