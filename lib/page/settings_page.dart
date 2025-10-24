@@ -492,28 +492,13 @@ class _SettingsPageState extends State<SettingsPage> {
                                       ),
                                     ),
                                     segments: ChordType.values
-                                        .map((t) {
-                                          // Abbreviate chord type names
-                                          String abbrev;
-                                          switch (t.name) {
-                                            case 'major':
-                                              abbrev = 'Maj';
-                                              break;
-                                            case 'minor':
-                                              abbrev = 'Min';
-                                              break;
-                                            case 'diminished':
-                                              abbrev = 'Dim';
-                                              break;
-                                            default:
-                                              abbrev = t.name;
-                                          }
-                                          return ButtonSegment<String>(
-                                            value: t.name,
-                                            label: Text(abbrev,
-                                                style: TextStyle(fontSize: 12)),
-                                          );
-                                        })
+                                        .map((t) => ButtonSegment<String>(
+                                              value: t.name,
+                                              label: Text(
+                                                t.symbol,
+                                                style: TextStyle(fontSize: 12),
+                                              ),
+                                            ))
                                         .toList(),
                                     selected: {chords[index]['type']!},
                                     onSelectionChanged: (Set<String> newSelection) {

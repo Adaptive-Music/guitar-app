@@ -8,17 +8,49 @@ class Chord {
   final ChordType type;
 
   String getName() {
-    return '${rootKey.name} ${type.name}';
+    // Humanize the chord type enum name: add spaces between camelCase and capitalize words
+    String humanize(String s) {
+      if (s.isEmpty) return s;
+      final withSpaces = s.replaceAllMapped(
+          RegExp(r'([a-z])([A-Z])'), (m) => '${m[1]} ${m[2]}');
+      return withSpaces[0].toUpperCase() + withSpaces.substring(1);
+    }
+
+    final typeLabel = humanize(type.name);
+    return '${rootKey.name} $typeLabel';
   }
   
   static _buildChordNotes(KeyCenter rootKey, ChordType type) {
     final int root = rootKey.key;
-    
-    // Define the intervals for each chord type (root, third, fifth)
-    int third = type == ChordType.major ? 4 : 3;
-    int fifth = type == ChordType.diminished ? 6 : 7;
+    final int base = 36;
 
-    List<int> chordNotes = [0, fifth, 12, third + 12, fifth + 12, 24];
-    return chordNotes.map((note) => root + note + 36).toList();
+    // Use the intervals defined on ChordType to build voicings.
+    // Intervals are relative to the root (in semitones), e.g. [0,4,7] for major,
+    // [0,4,7,10] for dominant 7th, etc.
+    final List<int> tones = List<int>.from(type.intervals)..sort();
+    final int len = tones.length;
+
+    int toneAt(int idx) => tones[idx % len];
+
+    // Build a 6-note voicing across low/mid/high registers.
+    // Layout (relative to root):
+    //  - String 0: root
+    //  - String 1: prefer the fifth (or next available tone)
+    //  - String 2: root + 12
+    //  - String 3: third (or next available) + 12
+    //  - String 4: if seventh exists use it + 12, else fifth/next tone + 12
+    //  - String 5: root + 24
+    final List<int> rel = [
+      toneAt(0),                              // root
+      (len >= 3 ? tones[2] : toneAt(1)),      // prefer fifth if present
+      toneAt(0) + 12,                         // root octave
+      (len >= 2 ? tones[1] : toneAt(0)) + 12, // third (or next)
+      (len >= 4
+          ? tones[3]
+          : (len >= 3 ? tones[2] : toneAt(1))) + 12, // seventh if present
+      toneAt(0) + 24,                         // two octaves root
+    ];
+
+    return rel.map((note) => root + note + base).toList();
   } 
 }

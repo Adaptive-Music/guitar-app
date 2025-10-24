@@ -493,11 +493,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemBuilder: (context, index) {
                         final chord = widget.chordList[index];
                         final isSelected = index == widget.currentChordIndex;
+                        // Build compact chord label using sharp key name + chord type symbol
+                        final keyLabel = chord.rootKey.name.contains('/')
+                            ? chord.rootKey.name.split('/')[0]
+                            : chord.rootKey.name;
+                        final chordLabel = '${keyLabel} ${chord.type.symbol}';
                         return Container(
                           color: isSelected ? Colors.blue : Colors.transparent,
                           child: ListTile(
                             title: Text(
-                              chord.getName(),
+                              chordLabel,
                               style: TextStyle(
                                 color: isSelected ? Colors.white : Colors.grey[400],
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
