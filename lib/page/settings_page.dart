@@ -282,6 +282,57 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  void _showChordTypeInfo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Chord Types'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: ChordType.values
+                  .map(
+                    (t) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              t.symbol,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              t.displayName,
+                              style: TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -421,10 +472,19 @@ class _SettingsPageState extends State<SettingsPage> {
                         Text('Chords',
                             style: TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w500)),
-                        IconButton(
-                          icon: Icon(Icons.add_circle),
-                          onPressed: addChord,
-                          tooltip: 'Add Chord',
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.info_outline),
+                              onPressed: _showChordTypeInfo,
+                              tooltip: 'Chord type info',
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.add_circle),
+                              onPressed: addChord,
+                              tooltip: 'Add Chord',
+                            ),
+                          ],
                         ),
                       ],
                     ),

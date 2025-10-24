@@ -473,7 +473,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 // Big Button
                 Expanded(
-                  flex: 3,
+                  flex: 5,
                   child: Padding(
                     padding: EdgeInsets.all(12),
                     child: SizedBox(
@@ -556,32 +556,39 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Chord List
                 Expanded(
                   flex: 1,
-                  child: Container(
-                    color: Colors.grey[900],
-                    child: ListView.builder(
-                      itemCount: widget.chordList.length,
-                      itemBuilder: (context, index) {
-                        final chord = widget.chordList[index];
-                        final isSelected = index == widget.currentChordIndex;
-                        // Build compact chord label using sharp key name + chord type symbol
-                        final keyLabel = chord.rootKey.name.contains('/')
-                            ? chord.rootKey.name.split('/')[0]
-                            : chord.rootKey.name;
-                        final chordLabel = '${keyLabel} ${chord.type.symbol}';
-                        return Container(
-                          color: isSelected ? Colors.blue : Colors.transparent,
-                          child: ListTile(
-                            title: Text(
-                              chordLabel,
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.grey[400],
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  child: Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[900],
+                        border: Border.all(color: Colors.black, width: 3),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListView.builder(
+                        itemCount: widget.chordList.length,
+                        itemBuilder: (context, index) {
+                          final chord = widget.chordList[index];
+                          final isSelected = index == widget.currentChordIndex;
+                          // Build compact chord label using sharp key name + chord type symbol
+                          final keyLabel = chord.rootKey.name.contains('/')
+                              ? chord.rootKey.name.split('/')[0]
+                              : chord.rootKey.name;
+                          final chordLabel = '${keyLabel} ${chord.type.symbol}';
+                          return Container(
+                            color: isSelected ? Colors.blue : Colors.transparent,
+                            child: ListTile(
+                              title: Text(
+                                chordLabel,
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : Colors.grey[400],
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                ),
                               ),
+                              onTap: () => widget.onSelectChord(index),
                             ),
-                            onTap: () => widget.onSelectChord(index),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
