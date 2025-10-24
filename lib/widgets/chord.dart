@@ -18,20 +18,7 @@ class Chord {
     int third = type == ChordType.major ? 4 : 3;
     int fifth = type == ChordType.diminished ? 6 : 7;
 
-    List<int> chordNotes = [root, root + fifth, root + 12, root + third + 12, root + fifth + 12, root + 24];
-    return chordNotes.map((note) => note + 36).toList();
-
-    final triadIntervals = switch (type) {
-      ChordType.major => [0, 4, 7],        // Major: root, major 3rd, perfect 5th
-      ChordType.minor => [0, 3, 7],        // Minor: root, minor 3rd, perfect 5th
-      ChordType.diminished => [0, 3, 6],   // Dim: root, minor 3rd, diminished 5th
-    };
-    
-    // Create first triad in base octave, then add octave higher (add 12 semitones)
-    // Add 36 to shift into a comfortable MIDI range
-    final lowerTriad = triadIntervals.map((interval) => (root + interval) % 12 + 36).toList();
-    final upperTriad = triadIntervals.map((interval) => root + interval + 12 + 36).toList();
-    
-    return [...lowerTriad, ...upperTriad];
+    List<int> chordNotes = [0, fifth, 12, third + 12, fifth + 12, 24];
+    return chordNotes.map((note) => root + note + 36).toList();
   } 
 }
