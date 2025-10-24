@@ -442,7 +442,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(widget.currentProgressionName),
+        title: Text(widget.selectedMidiDevice == null ? 'Not connected' : widget.currentProgressionName),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.settings),
