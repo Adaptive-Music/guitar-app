@@ -429,12 +429,62 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
 
     // Make sure wakelock is still enabled when this screen is shown
     WakelockPlus.enable();
+  }
+
+  @override
+  void didUpdateWidget(HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // Scroll to current chord when it changes
+    if (oldWidget.currentChordIndex != widget.currentChordIndex) {
+      _scrollToCurrentChord();
+    }
+  }
+
+  void _scrollToCurrentChord() {
+    if (_scrollController.hasClients && widget.chordList.isNotEmpty) {
+      // Use ensureVisible for smoother, less jumpy scrolling
+      // This only scrolls if the item is not already visible
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          final itemHeight = 56.0 + 1.0; // ListTile height + Divider height
+          final targetOffset = widget.currentChordIndex * itemHeight;
+          final viewportHeight = _scrollController.position.viewportDimension;
+          final currentOffset = _scrollController.offset;
+          
+          // Only scroll if the item is outside the visible area
+          if (targetOffset < currentOffset || 
+              targetOffset > currentOffset + viewportHeight - itemHeight) {
+            // Center the item in the viewport
+            final centerOffset = targetOffset - (viewportHeight / 2) + (itemHeight / 2);
+            final clampedOffset = centerOffset.clamp(
+              _scrollController.position.minScrollExtent,
+              _scrollController.position.maxScrollExtent,
+            );
+            
+            _scrollController.animateTo(
+              clampedOffset,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          }
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -473,7 +523,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 // Big Button
                 Expanded(
-                  flex: 5,
+                  flex: 4,
                   child: Padding(
                     padding: EdgeInsets.all(12),
                     child: SizedBox(
@@ -501,11 +551,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ? widget.currentChord.rootKey.name.split('/')[0]
                                         : widget.currentChord.rootKey.name),
                                 style: TextStyle(
-                                  fontSize: 160,
+                                  fontSize: 240,
                                   fontWeight: FontWeight.w600,
                                   foreground: Paint()
                                     ..style = PaintingStyle.stroke
-                                    ..strokeWidth = 8
+                                    ..strokeWidth = 12
                                     ..color = Colors.black,
                                 ),
                               ),
@@ -514,7 +564,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ? widget.currentChord.rootKey.name.split('/')[0]
                                         : widget.currentChord.rootKey.name),
                                 style: TextStyle(
-                                  fontSize: 160,
+                                  fontSize: 240,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
                                 ),
@@ -560,12 +610,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: EdgeInsets.all(12),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.grey[900],
-                        border: Border.all(color: Colors.black, width: 3),
+                        color: Colors.grey[200],
+                        border: Border.all(color: Colors.grey[400]!, width: 2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: ListView.builder(
+                      child: ListView.separated(
+                        controller: _scrollController,
                         itemCount: widget.chordList.length,
+                        separatorBuilder: (context, index) => Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: Colors.grey[400],
+                        ),
                         itemBuilder: (context, index) {
                           final chord = widget.chordList[index];
                           final isSelected = index == widget.currentChordIndex;
@@ -575,13 +631,29 @@ class _HomeScreenState extends State<HomeScreen> {
                               : chord.rootKey.name;
                           final chordLabel = '${keyLabel} ${chord.type.symbol}';
                           return Container(
-                            color: isSelected ? Colors.blue : Colors.transparent,
+                            decoration: BoxDecoration(
+                              color: chord.rootKey.color.withOpacity(0.3),
+                              border: isSelected ? Border.all(color: Colors.black, width: 4) : null,
+                            ),
                             child: ListTile(
-                              title: Text(
-                                chordLabel,
-                                style: TextStyle(
-                                  color: isSelected ? Colors.white : Colors.grey[400],
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              title: RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: '${index + 1}. ',
+                                      style: TextStyle(
+                                        color: Colors.grey[800],
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: chordLabel,
+                                      style: TextStyle(
+                                        color: Colors.grey[800],
+                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               onTap: () => widget.onSelectChord(index),
