@@ -532,6 +532,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       Expanded(
                         child: ReorderableListView.builder(
+                          buildDefaultDragHandles: false,
                           itemCount: chords.length,
                           onReorder: reorderChords,
                           itemBuilder: (context, index) {
@@ -575,7 +576,10 @@ class _SettingsPageState extends State<SettingsPage> {
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                   ),
                                 ),
-                                trailing: Icon(Icons.drag_handle),
+                                trailing: ReorderableDragStartListener(
+                                  index: index,
+                                  child: Icon(Icons.drag_handle),
+                                ),
                                 onTap: () {
                                   setState(() {
                                     selectedChordIndex = index;
