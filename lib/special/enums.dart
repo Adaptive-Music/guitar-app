@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 enum Scale {
   major(name: 'Major', intervals: [0, 2, 4, 5, 7, 9, 11, 12]),
   minor(name: 'Minor', intervals: [0, 2, 3, 5, 7, 8, 10, 12]),
@@ -58,26 +60,28 @@ enum Scale {
 }
 
 enum KeyCenter {
-  cNat(name: 'C', key: 0),
-  cSh(name: 'C♯/D♭', key: 1),
-  dNat(name: 'D', key: 2),
-  dSh(name: 'D♯/E♭', key: 3),
-  eNat(name: 'E', key: 4),
-  fNat(name: 'F', key: 5),
-  fSh(name: 'F♯/G♭', key: 6),
-  gNat(name: 'G', key: 7),
-  gSh(name: 'G♯/A♭', key: 8),
-  aNat(name: 'A', key: 9),
-  aSh(name: 'A♯/B♭', key: 10),
-  bNat(name: 'B', key: 11);
+  cNat(name: 'C', key: 0, color: Colors.red),
+  cSh(name: 'C♯/D♭', key: 1, color: Color(0xFFFF7043)),
+  dNat(name: 'D', key: 2, color: Colors.orange),
+  dSh(name: 'D♯/E♭', key: 3, color: Color(0xFFFFD54F)),
+  eNat(name: 'E', key: 4, color: Colors.yellow),
+  fNat(name: 'F', key: 5, color: Colors.green),
+  fSh(name: 'F♯/G♭', key: 6, color: Color(0xFF26C6DA)),
+  gNat(name: 'G', key: 7, color: Colors.lightBlue),
+  gSh(name: 'G♯/A♭', key: 8, color: Color(0xFF1E88E5)),
+  aNat(name: 'A', key: 9, color: Colors.indigo),
+  aSh(name: 'A♯/B♭', key: 10, color: Color(0xFF8E24AA)),
+  bNat(name: 'B', key: 11, color: Colors.purple);
 
   const KeyCenter({
     required this.name,
     required this.key,
+    required this.color,
   });
 
   final String name;
   final int key;
+  final Color color;
 
   String getName(Scale scale) {
     final sharpNoteNames = [
@@ -209,5 +213,16 @@ enum ChordType {
 
   final String symbol;
   final List<int> intervals;
+
+  // Human-friendly name with spaces and capitalization (e.g., "majorSeventh" -> "Major Seventh")
+  String get displayName {
+    final s = name; // enum case name
+    if (s.isEmpty) return s;
+    final withSpaces = s.replaceAllMapped(
+      RegExp(r'([a-z])([A-Z])'),
+      (m) => '${m[1]} ${m[2]}',
+    );
+    return withSpaces[0].toUpperCase() + withSpaces.substring(1);
+  }
 }
 

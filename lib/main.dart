@@ -478,10 +478,36 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: double.infinity,
                     height: double.infinity,
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: widget.currentChord.rootKey.color,
+                        foregroundColor: Colors.white,
+                      ),
                       onPressed: changeChord, 
-                      child: Text(
-                        widget.currentChord.getName(),
-                        style: TextStyle(fontSize: 32),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Stroke text
+                          Text(
+                            widget.currentChord.getName(),
+                            style: TextStyle(
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
+                              foreground: Paint()
+                                ..style = PaintingStyle.stroke
+                                ..strokeWidth = 5
+                                ..color = Colors.black,
+                            ),
+                          ),
+                          // Fill text
+                          Text(
+                            widget.currentChord.getName(),
+                            style: TextStyle(
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

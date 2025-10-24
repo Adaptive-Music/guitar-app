@@ -8,15 +8,7 @@ class Chord {
   final ChordType type;
 
   String getName() {
-    // Humanize the chord type enum name: add spaces between camelCase and capitalize words
-    String humanize(String s) {
-      if (s.isEmpty) return s;
-      final withSpaces = s.replaceAllMapped(
-          RegExp(r'([a-z])([A-Z])'), (m) => '${m[1]} ${m[2]}');
-      return withSpaces[0].toUpperCase() + withSpaces.substring(1);
-    }
-
-    final typeLabel = humanize(type.name);
+    final typeLabel = type.displayName;
     return '${rootKey.name} $typeLabel';
   }
   
