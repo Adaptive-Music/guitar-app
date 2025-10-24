@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/widgets/chord.dart';
 
 class GuitarStrings extends StatefulWidget {
-  const GuitarStrings({super.key});
+  final Chord? currentChord;
+  
+  const GuitarStrings({super.key, this.currentChord});
 
   @override
   State<GuitarStrings> createState() => GuitarStringsState();
@@ -53,6 +56,14 @@ class GuitarStringsState extends State<GuitarStrings> {
         children: List.generate(6, (index) {
           final isActive = _activeStrings[index];
           final stringColor = _stringColors[index];
+          
+          // Get note name for this string from current chord
+          String noteName = '';
+          if (widget.currentChord != null) {
+            final midiNote = widget.currentChord!.notes[index];
+            final noteNames = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+            noteName = noteNames[midiNote % 12];
+          }
 
           return Expanded(
             child: Padding(
@@ -85,15 +96,25 @@ class GuitarStringsState extends State<GuitarStrings> {
                     Text(
                       '${index + 1}',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: isActive ? stringColor : Colors.grey[600],
                       ),
                     ),
+                    // Note name
+                    if (noteName.isNotEmpty)
+                      Text(
+                        noteName,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: isActive ? stringColor : Colors.grey[500],
+                        ),
+                      ),
                     const SizedBox(height: 4),
                     // Visual string representation
                     Container(
-                      height: 4 + (index * 0.8), // Thicker for lower strings
+                      height: 4 + ((5 - index) * 0.8), // Thicker for lower strings
                       decoration: BoxDecoration(
                         color: isActive ? stringColor : Colors.grey[400],
                         borderRadius: BorderRadius.circular(2),

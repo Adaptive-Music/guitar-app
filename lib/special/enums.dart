@@ -195,7 +195,7 @@ enum Instrument {
 enum ChordType {
   major(symbol: 'M', intervals: [0, 4, 7]),
   minor(symbol: 'm', intervals: [0, 3, 7]),
-  seventh(symbol: '7', intervals: [0, 4, 7, 10]),
+  dominantSeventh(symbol: '7', intervals: [0, 4, 7, 10]),
   majorSeventh(symbol: 'M7', intervals: [0, 4, 7, 11]),
   minorSeventh(symbol: 'm7', intervals: [0, 3, 7, 10]),
   diminished(symbol: 'o', intervals: [0, 3, 6]),

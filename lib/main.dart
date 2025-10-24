@@ -463,7 +463,10 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           // Guitar Strings Visualization
-          GuitarStrings(key: widget.guitarStringsKey),
+          GuitarStrings(
+            key: widget.guitarStringsKey,
+            currentChord: widget.currentChord,
+          ),
           // Keyboard and Chord List
           Expanded(
             child: Row(
