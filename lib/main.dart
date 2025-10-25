@@ -341,8 +341,8 @@ class _MyAppState extends State<MyApp> {
         builder: (context) {
           if (_sfLoading || _prefLoading || _midiConnecting) {
             // Show a loading screen while waiting for async task to complete
-            return Scaffold(
-              body: Text('Loading...'),
+            return const Scaffold(
+              body: Center(child: Text('Loading...')),
             );
           }
           return HomeScreen(
@@ -538,65 +538,68 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(50),
                         ),
                       ),
-                      onPressed: changeChord, 
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Big key label (sharp name only)
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Text(
-                                (widget.currentChord.rootKey.name.contains('/')
-                                        ? widget.currentChord.rootKey.name.split('/')[0]
-                                        : widget.currentChord.rootKey.name),
-                                style: TextStyle(
-                                  fontSize: 350,
-                                  fontWeight: FontWeight.w600,
-                                  foreground: Paint()
-                                    ..style = PaintingStyle.stroke
-                                    ..strokeWidth = 15
-                                    ..color = Colors.black,
+                      onPressed: changeChord,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Big key label (sharp name only)
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Text(
+                                  (widget.currentChord.rootKey.name.contains('/')
+                                          ? widget.currentChord.rootKey.name.split('/')[0]
+                                          : widget.currentChord.rootKey.name),
+                                  style: TextStyle(
+                                    fontSize: 350,
+                                    fontWeight: FontWeight.w600,
+                                    foreground: Paint()
+                                      ..style = PaintingStyle.stroke
+                                      ..strokeWidth = 15
+                                      ..color = Colors.black,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                (widget.currentChord.rootKey.name.contains('/')
-                                        ? widget.currentChord.rootKey.name.split('/')[0]
-                                        : widget.currentChord.rootKey.name),
-                                style: TextStyle(
-                                  fontSize: 350,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                                Text(
+                                  (widget.currentChord.rootKey.name.contains('/')
+                                          ? widget.currentChord.rootKey.name.split('/')[0]
+                                          : widget.currentChord.rootKey.name),
+                                  style: TextStyle(
+                                    fontSize: 350,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          // Smaller chord type display name
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Text(
-                                widget.currentChord.type.displayName,
-                                style: TextStyle(
-                                  fontSize: 72,
-                                  fontWeight: FontWeight.w600,
-                                  foreground: Paint()
-                                    ..style = PaintingStyle.stroke
-                                    ..strokeWidth = 6
-                                    ..color = Colors.black,
+                              ],
+                            ),
+                            // Smaller chord type display name
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Text(
+                                  widget.currentChord.type.displayName,
+                                  style: TextStyle(
+                                    fontSize: 72,
+                                    fontWeight: FontWeight.w600,
+                                    foreground: Paint()
+                                      ..style = PaintingStyle.stroke
+                                      ..strokeWidth = 6
+                                      ..color = Colors.black,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                widget.currentChord.type.displayName,
-                                style: TextStyle(
-                                  fontSize: 72,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                                Text(
+                                  widget.currentChord.type.displayName,
+                                  style: TextStyle(
+                                    fontSize: 72,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -632,29 +635,99 @@ class _HomeScreenState extends State<HomeScreen> {
                           return Container(
                             decoration: BoxDecoration(
                               color: chord.rootKey.color.withOpacity(0.3),
-                              border: isSelected ? Border.all(color: Colors.yellow, width: 4) : null,
+                              // Remove yellow border highlight; we'll use an indicator instead
+                              border: null,
                             ),
                             child: ListTile(
-                              title: RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: '${index + 1}. ',
-                                      style: TextStyle(
-                                        color: Colors.grey[800],
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: chordLabel,
-                                      style: TextStyle(
-                                        color: Colors.grey[800],
-                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                      ),
-                                    ),
-                                  ],
+                              // Keep horizontal alignment by reserving space for the indicator
+                              minLeadingWidth: 24,
+                              leading: SizedBox(
+                                width: 24,
+                                child: Center(
+                                  child: isSelected
+                                      ? const Text('🎸', style: TextStyle(fontSize: 20))
+                                      : const SizedBox.shrink(),
                                 ),
                               ),
+                              title: isSelected
+                                  ? Stack(
+                                      children: [
+                                        // Stroke layer
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: '${index + 1}. ',
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  foreground: Paint()
+                                                    ..style = PaintingStyle.stroke
+                                                    ..strokeWidth = 3
+                                                    ..color = Colors.black,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: chordLabel,
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  foreground: Paint()
+                                                    ..style = PaintingStyle.stroke
+                                                    ..strokeWidth = 3
+                                                    ..color = Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        // Fill layer
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: '${index + 1}. ',
+                                                style: const TextStyle(
+                                                  fontSize: 18,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: chordLabel,
+                                                style: const TextStyle(
+                                                  fontSize: 18,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: '${index + 1}. ',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              color: Colors.grey[800],
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: chordLabel,
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              color: Colors.grey[800],
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                               onTap: () => widget.onSelectChord(index),
                             ),
                           );
