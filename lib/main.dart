@@ -645,7 +645,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 width: 24,
                                 child: Center(
                                   child: isSelected
-                                      ? const Text('🎸', style: TextStyle(fontSize: 20))
+                                      ? const Text('→', style: TextStyle(fontSize: 20))
                                       : const SizedBox.shrink(),
                                 ),
                               ),
