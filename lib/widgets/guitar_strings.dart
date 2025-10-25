@@ -73,10 +73,10 @@ class GuitarStringsState extends State<GuitarStrings> {
                 decoration: BoxDecoration(
                   color: isActive
                       ? stringColor.withOpacity(0.3)
-                      : Colors.grey.withOpacity(0.1),
+                      : Colors.black.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isActive ? stringColor : Colors.grey,
+                    color: isActive ? stringColor : Colors.black,
                     width: isActive ? 3 : 2,
                   ),
                   boxShadow: isActive
@@ -98,7 +98,7 @@ class GuitarStringsState extends State<GuitarStrings> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isActive ? stringColor : Colors.grey[600],
+                        color: isActive ? stringColor : Colors.black,
                       ),
                     ),
                     // Note name
@@ -108,7 +108,7 @@ class GuitarStringsState extends State<GuitarStrings> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: isActive ? stringColor : Colors.grey[500],
+                          color: isActive ? stringColor : Colors.black,
                         ),
                       ),
                     const SizedBox(height: 4),
@@ -116,7 +116,7 @@ class GuitarStringsState extends State<GuitarStrings> {
                     Container(
                       height: 4 + ((5 - index) * 0.8), // Thicker for lower strings
                       decoration: BoxDecoration(
-                        color: isActive ? stringColor : Colors.grey[400],
+                        color: isActive ? stringColor : Colors.grey[700],
                         borderRadius: BorderRadius.circular(2),
                         boxShadow: isActive
                             ? [

@@ -234,9 +234,9 @@ class _MyAppState extends State<MyApp> {
     if (_prefs?.getStringList('chords') == null) {
       final defaultChords = [
         'C:major',
-        'F:major',
         'G:major',
         'A:minor',
+        'F:major',
       ];
       await _prefs?.setStringList('chords', defaultChords);
     }
@@ -551,11 +551,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ? widget.currentChord.rootKey.name.split('/')[0]
                                         : widget.currentChord.rootKey.name),
                                 style: TextStyle(
-                                  fontSize: 240,
+                                  fontSize: 300,
                                   fontWeight: FontWeight.w600,
                                   foreground: Paint()
                                     ..style = PaintingStyle.stroke
-                                    ..strokeWidth = 12
+                                    ..strokeWidth = 15
                                     ..color = Colors.black,
                                 ),
                               ),
@@ -564,14 +564,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ? widget.currentChord.rootKey.name.split('/')[0]
                                         : widget.currentChord.rootKey.name),
                                 style: TextStyle(
-                                  fontSize: 240,
+                                  fontSize: 300,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 4),
                           // Smaller chord type display name
                           Stack(
                             alignment: Alignment.center,
@@ -579,18 +578,18 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 widget.currentChord.type.displayName,
                                 style: TextStyle(
-                                  fontSize: 48,
+                                  fontSize: 60,
                                   fontWeight: FontWeight.w600,
                                   foreground: Paint()
                                     ..style = PaintingStyle.stroke
-                                    ..strokeWidth = 5
+                                    ..strokeWidth = 6
                                     ..color = Colors.black,
                                 ),
                               ),
                               Text(
                                 widget.currentChord.type.displayName,
                                 style: TextStyle(
-                                  fontSize: 48,
+                                  fontSize: 60,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
                                 ),
@@ -611,7 +610,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
-                        border: Border.all(color: Colors.grey[400]!, width: 2),
+                        border: Border.all(color: Colors.black, width: 3),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListView.separated(
@@ -620,7 +619,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         separatorBuilder: (context, index) => Divider(
                           height: 1,
                           thickness: 1,
-                          color: Colors.grey[400],
+                          color: Colors.grey[800],
                         ),
                         itemBuilder: (context, index) {
                           final chord = widget.chordList[index];
@@ -633,7 +632,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           return Container(
                             decoration: BoxDecoration(
                               color: chord.rootKey.color.withOpacity(0.3),
-                              border: isSelected ? Border.all(color: Colors.black, width: 4) : null,
+                              border: isSelected ? Border.all(color: Colors.yellow, width: 4) : null,
                             ),
                             child: ListTile(
                               title: RichText(
