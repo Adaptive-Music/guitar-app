@@ -150,7 +150,7 @@ class _MyAppState extends State<MyApp> {
         // Illuminate the corresponding guitar string on Note On
         if ((status & 0xF0) == 0x90 && velocity > 0) {
           // Note On
-          _guitarStringsKey.currentState?.illuminateString(stringNumber);
+          _guitarStringsKey.currentState?.illuminateString(stringNumber, velocity);
           // Play the MIDI note from the current chord
           int chordNote = chords[currentChord].notes[stringNumber];
           _midi.playNote(key: chordNote, velocity: velocity, sfId: sfID);
