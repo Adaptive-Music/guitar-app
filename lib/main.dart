@@ -551,7 +551,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ? widget.currentChord.rootKey.name.split('/')[0]
                                         : widget.currentChord.rootKey.name),
                                 style: TextStyle(
-                                  fontSize: 300,
+                                  fontSize: 350,
                                   fontWeight: FontWeight.w600,
                                   foreground: Paint()
                                     ..style = PaintingStyle.stroke
@@ -564,7 +564,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ? widget.currentChord.rootKey.name.split('/')[0]
                                         : widget.currentChord.rootKey.name),
                                 style: TextStyle(
-                                  fontSize: 300,
+                                  fontSize: 350,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
                                 ),
@@ -578,7 +578,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 widget.currentChord.type.displayName,
                                 style: TextStyle(
-                                  fontSize: 60,
+                                  fontSize: 72,
                                   fontWeight: FontWeight.w600,
                                   foreground: Paint()
                                     ..style = PaintingStyle.stroke
@@ -589,7 +589,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 widget.currentChord.type.displayName,
                                 style: TextStyle(
-                                  fontSize: 60,
+                                  fontSize: 72,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
                                 ),
@@ -606,7 +606,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   flex: 1,
                   child: Padding(
-                    padding: EdgeInsets.all(12),
+                    padding: EdgeInsets.fromLTRB(0, 12, 12, 12),
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
