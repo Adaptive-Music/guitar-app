@@ -360,8 +360,9 @@ class _MyAppState extends State<MyApp> {
               setState(() {
                 if (chords.isNotEmpty) {
                   // Stop all notes from current chord before switching
-                  for (int note in chords[currentChord].notes) {
-                    _midi.stopNote(key: note, sfId: sfID);
+                  for (int i = 0; i < chords[currentChord].notes.length; i++) {
+                    _midi.stopNote(key: chords[currentChord].notes[i], sfId: sfID);
+                    _guitarStringsKey.currentState?.turnOffString(i);
                   }
                   currentChord = (currentChord + 1) % chords.length;
                 }
@@ -371,8 +372,9 @@ class _MyAppState extends State<MyApp> {
               setState(() {
                 // Stop all notes from current chord before switching
                 if (chords.isNotEmpty && currentChord < chords.length) {
-                  for (int note in chords[currentChord].notes) {
-                    _midi.stopNote(key: note, sfId: sfID);
+                  for (int i = 0; i < chords[currentChord].notes.length; i++) {
+                    _midi.stopNote(key: chords[currentChord].notes[i], sfId: sfID);
+                    _guitarStringsKey.currentState?.turnOffString(i);
                   }
                 }
                 currentChord = index;
