@@ -47,7 +47,6 @@ class _MyAppState extends State<MyApp> {
   bool _midiConnecting = false;
   bool _prefLoading = true;
 
-  List<MidiDevice>? midiDevices = [];
   MidiDevice? selectedMidiDevice;
 
   Future<void> loadSoundFont() async {
@@ -181,16 +180,6 @@ class _MyAppState extends State<MyApp> {
       return 4;
     else
       return 5;
-  }
-
-  void sendNoteOn(note) {
-    final noteOn = Uint8List.fromList([0x90, note, 100]);
-    _midi_cmd.sendData(noteOn);
-  }
-
-  void sendNoteOff(note) {
-    final noteOff = Uint8List.fromList([0x80, note, 0]);
-    _midi_cmd.sendData(noteOff);
   }
 
   Future<void> _initPrefs() async {
@@ -332,6 +321,15 @@ class _MyAppState extends State<MyApp> {
     super.dispose();
   }
 
+  void _stopCurrentChordNotesAndStrings() {
+    if (chords.isNotEmpty && currentChord < chords.length) {
+      for (int i = 0; i < chords[currentChord].notes.length; i++) {
+        _midi.stopNote(key: chords[currentChord].notes[i], sfId: sfID);
+        _guitarStringsKey.currentState?.turnOffString(i);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -358,25 +356,15 @@ class _MyAppState extends State<MyApp> {
             currentProgressionName: currentProgressionName,
             onChangeChord: () {
               setState(() {
+                _stopCurrentChordNotesAndStrings();
                 if (chords.isNotEmpty) {
-                  // Stop all notes from current chord before switching
-                  for (int i = 0; i < chords[currentChord].notes.length; i++) {
-                    _midi.stopNote(key: chords[currentChord].notes[i], sfId: sfID);
-                    _guitarStringsKey.currentState?.turnOffString(i);
-                  }
                   currentChord = (currentChord + 1) % chords.length;
                 }
               });
             },
             onSelectChord: (int index) {
               setState(() {
-                // Stop all notes from current chord before switching
-                if (chords.isNotEmpty && currentChord < chords.length) {
-                  for (int i = 0; i < chords[currentChord].notes.length; i++) {
-                    _midi.stopNote(key: chords[currentChord].notes[i], sfId: sfID);
-                    _guitarStringsKey.currentState?.turnOffString(i);
-                  }
-                }
+                _stopCurrentChordNotesAndStrings();
                 currentChord = index;
               });
             },
