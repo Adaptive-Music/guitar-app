@@ -11,6 +11,49 @@ import 'package:flutter_application_1/special/enums.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+// Configuration classes to group related parameters
+class ChordState {
+  final Chord currentChord;
+  final int currentChordIndex;
+  final List<Chord> chordList;
+  final String progressionName;
+
+  const ChordState({
+    required this.currentChord,
+    required this.currentChordIndex,
+    required this.chordList,
+    required this.progressionName,
+  });
+}
+
+class ChordCallbacks {
+  final VoidCallback onNext;
+  final VoidCallback onPrevious;
+  final Function(int) onSelect;
+  final VoidCallback onUpdate;
+
+  const ChordCallbacks({
+    required this.onNext,
+    required this.onPrevious,
+    required this.onSelect,
+    required this.onUpdate,
+  });
+}
+
+class MidiConfig {
+  final SharedPreferences? prefs;
+  final int sfID;
+  final MidiDevice? selectedDevice;
+  final GlobalKey<GuitarStringsState> guitarStringsKey;
+
+  const MidiConfig({
+    required this.prefs,
+    required this.sfID,
+    required this.selectedDevice,
+    required this.guitarStringsKey,
+  });
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -344,45 +387,49 @@ class _MyAppState extends State<MyApp> {
             );
           }
           return HomeScreen(
-            prefs: _prefs,
-            sfID1: sfID,
-            midiController: _midi,
-            midiCommand: _midi_cmd,
-            selectedMidiDevice: selectedMidiDevice,
-            guitarStringsKey: _guitarStringsKey,
-            currentChord: chords.isNotEmpty ? chords[currentChord] : Chord(KeyCenter.cNat, ChordType.major),
-            currentChordIndex: currentChord,
-            chordList: chords,
-            currentProgressionName: currentProgressionName,
-            onNextChord: () {
-              setState(() {
-                _stopCurrentChordNotesAndStrings();
-                if (chords.isNotEmpty) {
-                  currentChord = (currentChord + 1) % chords.length;
-                }
-              });
-            },
-            onPreviousChord: () {
-              setState(() {
-                _stopCurrentChordNotesAndStrings();
-                if (chords.isNotEmpty) {
-                  currentChord = (currentChord - 1 + chords.length) % chords.length;
-                }
-              });
-            },
-            onSelectChord: (int index) {
-              setState(() {
-                _stopCurrentChordNotesAndStrings();
-                currentChord = index;
-              });
-            },
-            onChordsUpdated: () {
-              setState(() {
-                _loadChords();
-                // Reset to first chord when returning from settings
-                currentChord = 0;
-              });
-            },
+            chordState: ChordState(
+              currentChord: chords.isNotEmpty ? chords[currentChord] : Chord(KeyCenter.cNat, ChordType.major),
+              currentChordIndex: currentChord,
+              chordList: chords,
+              progressionName: currentProgressionName,
+            ),
+            callbacks: ChordCallbacks(
+              onNext: () {
+                setState(() {
+                  _stopCurrentChordNotesAndStrings();
+                  if (chords.isNotEmpty) {
+                    currentChord = (currentChord + 1) % chords.length;
+                  }
+                });
+              },
+              onPrevious: () {
+                setState(() {
+                  _stopCurrentChordNotesAndStrings();
+                  if (chords.isNotEmpty) {
+                    currentChord = (currentChord - 1 + chords.length) % chords.length;
+                  }
+                });
+              },
+              onSelect: (int index) {
+                setState(() {
+                  _stopCurrentChordNotesAndStrings();
+                  currentChord = index;
+                });
+              },
+              onUpdate: () {
+                setState(() {
+                  _loadChords();
+                  // Reset to first chord when returning from settings
+                  currentChord = 0;
+                });
+              },
+            ),
+            midiConfig: MidiConfig(
+              prefs: _prefs,
+              sfID: sfID,
+              selectedDevice: selectedMidiDevice,
+              guitarStringsKey: _guitarStringsKey,
+            ),
           );
         },
       ),
@@ -391,37 +438,15 @@ class _MyAppState extends State<MyApp> {
 }
 
 class HomeScreen extends StatefulWidget {
-  final SharedPreferences? prefs;
-  final int sfID1;
-  final MidiPro midiController;
-  final MidiCommand midiCommand;
-  final MidiDevice? selectedMidiDevice;
-  final GlobalKey<GuitarStringsState> guitarStringsKey;
-  final Chord currentChord;
-  final int currentChordIndex;
-  final VoidCallback onNextChord;
-  final VoidCallback onPreviousChord;
-  final List<Chord> chordList;
-  final Function(int) onSelectChord;
-  final VoidCallback onChordsUpdated;
-  final String currentProgressionName;
+  final ChordState chordState;
+  final ChordCallbacks callbacks;
+  final MidiConfig midiConfig;
 
   const HomeScreen({
     super.key,
-    required this.sfID1,
-    required this.midiController,
-    required this.prefs,
-    required this.midiCommand,
-    required this.selectedMidiDevice,
-    required this.guitarStringsKey,
-    required this.currentChord,
-    required this.currentChordIndex,
-    required this.onNextChord,
-    required this.onPreviousChord,
-    required this.chordList,
-    required this.onSelectChord,
-    required this.onChordsUpdated,
-    required this.currentProgressionName,
+    required this.chordState,
+    required this.callbacks,
+    required this.midiConfig,
   });
 
   @override
@@ -444,19 +469,19 @@ class _HomeScreenState extends State<HomeScreen> {
     super.didUpdateWidget(oldWidget);
     
     // Scroll to current chord when it changes
-    if (oldWidget.currentChordIndex != widget.currentChordIndex) {
+    if (oldWidget.chordState.currentChordIndex != widget.chordState.currentChordIndex) {
       _scrollToCurrentChord();
     }
   }
 
   void _scrollToCurrentChord() {
-    if (_scrollController.hasClients && widget.chordList.isNotEmpty) {
+    if (_scrollController.hasClients && widget.chordState.chordList.isNotEmpty) {
       // Use ensureVisible for smoother, less jumpy scrolling
       // This only scrolls if the item is not already visible
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
           final itemHeight = 56.0 + 1.0; // ListTile height + Divider height
-          final targetOffset = widget.currentChordIndex * itemHeight;
+          final targetOffset = widget.chordState.currentChordIndex * itemHeight;
           final viewportHeight = _scrollController.position.viewportDimension;
           final currentOffset = _scrollController.offset;
           
@@ -492,7 +517,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(widget.selectedMidiDevice == null ? 'Not connected' : widget.currentProgressionName),
+        title: Text(widget.midiConfig.selectedDevice == null ? 'Not connected' : widget.chordState.progressionName),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.settings),
@@ -502,9 +527,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 MaterialPageRoute(
                     builder: (context) =>
-                        SettingsPage(prefs: widget.prefs, sfID: widget.sfID1)),
+                        SettingsPage(prefs: widget.midiConfig.prefs, sfID: widget.midiConfig.sfID)),
               ).then((_) {
-                widget.onChordsUpdated();
+                widget.callbacks.onUpdate();
               });
             },
           ),
@@ -528,8 +553,8 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // Guitar Strings Visualization
           GuitarStrings(
-            key: widget.guitarStringsKey,
-            currentChord: widget.currentChord,
+            key: widget.midiConfig.guitarStringsKey,
+            currentChord: widget.chordState.currentChord,
           ),
           // Keyboard and Chord List
           Expanded(
@@ -545,7 +570,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: double.infinity,
                       child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: widget.currentChord.rootKey.color,
+                        backgroundColor: widget.chordState.currentChord.rootKey.color,
                         foregroundColor: Colors.white,
                         side: const BorderSide(color: Colors.black, width: 3),
                         shape: RoundedRectangleBorder(
@@ -563,9 +588,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               alignment: Alignment.center,
                               children: [
                                 Text(
-                                  (widget.currentChord.rootKey.name.contains('/')
-                                          ? widget.currentChord.rootKey.name.split('/')[0]
-                                          : widget.currentChord.rootKey.name),
+                                  (widget.chordState.currentChord.rootKey.name.contains('/')
+                                          ? widget.chordState.currentChord.rootKey.name.split('/')[0]
+                                          : widget.chordState.currentChord.rootKey.name),
                                   style: TextStyle(
                                     fontSize: 350,
                                     fontWeight: FontWeight.w600,
@@ -576,9 +601,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                                 Text(
-                                  (widget.currentChord.rootKey.name.contains('/')
-                                          ? widget.currentChord.rootKey.name.split('/')[0]
-                                          : widget.currentChord.rootKey.name),
+                                  (widget.chordState.currentChord.rootKey.name.contains('/')
+                                          ? widget.chordState.currentChord.rootKey.name.split('/')[0]
+                                          : widget.chordState.currentChord.rootKey.name),
                                   style: TextStyle(
                                     fontSize: 350,
                                     fontWeight: FontWeight.w600,
@@ -592,7 +617,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               alignment: Alignment.center,
                               children: [
                                 Text(
-                                  widget.currentChord.type.displayName,
+                                  widget.chordState.currentChord.type.displayName,
                                   style: TextStyle(
                                     fontSize: 72,
                                     fontWeight: FontWeight.w600,
@@ -603,7 +628,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                                 Text(
-                                  widget.currentChord.type.displayName,
+                                  widget.chordState.currentChord.type.displayName,
                                   style: TextStyle(
                                     fontSize: 72,
                                     fontWeight: FontWeight.w600,
@@ -632,15 +657,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: ListView.separated(
                         controller: _scrollController,
-                        itemCount: widget.chordList.length,
+                        itemCount: widget.chordState.chordList.length,
                         separatorBuilder: (context, index) => Divider(
                           height: 1,
                           thickness: 1,
                           color: Colors.grey[800],
                         ),
                         itemBuilder: (context, index) {
-                          final chord = widget.chordList[index];
-                          final isSelected = index == widget.currentChordIndex;
+                          final chord = widget.chordState.chordList[index];
+                          final isSelected = index == widget.chordState.currentChordIndex;
                           // Build compact chord label using sharp key name + chord type symbol
                           final keyLabel = chord.rootKey.name.contains('/')
                               ? chord.rootKey.name.split('/')[0]
@@ -763,7 +788,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ],
                                       ),
                                     ),
-                              onTap: () => widget.onSelectChord(index),
+                              onTap: () => widget.callbacks.onSelect(index),
                             ),
                           );
                         },
@@ -781,10 +806,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void nextChord() {
-    widget.onNextChord();
+    widget.callbacks.onNext();
   }
 
   void previousChord() {
-    widget.onPreviousChord();
+    widget.callbacks.onPrevious();
   }
 }
