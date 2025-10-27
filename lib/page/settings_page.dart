@@ -419,17 +419,20 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Chords',
                           style: TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w600)),
+                              fontSize: 16, fontWeight: FontWeight.bold)),
                       IconButton(
-                        icon: Icon(Icons.add_circle),
+                        icon: Icon(Icons.add),
                         onPressed: addChord,
                         tooltip: 'Add Chord',
+                        padding: EdgeInsets.zero,
+                        constraints: BoxConstraints(),
                       ),
                     ],
                   ),
@@ -612,7 +615,7 @@ class _SettingsPageState extends State<SettingsPage> {
           
           // Right side: Progression selector, Chord editor, and Instrument selector stacked
           Expanded(
-            flex: 3,
+            flex: 5,
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
