@@ -61,14 +61,14 @@ enum Scale {
 
 enum KeyCenter {
   cNat(name: 'C', key: 0, color: Colors.red),
-  cSh(name: 'C♯/D♭', key: 1, color: Color(0xFFFF7043)),
+  cSh(name: 'C♯/D♭', key: 1, color: Color(0xFFFF7C1C)), // Midpoint between red and orange
   dNat(name: 'D', key: 2, color: Colors.orange),
-  dSh(name: 'D♯/E♭', key: 3, color: Color(0xFFFFD54F)),
+  dSh(name: 'D♯/E♭', key: 3, color: Color(0xFFFFC21D)), // Midpoint between orange and yellow
   eNat(name: 'E', key: 4, color: Colors.yellow),
   fNat(name: 'F', key: 5, color: Colors.green),
-  fSh(name: 'F♯/G♭', key: 6, color: Color(0xFF26C6DA)),
-  gNat(name: 'G', key: 7, color: Colors.lightBlue),
-  gSh(name: 'G♯/A♭', key: 8, color: Color(0xFF1E88E5)),
+  fSh(name: 'F♯/G♭', key: 6, color: Color(0xFF3BB2C1)), // Midpoint between green and blue
+  gNat(name: 'G', key: 7, color: Colors.blue),
+  gSh(name: 'G♯/A♭', key: 8, color: Color(0xFF2D73D4)), // Midpoint between blue and indigo
   aNat(name: 'A', key: 9, color: Colors.indigo),
   aSh(name: 'A♯/B♭', key: 10, color: Color(0xFF5E35B1)),
   bNat(name: 'B', key: 11, color: Colors.purple);
