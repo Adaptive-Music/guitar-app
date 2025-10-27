@@ -585,7 +585,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Chords',
                           style: TextStyle(
@@ -639,62 +638,72 @@ class _SettingsPageState extends State<SettingsPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // 1. Progression Management Section
-                    Text('Progression',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            decoration: InputDecoration(
-                              labelText: 'Current Progression',
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 8.0, horizontal: 10.0),
-                              isDense: true,
+                        Text('Progression',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.add),
+                              onPressed: createNewProgression,
+                              tooltip: 'New Progression',
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(),
                             ),
-                            value: currentProgressionName,
-                            isExpanded: true,
-                            items: savedProgressions.keys
-                                .map((name) => DropdownMenuItem(
-                                      value: name,
-                                      child: Text(name, style: TextStyle(fontSize: 14)),
-                                    ))
-                                .toList(),
-                            onChanged: (newValue) {
-                              if (newValue != null) {
-                                loadProgression(newValue);
-                              }
-                            },
-                          ),
-                        ),
-                        PopupMenuButton<String>(
-                          icon: Icon(Icons.more_vert),
-                          onSelected: (value) {
-                            switch (value) {
-                              case 'new':
-                                createNewProgression();
-                                break;
-                              case 'rename':
-                                renameProgression();
-                                break;
-                              case 'duplicate':
-                                duplicateProgression();
-                                break;
-                              case 'delete':
-                                deleteProgression();
-                                break;
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            PopupMenuItem(value: 'new', child: Row(children: [Icon(Icons.add), SizedBox(width: 8), Text('New')])),
-                            PopupMenuItem(value: 'rename', child: Row(children: [Icon(Icons.edit), SizedBox(width: 8), Text('Rename')])),
-                            PopupMenuItem(value: 'duplicate', child: Row(children: [Icon(Icons.copy), SizedBox(width: 8), Text('Duplicate')])),
-                            PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete, color: Colors.red), SizedBox(width: 8), Text('Delete', style: TextStyle(color: Colors.red))])),
+                            SizedBox(width: 8),
+                            IconButton(
+                              icon: Icon(Icons.copy),
+                              onPressed: duplicateProgression,
+                              tooltip: 'Duplicate Progression',
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(),
+                            ),
+                            SizedBox(width: 8),
+                            IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: renameProgression,
+                              tooltip: 'Rename Progression',
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(),
+                            ),
+                            SizedBox(width: 8),
+                            IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: deleteProgression,
+                              tooltip: 'Delete Progression',
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(),
+                              color: Colors.red,
+                            ),
                           ],
                         ),
                       ],
+                    ),
+                    SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Select Progression',
+                        contentPadding: EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 10.0),
+                        isDense: true,
+                      ),
+                      value: currentProgressionName,
+                      isExpanded: true,
+                      items: savedProgressions.keys
+                          .map((name) => DropdownMenuItem(
+                                value: name,
+                                child: Text(name, style: TextStyle(fontSize: 14)),
+                              ))
+                          .toList(),
+                      onChanged: (newValue) {
+                        if (newValue != null) {
+                          loadProgression(newValue);
+                        }
+                      },
                     ),
                     
                     SizedBox(height: 24),
@@ -727,6 +736,10 @@ class _SettingsPageState extends State<SettingsPage> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
+                                        icon: Icon(Icons.info_outline),
+                                        onPressed: _showChordTypeInfo,
+                                        tooltip: 'Chord type info',
+                                      ),                                      IconButton(
                                         icon: Icon(Icons.delete),
                                         onPressed: chords.length > 1
                                             ? () => removeChord(selectedChordIndex!)
@@ -734,11 +747,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                         tooltip: 'Remove chord',
                                         color: Colors.red,
                                       ),
-                                      IconButton(
-                                        icon: Icon(Icons.info_outline),
-                                        onPressed: _showChordTypeInfo,
-                                        tooltip: 'Chord type info',
-                                      ),
+
                                     ],
                                   ),
                                 ],
