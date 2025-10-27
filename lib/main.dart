@@ -354,11 +354,19 @@ class _MyAppState extends State<MyApp> {
             currentChordIndex: currentChord,
             chordList: chords,
             currentProgressionName: currentProgressionName,
-            onChangeChord: () {
+            onNextChord: () {
               setState(() {
                 _stopCurrentChordNotesAndStrings();
                 if (chords.isNotEmpty) {
                   currentChord = (currentChord + 1) % chords.length;
+                }
+              });
+            },
+            onPreviousChord: () {
+              setState(() {
+                _stopCurrentChordNotesAndStrings();
+                if (chords.isNotEmpty) {
+                  currentChord = (currentChord - 1 + chords.length) % chords.length;
                 }
               });
             },
@@ -391,7 +399,8 @@ class HomeScreen extends StatefulWidget {
   final GlobalKey<GuitarStringsState> guitarStringsKey;
   final Chord currentChord;
   final int currentChordIndex;
-  final VoidCallback onChangeChord;
+  final VoidCallback onNextChord;
+  final VoidCallback onPreviousChord;
   final List<Chord> chordList;
   final Function(int) onSelectChord;
   final VoidCallback onChordsUpdated;
@@ -407,7 +416,8 @@ class HomeScreen extends StatefulWidget {
     required this.guitarStringsKey,
     required this.currentChord,
     required this.currentChordIndex,
-    required this.onChangeChord,
+    required this.onNextChord,
+    required this.onPreviousChord,
     required this.chordList,
     required this.onSelectChord,
     required this.onChordsUpdated,
@@ -500,7 +510,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: KeyboardListener(
+        focusNode: FocusNode()..requestFocus(),
+        autofocus: true,
+        onKeyEvent: (KeyEvent event) {
+          if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
+            nextChord();
+          } else if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
+            previousChord();
+          }
+        },
+        child: Column(
         children: [
           // Guitar Strings Visualization
           GuitarStrings(
@@ -528,7 +548,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(50),
                         ),
                       ),
-                      onPressed: changeChord,
+                      onPressed: nextChord,
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Column(
@@ -752,10 +772,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+      ),
     );
   }
 
-  void changeChord() {
-    widget.onChangeChord();
+  void nextChord() {
+    widget.onNextChord();
+  }
+
+  void previousChord() {
+    widget.onPreviousChord();
   }
 }
