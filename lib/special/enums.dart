@@ -206,6 +206,9 @@ enum ChordType {
   dominantSeventh(symbol: '7', intervals: [0, 4, 7, 10]),
   majorSeventh(symbol: 'maj7', intervals: [0, 4, 7, 11]),
   minorSeventh(symbol: 'min7', intervals: [0, 3, 7, 10]),
+  suspendedSecond(symbol: 'sus2', intervals: [0, 2, 7]),
+  suspendedFourth(symbol: 'sus4', intervals: [0, 5, 7]),
+  addNinth(symbol: 'add9', intervals: [0, 4, 7, 14]),
   diminished(symbol: 'dim', intervals: [0, 3, 6]),
   ;
 

@@ -345,7 +345,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Row(
                         children: [
                           Container(
-                            width: 36,
+                            width: 70,
                             alignment: Alignment.centerLeft,
                             child: Text(
                               t.symbol,
@@ -741,7 +741,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               SizedBox(height: 16),
                               
                               // Key selector
-                              Text('Key',
+                              Text('Root Note',
                                   style: TextStyle(
                                       fontSize: 14, fontWeight: FontWeight.w500)),
                               SizedBox(height: 8),
@@ -776,7 +776,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               SizedBox(height: 24),
                               
                               // Type selector
-                              Text('Chord Type',
+                              Text('Type',
                                   style: TextStyle(
                                       fontSize: 14, fontWeight: FontWeight.w500)),
                               SizedBox(height: 8),
