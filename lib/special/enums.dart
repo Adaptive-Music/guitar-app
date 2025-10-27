@@ -151,8 +151,8 @@ enum Octave {
 }
 
 enum Instrument {
-  nylonGuitar(bank: 0, program: 24),
-  steelGuitar(bank: 0, program: 25),
+  nylonStringGuitar(bank: 0, program: 24),
+  steelStringGuitar(bank: 0, program: 25),
   jazzGuitar(bank: 0, program: 26),
   cleanGuitar(bank: 0, program: 27),
   overdriveGuitar(bank: 0, program: 29),
@@ -208,7 +208,7 @@ enum ChordType {
   minorSeventh(symbol: 'min7', intervals: [0, 3, 7, 10]),
   suspendedSecond(symbol: 'sus2', intervals: [0, 2, 7]),
   suspendedFourth(symbol: 'sus4', intervals: [0, 5, 7]),
-  addNinth(symbol: 'add9', intervals: [0, 4, 7, 14]),
+  addedNinth(symbol: 'add9', intervals: [0, 4, 7, 14]),
   diminished(symbol: 'dim', intervals: [0, 3, 6]),
   ;
 

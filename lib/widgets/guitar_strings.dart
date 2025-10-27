@@ -81,8 +81,8 @@ class GuitarStringsState extends State<GuitarStrings> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      height: 72,
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
       child: Row(
         children: List.generate(6, (index) {
           final isActive = _activeStrings[index];
@@ -117,7 +117,7 @@ class GuitarStringsState extends State<GuitarStrings> {
                   border: Border.all(
                     color: isActive ? stringColor : Colors.black,
                     // Base 2.0 + up to +2.0, capped at 3.0
-                    width: isActive ? (2.0 + 2.0 * intensity).clamp(2.0, 3.0) : 2.0,
+                    width: isActive ? (3.0 + 2.0 * intensity).clamp(2.0, 3.0) : 3.0,
                   ),
                   boxShadow: isActive
                       ? [
