@@ -605,15 +605,20 @@ class _SettingsPageState extends State<SettingsPage> {
                     padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.grey[200],
                         border: Border.all(color: Colors.grey, width: 3),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: ReorderableListView.builder(
-                        buildDefaultDragHandles: false,
-                        itemCount: chords.length,
-                        onReorder: reorderChords,
-                        itemBuilder: (context, index) => _buildChordListItem(index),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(9), // Slightly smaller to fit inside border
+                        child: Container(
+                          color: Colors.grey[200],
+                          child: ReorderableListView.builder(
+                            buildDefaultDragHandles: false,
+                            itemCount: chords.length,
+                            onReorder: reorderChords,
+                            itemBuilder: (context, index) => _buildChordListItem(index),
+                          ),
+                        ),
                       ),
                     ),
                   ),

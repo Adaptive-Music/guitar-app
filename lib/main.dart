@@ -651,18 +651,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: EdgeInsets.fromLTRB(0, 12, 12, 12),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.grey[200],
                         border: Border.all(color: Colors.black, width: 3),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: ListView.separated(
-                        controller: _scrollController,
-                        itemCount: widget.chordState.chordList.length,
-                        separatorBuilder: (context, index) => Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: Colors.grey[800],
-                        ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(9), // Slightly smaller to fit inside border
+                        child: Container(
+                          color: Colors.grey[200],
+                          child: ListView.separated(
+                            controller: _scrollController,
+                            itemCount: widget.chordState.chordList.length,
+                            separatorBuilder: (context, index) => Divider(
+                              height: 1,
+                              thickness: 1,
+                              color: Colors.grey[800],
+                            ),
                         itemBuilder: (context, index) {
                           final chord = widget.chordState.chordList[index];
                           final isSelected = index == widget.chordState.currentChordIndex;
@@ -799,6 +802,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
                         },
+                      ),
+                        ),
                       ),
                     ),
                   ),
