@@ -510,15 +510,19 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: KeyboardListener(
-        focusNode: FocusNode()..requestFocus(),
+      body: Focus(
         autofocus: true,
-        onKeyEvent: (KeyEvent event) {
-          if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
-            nextChord();
-          } else if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
-            previousChord();
+        onKeyEvent: (FocusNode node, KeyEvent event) {
+          if (event is KeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.space) {
+              nextChord();
+              return KeyEventResult.handled;
+            } else if (event.logicalKey == LogicalKeyboardKey.enter) {
+              previousChord();
+              return KeyEventResult.handled;
+            }
           }
+          return KeyEventResult.ignored;
         },
         child: Column(
         children: [
