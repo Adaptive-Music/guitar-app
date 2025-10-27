@@ -45,12 +45,14 @@ class MidiConfig {
   final int sfID;
   final MidiDevice? selectedDevice;
   final GlobalKey<GuitarStringsState> guitarStringsKey;
+  final MidiPro midiPlayer;
 
   const MidiConfig({
     required this.prefs,
     required this.sfID,
     required this.selectedDevice,
     required this.guitarStringsKey,
+    required this.midiPlayer,
   });
 }
 
@@ -429,6 +431,7 @@ class _MyAppState extends State<MyApp> {
               sfID: sfID,
               selectedDevice: selectedMidiDevice,
               guitarStringsKey: _guitarStringsKey,
+              midiPlayer: _midi,
             ),
           );
         },
@@ -555,6 +558,8 @@ class _HomeScreenState extends State<HomeScreen> {
           GuitarStrings(
             key: widget.midiConfig.guitarStringsKey,
             currentChord: widget.chordState.currentChord,
+            midiPlayer: widget.midiConfig.midiPlayer,
+            sfId: widget.midiConfig.sfID,
           ),
           // Keyboard and Chord List
           Expanded(

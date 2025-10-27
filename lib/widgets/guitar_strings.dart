@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/widgets/chord.dart';
+import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 
 class GuitarStrings extends StatefulWidget {
   final Chord? currentChord;
+  final MidiPro? midiPlayer;
+  final int? sfId;
   
-  const GuitarStrings({super.key, this.currentChord});
+  const GuitarStrings({
+    super.key, 
+    this.currentChord,
+    this.midiPlayer,
+    this.sfId,
+  });
 
   @override
   State<GuitarStrings> createState() => GuitarStringsState();
@@ -52,6 +60,24 @@ class GuitarStringsState extends State<GuitarStrings> {
     }
   }
 
+  // Play note for a string
+  void _playStringNote(int stringNumber) {
+    if (widget.currentChord != null && widget.midiPlayer != null && widget.sfId != null) {
+      final note = widget.currentChord!.notes[stringNumber];
+      widget.midiPlayer!.playNote(key: note, velocity: 127, sfId: widget.sfId!);
+      illuminateString(stringNumber, 127);
+    }
+  }
+
+  // Stop note for a string
+  void _stopStringNote(int stringNumber) {
+    if (widget.currentChord != null && widget.midiPlayer != null && widget.sfId != null) {
+      final note = widget.currentChord!.notes[stringNumber];
+      widget.midiPlayer!.stopNote(key: note, sfId: widget.sfId!);
+      turnOffString(stringNumber);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -74,8 +100,12 @@ class GuitarStringsState extends State<GuitarStrings> {
           return Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
+              child: GestureDetector(
+                onTapDown: (_) => _playStringNote(index),
+                onTapUp: (_) => _stopStringNote(index),
+                onTapCancel: () => _stopStringNote(index),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
                 decoration: BoxDecoration(
                   color: isActive
                       ? stringColor.withOpacity(
@@ -171,6 +201,7 @@ class GuitarStringsState extends State<GuitarStrings> {
                     ),
                   ],
                 ),
+              ),
               ),
             ),
           );
