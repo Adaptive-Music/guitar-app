@@ -524,7 +524,7 @@ class _SettingsPageState extends State<SettingsPage> {
               text: '${index + 1}. ',
               style: TextStyle(
                 fontSize: 18,
-                color: Colors.grey[800],
+                color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -532,7 +532,7 @@ class _SettingsPageState extends State<SettingsPage> {
               text: chordLabel,
               style: TextStyle(
                 fontSize: 18,
-                color: Colors.grey[800],
+                color: Colors.black,
                 fontWeight: FontWeight.normal,
               ),
             ),

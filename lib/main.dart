@@ -802,7 +802,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             text: '${index + 1}. ',
                                             style: TextStyle(
                                               fontSize: 18,
-                                              color: Colors.grey[800],
+                                              color: Colors.black,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -810,7 +810,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             text: chordLabel,
                                             style: TextStyle(
                                               fontSize: 18,
-                                              color: Colors.grey[800],
+                                              color: Colors.black,
                                               fontWeight: FontWeight.normal,
                                             ),
                                           ),
