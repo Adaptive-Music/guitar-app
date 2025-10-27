@@ -671,11 +671,18 @@ class _HomeScreenState extends State<HomeScreen> {
                               ? chord.rootKey.name.split('/')[0]
                               : chord.rootKey.name;
                           final chordLabel = '${keyLabel} ${chord.type.symbol}';
+                          final isLastItem = index == widget.chordState.chordList.length - 1;
                           return Container(
                             decoration: BoxDecoration(
                               color: isSelected ? chord.rootKey.color : chord.rootKey.color.withOpacity(0.3),
-                              // Remove yellow border highlight; we'll use an indicator instead
-                              border: null,
+                              border: isLastItem
+                                  ? Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey[800]!,
+                                        width: 1,
+                                      ),
+                                    )
+                                  : null,
                             ),
                             child: ListTile(
                               // Keep horizontal alignment by reserving space for the indicator
