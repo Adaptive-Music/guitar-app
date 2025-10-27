@@ -23,7 +23,21 @@ class _SettingsPageState extends State<SettingsPage> {
   late String currentProgressionName;
   int? selectedChordIndex;
 
-  extractSettings() {
+  @override
+  void initState() {
+    super.initState();
+    _extractSettings();
+    // Select first chord by default
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (chords.isNotEmpty && selectedChordIndex == null) {
+        setState(() {
+          selectedChordIndex = 0;
+        });
+      }
+    });
+  }
+
+  void _extractSettings() {
     selectedInstrument = Instrument.values
         .firstWhere((e) => e.name == widget.prefs!.getString('instrument')!);
 
@@ -365,18 +379,167 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-    extractSettings();
-    // Select first chord by default
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (chords.isNotEmpty && selectedChordIndex == null) {
-        setState(() {
-          selectedChordIndex = 0;
-        });
-      }
-    });
+  Widget _buildChordListItem(int index) {
+    final chord = chords[index];
+    final isSelected = selectedChordIndex == index;
+    final keyCenter = KeyCenter.values.firstWhere(
+      (k) => k.name == chord['key'],
+      orElse: () => KeyCenter.cNat,
+    );
+    final chordType = ChordType.values.firstWhere(
+      (t) => t.name == chord['type'],
+      orElse: () => ChordType.major,
+    );
+    
+    final keyLabel = keyCenter.name.contains('/')
+        ? keyCenter.name.split('/')[0]
+        : keyCenter.name;
+    final chordLabel = '${keyLabel} ${chordType.symbol}';
+    
+    return Container(
+      key: ValueKey('$index-${chord['key']}-${chord['type']}'),
+      decoration: BoxDecoration(
+        color: isSelected 
+            ? keyCenter.color
+            : keyCenter.color.withOpacity(0.3),
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey,
+            width: 1,
+          ),
+        ),
+      ),
+      child: ListTile(
+        minLeadingWidth: 24,
+        leading: _buildChordIndicator(isSelected),
+        title: _buildChordTitle(index, chordLabel, isSelected),
+        trailing: ReorderableDragStartListener(
+          index: index,
+          child: Icon(Icons.drag_handle),
+        ),
+        onTap: () {
+          setState(() {
+            selectedChordIndex = index;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildChordIndicator(bool isSelected) {
+    return SizedBox(
+      width: 24,
+      child: Center(
+        child: isSelected
+            ? Stack(
+                alignment: Alignment.center,
+                children: [
+                  Text(
+                    '→',
+                    style: TextStyle(
+                      fontSize: 20,
+                      foreground: Paint()
+                        ..style = PaintingStyle.stroke
+                        ..strokeWidth = 3
+                        ..color = Colors.black,
+                    ),
+                  ),
+                  const Text(
+                    '→',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              )
+            : const SizedBox.shrink(),
+      ),
+    );
+  }
+
+  Widget _buildChordTitle(int index, String chordLabel, bool isSelected) {
+    if (isSelected) {
+      return Stack(
+        children: [
+          // Stroke layer
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: '${index + 1}. ',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    foreground: Paint()
+                      ..style = PaintingStyle.stroke
+                      ..strokeWidth = 3
+                      ..color = Colors.black,
+                  ),
+                ),
+                TextSpan(
+                  text: chordLabel,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    foreground: Paint()
+                      ..style = PaintingStyle.stroke
+                      ..strokeWidth = 3
+                      ..color = Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Fill layer
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: '${index + 1}. ',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextSpan(
+                  text: chordLabel,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else {
+      return RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: '${index + 1}. ',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[800],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            TextSpan(
+              text: chordLabel,
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[800],
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override
@@ -450,159 +613,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         buildDefaultDragHandles: false,
                         itemCount: chords.length,
                         onReorder: reorderChords,
-                        itemBuilder: (context, index) {
-                          final chord = chords[index];
-                          final isSelected = selectedChordIndex == index;
-                          final keyCenter = KeyCenter.values.firstWhere(
-                            (k) => k.name == chord['key'],
-                            orElse: () => KeyCenter.cNat,
-                          );
-                          final chordType = ChordType.values.firstWhere(
-                            (t) => t.name == chord['type'],
-                            orElse: () => ChordType.major,
-                          );
-                          
-                          // Build compact chord label using sharp key name + chord type symbol
-                          final keyLabel = keyCenter.name.contains('/')
-                              ? keyCenter.name.split('/')[0]
-                              : keyCenter.name;
-                          final chordLabel = '${keyLabel} ${chordType.symbol}';
-                          
-                          return Container(
-                            key: ValueKey('$index-${chord['key']}-${chord['type']}'),
-                            decoration: BoxDecoration(
-                              color: isSelected 
-                                  ? keyCenter.color
-                                  : keyCenter.color.withOpacity(0.3),
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: Colors.grey,
-                                  width: 1,
-                                ),
-                              ),
-                            ),
-                            child: ListTile(
-                              minLeadingWidth: 24,
-                              leading: SizedBox(
-                                width: 24,
-                                child: Center(
-                                  child: isSelected
-                                      ? Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            Text(
-                                              '→',
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                foreground: Paint()
-                                                  ..style = PaintingStyle.stroke
-                                                  ..strokeWidth = 3
-                                                  ..color = Colors.black,
-                                              ),
-                                            ),
-                                            const Text(
-                                              '→',
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      : const SizedBox.shrink(),
-                                ),
-                              ),
-                              title: isSelected
-                                  ? Stack(
-                                      children: [
-                                        // Stroke layer
-                                        RichText(
-                                          text: TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: '${index + 1}. ',
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  foreground: Paint()
-                                                    ..style = PaintingStyle.stroke
-                                                    ..strokeWidth = 3
-                                                    ..color = Colors.black,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: chordLabel,
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  foreground: Paint()
-                                                    ..style = PaintingStyle.stroke
-                                                    ..strokeWidth = 3
-                                                    ..color = Colors.black,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        // Fill layer
-                                        RichText(
-                                          text: TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: '${index + 1}. ',
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: chordLabel,
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: '${index + 1}. ',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              color: Colors.grey[800],
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: chordLabel,
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              color: Colors.grey[800],
-                                              fontWeight: FontWeight.normal,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                              trailing: ReorderableDragStartListener(
-                                index: index,
-                                child: Icon(Icons.drag_handle),
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  selectedChordIndex = index;
-                                });
-                              },
-                            ),
-                          );
-                        },
+                        itemBuilder: (context, index) => _buildChordListItem(index),
                       ),
                     ),
                   ),
