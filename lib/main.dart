@@ -568,81 +568,100 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: SizedBox(
                       width: double.infinity,
                       height: double.infinity,
-                      child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: widget.chordState.currentChord.rootKey.color,
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.black, width: 3),
-                        shape: RoundedRectangleBorder(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                        decoration: BoxDecoration(
+                          color: widget.chordState.currentChord.rootKey.color,
+                          border: Border.all(color: Colors.black, width: 3),
                           borderRadius: BorderRadius.circular(50),
                         ),
-                      ),
-                      onPressed: nextChord,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Big key label (sharp name only)
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Text(
-                                  (widget.chordState.currentChord.rootKey.name.contains('/')
-                                          ? widget.chordState.currentChord.rootKey.name.split('/')[0]
-                                          : widget.chordState.currentChord.rootKey.name),
-                                  style: TextStyle(
-                                    fontSize: 350,
-                                    fontWeight: FontWeight.w600,
-                                    foreground: Paint()
-                                      ..style = PaintingStyle.stroke
-                                      ..strokeWidth = 15
-                                      ..color = Colors.black,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(50),
+                            onTap: nextChord,
+                            child: Center(
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                switchInCurve: Curves.easeInOut,
+                                switchOutCurve: Curves.easeInOut,
+                                transitionBuilder: (Widget child, Animation<double> animation) {
+                                  return FadeTransition(
+                                    opacity: animation,
+                                    child: child,
+                                  );
+                                },
+                                child: FittedBox(
+                                  key: ValueKey<String>('${widget.chordState.currentChord.rootKey.name}-${widget.chordState.currentChord.type.displayName}'),
+                                  fit: BoxFit.scaleDown,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      // Big key label (sharp name only)
+                                      Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          Text(
+                                            (widget.chordState.currentChord.rootKey.name.contains('/')
+                                                    ? widget.chordState.currentChord.rootKey.name.split('/')[0]
+                                                    : widget.chordState.currentChord.rootKey.name),
+                                            style: TextStyle(
+                                              fontSize: 350,
+                                              fontWeight: FontWeight.w600,
+                                              foreground: Paint()
+                                                ..style = PaintingStyle.stroke
+                                                ..strokeWidth = 15
+                                                ..color = Colors.black,
+                                            ),
+                                          ),
+                                          Text(
+                                            (widget.chordState.currentChord.rootKey.name.contains('/')
+                                                    ? widget.chordState.currentChord.rootKey.name.split('/')[0]
+                                                    : widget.chordState.currentChord.rootKey.name),
+                                            style: TextStyle(
+                                              fontSize: 350,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      // Smaller chord type display name
+                                      Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          Text(
+                                            widget.chordState.currentChord.type.displayName,
+                                            style: TextStyle(
+                                              fontSize: 72,
+                                              fontWeight: FontWeight.w600,
+                                              foreground: Paint()
+                                                ..style = PaintingStyle.stroke
+                                                ..strokeWidth = 6
+                                                ..color = Colors.black,
+                                            ),
+                                          ),
+                                          Text(
+                                            widget.chordState.currentChord.type.displayName,
+                                            style: TextStyle(
+                                              fontSize: 72,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                Text(
-                                  (widget.chordState.currentChord.rootKey.name.contains('/')
-                                          ? widget.chordState.currentChord.rootKey.name.split('/')[0]
-                                          : widget.chordState.currentChord.rootKey.name),
-                                  style: TextStyle(
-                                    fontSize: 350,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                            // Smaller chord type display name
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Text(
-                                  widget.chordState.currentChord.type.displayName,
-                                  style: TextStyle(
-                                    fontSize: 72,
-                                    fontWeight: FontWeight.w600,
-                                    foreground: Paint()
-                                      ..style = PaintingStyle.stroke
-                                      ..strokeWidth = 6
-                                      ..color = Colors.black,
-                                  ),
-                                ),
-                                Text(
-                                  widget.chordState.currentChord.type.displayName,
-                                  style: TextStyle(
-                                    fontSize: 72,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
                 ),
                 // Chord List
                 Expanded(
