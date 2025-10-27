@@ -70,7 +70,7 @@ enum KeyCenter {
   gNat(name: 'G', key: 7, color: Colors.lightBlue),
   gSh(name: 'G♯/A♭', key: 8, color: Color(0xFF1E88E5)),
   aNat(name: 'A', key: 9, color: Colors.indigo),
-  aSh(name: 'A♯/B♭', key: 10, color: Color(0xFF8E24AA)),
+  aSh(name: 'A♯/B♭', key: 10, color: Color(0xFF5E35B1)),
   bNat(name: 'B', key: 11, color: Colors.purple);
 
   const KeyCenter({
