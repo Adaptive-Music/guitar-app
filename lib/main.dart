@@ -624,7 +624,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           final chordLabel = '${keyLabel} ${chord.type.symbol}';
                           return Container(
                             decoration: BoxDecoration(
-                              color: chord.rootKey.color.withOpacity(0.3),
+                              color: isSelected ? chord.rootKey.color : chord.rootKey.color.withOpacity(0.3),
                               // Remove yellow border highlight; we'll use an indicator instead
                               border: null,
                             ),
@@ -635,7 +635,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                 width: 24,
                                 child: Center(
                                   child: isSelected
-                                      ? const Text('→', style: TextStyle(fontSize: 20))
+                                      ? Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            Text(
+                                              '→',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                foreground: Paint()
+                                                  ..style = PaintingStyle.stroke
+                                                  ..strokeWidth = 3
+                                                  ..color = Colors.black,
+                                              ),
+                                            ),
+                                            const Text(
+                                              '→',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        )
                                       : const SizedBox.shrink(),
                                 ),
                               ),
