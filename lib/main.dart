@@ -567,7 +567,6 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 // Big Button
                 Expanded(
-                  flex: 4,
                   child: Padding(
                     padding: EdgeInsets.all(12),
                     child: SizedBox(
@@ -669,8 +668,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 // Chord List
-                Expanded(
-                  flex: 1,
+                SizedBox(
+                  width: 230,
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(0, 12, 12, 12),
                     child: Container(
@@ -681,7 +680,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(9), // Slightly smaller to fit inside border
                         child: Container(
-                          color: Colors.grey[200],
+                          color: Colors.white,
                           child: ListView.separated(
                             controller: _scrollController,
                             itemCount: widget.chordState.chordList.length,
@@ -713,9 +712,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             child: ListTile(
                               // Keep horizontal alignment by reserving space for the indicator
-                              minLeadingWidth: 24,
+                              minLeadingWidth: 12,
                               leading: SizedBox(
-                                width: 24,
+                                width: 12,
                                 child: Center(
                                   child: isSelected
                                       ? Stack(

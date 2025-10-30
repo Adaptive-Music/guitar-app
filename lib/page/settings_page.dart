@@ -410,7 +410,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
       child: ListTile(
-        minLeadingWidth: 24,
+        minLeadingWidth: 12,
         leading: _buildChordIndicator(isSelected),
         title: _buildChordTitle(index, chordLabel, isSelected),
         trailing: ReorderableDragStartListener(
@@ -428,7 +428,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildChordIndicator(bool isSelected) {
     return SizedBox(
-      width: 24,
+      width: 12,
       child: Center(
         child: isSelected
             ? Stack(
@@ -577,8 +577,8 @@ class _SettingsPageState extends State<SettingsPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Left side: Chord list taking full vertical space
-          Expanded(
-            flex: 2,
+          SizedBox(
+            width: 280,
             child: Column(
               children: [
                 Padding(
@@ -610,7 +610,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(9), // Slightly smaller to fit inside border
                         child: Container(
-                          color: Colors.grey[200],
+                          color: Colors.white,
                           child: ReorderableListView.builder(
                             buildDefaultDragHandles: false,
                             itemCount: chords.length,
@@ -630,7 +630,6 @@ class _SettingsPageState extends State<SettingsPage> {
           
           // Right side: Progression selector, Chord editor, and Instrument selector stacked
           Expanded(
-            flex: 5,
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
