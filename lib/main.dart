@@ -714,21 +714,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.all(12),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: double.infinity,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeInOut,
-                        decoration: BoxDecoration(
-                          color: widget.chordState.currentChord.rootKey.color,
-                          border: Border.all(color: Colors.black, width: 3),
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: GestureDetector(
-                            onTap: nextChord,
+                    child: GestureDetector(
+                      onTap: nextChord,
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: double.infinity,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.easeInOut,
+                          decoration: BoxDecoration(
+                            color: widget.chordState.currentChord.rootKey.color,
+                            border: Border.all(color: Colors.black, width: 3),
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
                             child: Center(
                               child: AnimatedSwitcher(
                                 duration: const Duration(milliseconds: 300),
