@@ -22,6 +22,7 @@ class _SettingsPageState extends State<SettingsPage> {
   late Map<String, List<Map<String, String>>> savedProgressions;
   late String currentProgressionName;
   int? selectedChordIndex;
+  int velocityBoost = 0;
 
   @override
   void initState() {
@@ -95,6 +96,9 @@ class _SettingsPageState extends State<SettingsPage> {
       chords = List.from(savedProgressions[currentProgressionName]!);
     }
 
+    // Load velocity boost
+    velocityBoost = widget.prefs!.getInt('velocityBoost') ?? 0;
+
     print("Instrument: $selectedInstrument");
     print("Current Progression: $currentProgressionName");
     print("Chords: $chords");
@@ -115,6 +119,7 @@ class _SettingsPageState extends State<SettingsPage> {
     await widget.prefs?.setString('instrument', selectedInstrument.name);
     await widget.prefs?.setString('savedProgressions', progressionsJson);
     await widget.prefs?.setString('currentProgressionName', currentProgressionName);
+    await widget.prefs?.setInt('velocityBoost', velocityBoost);
 
     MidiPro().selectInstrument(
         sfId: widget.sfID,
@@ -851,6 +856,46 @@ class _SettingsPageState extends State<SettingsPage> {
                           selectedInstrument = newValue!;
                         });
                       },
+                    ),
+                    
+                    SizedBox(height: 24),
+                    Divider(),
+                    SizedBox(height: 16),
+                    
+                    // 4. Velocity Boost Section
+                    Text('Velocity Boost',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Slider(
+                            value: velocityBoost.toDouble(),
+                            min: 0,
+                            max: 10,
+                            divisions: 10,
+                            label: velocityBoost.toString(),
+                            onChanged: (double value) {
+                              setState(() {
+                                velocityBoost = value.round();
+                              });
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        SizedBox(
+                          width: 50,
+                          child: Text(
+                            velocityBoost.toString(),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

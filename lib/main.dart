@@ -46,6 +46,7 @@ class MidiConfig {
   final MidiDevice? selectedDevice;
   final GlobalKey<GuitarStringsState> guitarStringsKey;
   final MidiPro midiPlayer;
+  final int velocityBoost;
 
   const MidiConfig({
     required this.prefs,
@@ -53,6 +54,7 @@ class MidiConfig {
     required this.selectedDevice,
     required this.guitarStringsKey,
     required this.midiPlayer,
+    required this.velocityBoost,
   });
 }
 
@@ -87,6 +89,7 @@ class _MyAppState extends State<MyApp> {
   int currentChord = 0;
   List<Chord> chords = [];
   String currentProgressionName = '';
+  int velocityBoost = 0;
 
   bool _sfLoading = true;
   bool _midiConnecting = false;
@@ -186,6 +189,9 @@ class _MyAppState extends State<MyApp> {
         int velocity = data.length > 2 ? data[2] : 0;
 
         print("Received MIDI message: status=$status, note=$note, velocity=$velocity");
+        // Apply velocity boost
+        velocity = (velocity + (127 * velocityBoost / 10).round()).clamp(0, 127);
+        print("After velocity boost: velocity=$velocity");
 
         // Determine which string based on note number
         int stringNumber = getStringNumberFromNote(note);
@@ -264,6 +270,10 @@ class _MyAppState extends State<MyApp> {
       _prefs?.setString('playingMode', 'Single Note');
     }
 
+    if (_prefs?.getInt('velocityBoost') == null) {
+      _prefs?.setInt('velocityBoost', 0);
+    }
+
     // Initialize default chords if not set
     if (_prefs?.getStringList('chords') == null) {
       final defaultChords = [
@@ -277,6 +287,9 @@ class _MyAppState extends State<MyApp> {
 
     // Load chords from preferences
     _loadChords();
+
+    // Load velocity boost
+    velocityBoost = _prefs?.getInt('velocityBoost') ?? 0;
 
     // if (_prefs?.getString('visuals') == null) {
     //   _prefs?.setString('visuals', 'Grid');
@@ -432,6 +445,7 @@ class _MyAppState extends State<MyApp> {
               selectedDevice: selectedMidiDevice,
               guitarStringsKey: _guitarStringsKey,
               midiPlayer: _midi,
+              velocityBoost: velocityBoost,
             ),
           );
         },
