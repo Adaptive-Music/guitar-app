@@ -19,9 +19,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
   late Instrument selectedInstrument;
   late List<Map<String, String>> chords;
-  late Map<String, List<Map<String, String>>> savedProgressions;
+  late Map<String, dynamic> savedSongs; // Song name -> {progressions: {progName: [chords]}, order: [progNames]}
+  late String currentSongName;
   late String currentProgressionName;
   int? selectedChordIndex;
+  int? selectedProgressionIndex;
   int velocityBoost = 0;
 
   @override
@@ -42,64 +44,101 @@ class _SettingsPageState extends State<SettingsPage> {
     selectedInstrument = Instrument.values
         .firstWhere((e) => e.name == widget.prefs!.getString('instrument')!);
 
-    // Load current progression name
+    // Load current song and progression names
+    currentSongName = widget.prefs!.getString('currentSongName') ?? 'Default Song';
     currentProgressionName = widget.prefs!.getString('currentProgressionName') ?? 'Default';
 
-    // Load saved progressions
-    final progressionsJson = widget.prefs!.getString('savedProgressions');
-    if (progressionsJson != null) {
-      final decoded = json.decode(progressionsJson) as Map<String, dynamic>;
-      savedProgressions = decoded.map((key, value) {
-        final chordsList = (value as List).map((chord) {
-          return {
-            'key': chord['key'] as String,
-            'type': chord['type'] as String,
-          };
-        }).toList();
-        return MapEntry(key, chordsList);
-      });
+    // Load saved songs structure
+    final songsJson = widget.prefs!.getString('savedSongs');
+    if (songsJson != null) {
+      savedSongs = json.decode(songsJson) as Map<String, dynamic>;
     } else {
-      savedProgressions = {};
+      savedSongs = {};
     }
 
-    // Only create Default progression if this is truly first launch (no saved progressions at all)
-    if (savedProgressions.isEmpty) {
-      // Check if there's old 'chords' data from before the progression system
-      final chordStrings = widget.prefs!.getStringList('chords') ?? [];
-      if (chordStrings.isNotEmpty) {
-        // Migrate old data to Default progression (one-time migration)
-        savedProgressions['Default'] = chordStrings.map((chordStr) {
-          final parts = chordStr.split(':');
-          return {
-            'key': parts.length > 0 ? parts[0] : 'C',
-            'type': parts.length > 1 ? parts[1] : 'major',
-          };
-        }).toList();
-        // Clear old key so we don't migrate again
-        widget.prefs!.remove('chords');
+    // Migration from old progressions-only format
+    if (savedSongs.isEmpty) {
+      final progressionsJson = widget.prefs!.getString('savedProgressions');
+      if (progressionsJson != null) {
+        // Migrate old progressions into a default song
+        final decoded = json.decode(progressionsJson) as Map<String, dynamic>;
+        final progressions = <String, List<Map<String, String>>>{};
+        decoded.forEach((key, value) {
+          final chordsList = (value as List).map((chord) {
+            return {
+              'key': chord['key'] as String,
+              'type': chord['type'] as String,
+            };
+          }).toList();
+          progressions[key] = chordsList;
+        });
+        savedSongs['Default Song'] = {
+          'progressions': progressions,
+          'order': progressions.keys.toList(),
+        };
+        currentSongName = 'Default Song';
       } else {
-        // True first launch - create default progression
-        savedProgressions['Default'] = [
-          {'key': 'C', 'type': 'major'},
-          {'key': 'F', 'type': 'major'},
-          {'key': 'G', 'type': 'major'},
-          {'key': 'A', 'type': 'minor'},
-        ];
+        // Check if there's old 'chords' data from before the progression system
+        final chordStrings = widget.prefs!.getStringList('chords') ?? [];
+        if (chordStrings.isNotEmpty) {
+          // Migrate old data to Default progression in Default Song
+          final defaultChords = chordStrings.map((chordStr) {
+            final parts = chordStr.split(':');
+            return {
+              'key': parts.length > 0 ? parts[0] : 'C',
+              'type': parts.length > 1 ? parts[1] : 'major',
+            };
+          }).toList();
+          savedSongs['Default Song'] = {
+            'progressions': {'Default': defaultChords},
+            'order': ['Default'],
+          };
+          widget.prefs!.remove('chords');
+        } else {
+          // True first launch - create default song with default progression
+          savedSongs['Default Song'] = {
+            'progressions': {
+              'Default': [
+                {'key': 'C', 'type': 'major'},
+                {'key': 'F', 'type': 'major'},
+                {'key': 'G', 'type': 'major'},
+                {'key': 'A', 'type': 'minor'},
+              ]
+            },
+            'order': ['Default'],
+          };
+        }
+        currentSongName = 'Default Song';
+        currentProgressionName = 'Default';
       }
     }
 
-    // Load current progression
-    if (savedProgressions.containsKey(currentProgressionName)) {
-      chords = List.from(savedProgressions[currentProgressionName]!);
-    } else {
-      currentProgressionName = savedProgressions.keys.first;
-      chords = List.from(savedProgressions[currentProgressionName]!);
+    // Load current song and progression
+    if (!savedSongs.containsKey(currentSongName)) {
+      currentSongName = savedSongs.keys.first;
     }
+    
+    final currentSong = savedSongs[currentSongName] as Map<String, dynamic>;
+    final progressions = currentSong['progressions'] as Map<String, dynamic>;
+    
+    if (!progressions.containsKey(currentProgressionName)) {
+      currentProgressionName = (currentSong['order'] as List<dynamic>).first.toString();
+    }
+    
+    // Load chords from current progression
+    final progressionData = progressions[currentProgressionName] as List;
+    chords = progressionData.map((chord) {
+      return {
+        'key': chord['key'] as String,
+        'type': chord['type'] as String,
+      };
+    }).toList();
 
     // Load velocity boost
     velocityBoost = widget.prefs!.getInt('velocityBoost') ?? 0;
 
     print("Instrument: $selectedInstrument");
+    print("Current Song: $currentSongName");
     print("Current Progression: $currentProgressionName");
     print("Chords: $chords");
 
@@ -110,24 +149,55 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> saveSettings() async {
-    // Save current progression (make a copy)
-    savedProgressions[currentProgressionName] = List.from(chords.map((chord) => Map<String, String>.from(chord)));
+    try {
+      // Save current chords back to current progression
+      final currentSong = savedSongs[currentSongName] as Map<String, dynamic>;
+      final progressions = currentSong['progressions'] as Map<String, dynamic>;
+      progressions[currentProgressionName] = chords.map((chord) => {
+        'key': chord['key']!,
+        'type': chord['type']!,
+      }).toList();
 
-    // Convert to JSON
-    final progressionsJson = json.encode(savedProgressions);
+      // Convert to JSON
+      final songsJson = json.encode(savedSongs);
 
-    await widget.prefs?.setString('instrument', selectedInstrument.name);
-    await widget.prefs?.setString('savedProgressions', progressionsJson);
-    await widget.prefs?.setString('currentProgressionName', currentProgressionName);
-    await widget.prefs?.setInt('velocityBoost', velocityBoost);
+      await widget.prefs?.setString('instrument', selectedInstrument.name);
+      await widget.prefs?.setString('savedSongs', songsJson);
+      await widget.prefs?.setString('currentSongName', currentSongName);
+      await widget.prefs?.setString('currentProgressionName', currentProgressionName);
+      await widget.prefs?.setInt('velocityBoost', velocityBoost);
 
-    MidiPro().selectInstrument(
-        sfId: widget.sfID,
-        bank: selectedInstrument.bank,
-        program: selectedInstrument.program);
+      MidiPro().selectInstrument(
+          sfId: widget.sfID,
+          bank: selectedInstrument.bank,
+          program: selectedInstrument.program);
 
-    print('settings saved');
-    print('Saved progression: $currentProgressionName');
+      print('settings saved successfully');
+      print('Saved song: $currentSongName');
+      print('Saved progression: $currentProgressionName');
+      print('Saved ${chords.length} chords');
+    } catch (e) {
+      print('Error saving settings: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error saving settings: $e')),
+      );
+    }
+  }
+
+  // Helper methods for accessing current song data
+  Map<String, dynamic> get currentSongProgressions {
+    final song = savedSongs[currentSongName] as Map<String, dynamic>;
+    return song['progressions'] as Map<String, dynamic>;
+  }
+
+  List<String> get currentSongProgressionOrder {
+    final song = savedSongs[currentSongName] as Map<String, dynamic>;
+    return List<String>.from(song['order']);
+  }
+
+  void setCurrentSongProgressionOrder(List<String> order) {
+    final song = savedSongs[currentSongName] as Map<String, dynamic>;
+    song['order'] = order;
   }
 
   void addChord() {
@@ -182,12 +252,20 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void loadProgression(String name) {
     print('Loading progression: $name');
-    print('Available progressions: ${savedProgressions.keys}');
-    print('Progression chords: ${savedProgressions[name]}');
+    final progressions = currentSongProgressions;
+    print('Available progressions: ${progressions.keys}');
+    print('Progression chords: ${progressions[name]}');
     setState(() {
       currentProgressionName = name;
-      chords = List.from(savedProgressions[name]!);
+      final progressionData = progressions[name] as List;
+      chords = progressionData.map((chord) {
+        return {
+          'key': chord['key'] as String,
+          'type': chord['type'] as String,
+        };
+      }).toList();
       selectedChordIndex = chords.isNotEmpty ? 0 : null; // Select first chord
+      selectedProgressionIndex = currentSongProgressionOrder.indexOf(name);
     });
     print('Loaded chords: $chords');
   }
@@ -216,11 +294,17 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
 
-    if (result != null && result.isNotEmpty && !savedProgressions.containsKey(result)) {
+    if (result != null && result.isNotEmpty && !currentSongProgressions.containsKey(result)) {
       setState(() {
-        savedProgressions[result] = [{'key': 'C', 'type': 'major'}];
+        final progressions = currentSongProgressions;
+        progressions[result] = [{'key': 'C', 'type': 'major'}];
+        // Add to order list
+        final order = currentSongProgressionOrder;
+        order.add(result);
+        setCurrentSongProgressionOrder(order);
         currentProgressionName = result;
-        chords = List.from(savedProgressions[result]!);
+        chords = [{'key': 'C', 'type': 'major'}];
+        selectedProgressionIndex = order.length - 1;
       });
     }
   }
@@ -250,22 +334,29 @@ class _SettingsPageState extends State<SettingsPage> {
     );
 
     if (result != null && result.isNotEmpty && result != currentProgressionName) {
-      if (savedProgressions.containsKey(result)) {
+      if (currentSongProgressions.containsKey(result)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('A progression with that name already exists')),
         );
         return;
       }
       setState(() {
-        savedProgressions[result] = savedProgressions[currentProgressionName]!;
-        savedProgressions.remove(currentProgressionName);
+        final progressions = currentSongProgressions;
+        progressions[result] = progressions[currentProgressionName]!;
+        progressions.remove(currentProgressionName);
+        // Update order list
+        final order = currentSongProgressionOrder;
+        final index = order.indexOf(currentProgressionName);
+        order[index] = result;
+        setCurrentSongProgressionOrder(order);
         currentProgressionName = result;
       });
     }
   }
 
   void deleteProgression() async {
-    if (savedProgressions.length <= 1) {
+    final progressions = currentSongProgressions;
+    if (progressions.length <= 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Cannot delete the last progression')),
       );
@@ -292,9 +383,21 @@ class _SettingsPageState extends State<SettingsPage> {
 
     if (confirmed == true) {
       setState(() {
-        savedProgressions.remove(currentProgressionName);
-        currentProgressionName = savedProgressions.keys.first;
-        chords = List.from(savedProgressions[currentProgressionName]!);
+        progressions.remove(currentProgressionName);
+        // Update order list
+        final order = currentSongProgressionOrder;
+        order.remove(currentProgressionName);
+        setCurrentSongProgressionOrder(order);
+        // Load first remaining progression
+        currentProgressionName = order.first;
+        final progressionData = progressions[currentProgressionName] as List;
+        chords = progressionData.map((chord) {
+          return {
+            'key': chord['key'] as String,
+            'type': chord['type'] as String,
+          };
+        }).toList();
+        selectedProgressionIndex = 0;
       });
     }
   }
@@ -323,9 +426,206 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
 
-    if (result != null && result.isNotEmpty && !savedProgressions.containsKey(result)) {
+    if (result != null && result.isNotEmpty && !currentSongProgressions.containsKey(result)) {
       setState(() {
-        savedProgressions[result] = List.from(chords);
+        final progressions = currentSongProgressions;
+        progressions[result] = List.from(chords.map((chord) => Map<String, String>.from(chord)));
+        // Add to order list
+        final order = currentSongProgressionOrder;
+        order.add(result);
+        setCurrentSongProgressionOrder(order);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Created "$result"')),
+      );
+    }
+  }
+
+  void reorderProgressions(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final order = currentSongProgressionOrder;
+      final progression = order.removeAt(oldIndex);
+      order.insert(newIndex, progression);
+      setCurrentSongProgressionOrder(order);
+      
+      // Update selection to follow the moved progression
+      if (selectedProgressionIndex == oldIndex) {
+        selectedProgressionIndex = newIndex;
+      } else if (selectedProgressionIndex != null) {
+        if (oldIndex < selectedProgressionIndex! && newIndex >= selectedProgressionIndex!) {
+          selectedProgressionIndex = selectedProgressionIndex! - 1;
+        } else if (oldIndex > selectedProgressionIndex! && newIndex <= selectedProgressionIndex!) {
+          selectedProgressionIndex = selectedProgressionIndex! + 1;
+        }
+      }
+    });
+  }
+
+  // Song management methods
+  void loadSong(String name) {
+    setState(() {
+      currentSongName = name;
+      final song = savedSongs[name] as Map<String, dynamic>;
+      final order = List<String>.from(song['order']);
+      currentProgressionName = order.first;
+      loadProgression(currentProgressionName);
+    });
+  }
+
+  void createNewSong() async {
+    final nameController = TextEditingController(text: 'New Song');
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('New Song'),
+        content: TextField(
+          controller: nameController,
+          decoration: InputDecoration(labelText: 'Song Name'),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, nameController.text),
+            child: Text('Create'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty && !savedSongs.containsKey(result)) {
+      setState(() {
+        savedSongs[result] = {
+          'progressions': {
+            'Default': [{'key': 'C', 'type': 'major'}]
+          },
+          'order': ['Default'],
+        };
+        currentSongName = result;
+        currentProgressionName = 'Default';
+        chords = [{'key': 'C', 'type': 'major'}];
+        selectedProgressionIndex = 0;
+      });
+    }
+  }
+
+  void renameSong() async {
+    final nameController = TextEditingController(text: currentSongName);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Rename Song'),
+        content: TextField(
+          controller: nameController,
+          decoration: InputDecoration(labelText: 'Song Name'),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, nameController.text),
+            child: Text('Rename'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty && result != currentSongName) {
+      if (savedSongs.containsKey(result)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('A song with that name already exists')),
+        );
+        return;
+      }
+      setState(() {
+        savedSongs[result] = savedSongs[currentSongName]!;
+        savedSongs.remove(currentSongName);
+        currentSongName = result;
+      });
+    }
+  }
+
+  void deleteSong() async {
+    if (savedSongs.length <= 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Cannot delete the last song')),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Song'),
+        content: Text('Are you sure you want to delete "$currentSongName"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() {
+        savedSongs.remove(currentSongName);
+        currentSongName = savedSongs.keys.first;
+        loadSong(currentSongName);
+      });
+    }
+  }
+
+  void duplicateSong() async {
+    final nameController = TextEditingController(text: '$currentSongName (Copy)');
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Duplicate Song'),
+        content: TextField(
+          controller: nameController,
+          decoration: InputDecoration(labelText: 'New Song Name'),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, nameController.text),
+            child: Text('Duplicate'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty && !savedSongs.containsKey(result)) {
+      setState(() {
+        // Deep copy the song
+        final originalSong = savedSongs[currentSongName] as Map<String, dynamic>;
+        final originalProgressions = originalSong['progressions'] as Map<String, dynamic>;
+        final newProgressions = <String, dynamic>{};
+        originalProgressions.forEach((key, value) {
+          newProgressions[key] = List.from((value as List).map((chord) => Map<String, String>.from(chord)));
+        });
+        savedSongs[result] = {
+          'progressions': newProgressions,
+          'order': List<String>.from(originalSong['order']),
+        };
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Created "$result"')),
@@ -426,6 +726,51 @@ class _SettingsPageState extends State<SettingsPage> {
           setState(() {
             selectedChordIndex = index;
           });
+        },
+      ),
+    );
+  }
+
+  Widget _buildProgressionListItem(int index) {
+    final order = currentSongProgressionOrder;
+    final progressionName = order[index];
+    final isSelected = selectedProgressionIndex == index;
+    
+    return Container(
+      key: ValueKey('progression-$index-$progressionName'),
+      decoration: BoxDecoration(
+        color: isSelected ? Colors.blue[100] : Colors.white,
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey,
+            width: 1,
+          ),
+        ),
+      ),
+      child: ListTile(
+        dense: true,
+        minLeadingWidth: 12,
+        leading: SizedBox(
+          width: 12,
+          child: Center(
+            child: isSelected
+                ? Icon(Icons.play_arrow, size: 18, color: Colors.blue)
+                : const SizedBox.shrink(),
+          ),
+        ),
+        title: Text(
+          '${index + 1}. $progressionName',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        trailing: ReorderableDragStartListener(
+          index: index,
+          child: Icon(Icons.drag_handle, size: 20),
+        ),
+        onTap: () {
+          loadProgression(progressionName);
         },
       ),
     );
@@ -581,13 +926,55 @@ class _SettingsPageState extends State<SettingsPage> {
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Left side: Chord list taking full vertical space
+          // Left side: Progression list and Chord list taking full vertical space
           SizedBox(
             width: 280,
             child: Column(
               children: [
+                // Progression List Section
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Progressions',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                      IconButton(
+                        icon: Icon(Icons.add),
+                        onPressed: createNewProgression,
+                        tooltip: 'Add Progression',
+                        padding: EdgeInsets.zero,
+                        constraints: BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  height: currentSongProgressionOrder.length * 57.0, // 56 for ListTile + 1 for divider
+                  padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey, width: 3),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(9),
+                      child: Container(
+                        color: Colors.white,
+                        child: ReorderableListView.builder(
+                          buildDefaultDragHandles: false,
+                          itemCount: currentSongProgressionOrder.length,
+                          onReorder: reorderProgressions,
+                          itemBuilder: (context, index) => _buildProgressionListItem(index),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // Chord List Section
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -633,7 +1020,7 @@ class _SettingsPageState extends State<SettingsPage> {
           
           VerticalDivider(width: 1),
           
-          // Right side: Progression selector, Chord editor, and Instrument selector stacked
+          // Right side: Song selector, Progression selector, Chord editor, and Instrument selector stacked
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
@@ -641,6 +1028,79 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // 0. Song Management Section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Song',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.add),
+                              onPressed: createNewSong,
+                              tooltip: 'New Song',
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(),
+                            ),
+                            SizedBox(width: 8),
+                            IconButton(
+                              icon: Icon(Icons.copy),
+                              onPressed: duplicateSong,
+                              tooltip: 'Duplicate Song',
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(),
+                            ),
+                            SizedBox(width: 8),
+                            IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: renameSong,
+                              tooltip: 'Rename Song',
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(),
+                            ),
+                            SizedBox(width: 8),
+                            IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: deleteSong,
+                              tooltip: 'Delete Song',
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(),
+                              color: Colors.red,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Select Song',
+                        contentPadding: EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 10.0),
+                        isDense: true,
+                      ),
+                      value: currentSongName,
+                      isExpanded: true,
+                      items: savedSongs.keys
+                          .map((name) => DropdownMenuItem(
+                                value: name,
+                                child: Text(name, style: TextStyle(fontSize: 14)),
+                              ))
+                          .toList(),
+                      onChanged: (newValue) {
+                        if (newValue != null) {
+                          loadSong(newValue);
+                        }
+                      },
+                    ),
+                    
+                    SizedBox(height: 24),
+                    Divider(),
+                    SizedBox(height: 16),
+                    
                     // 1. Progression Management Section
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -697,7 +1157,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       value: currentProgressionName,
                       isExpanded: true,
-                      items: savedProgressions.keys
+                      items: currentSongProgressionOrder
                           .map((name) => DropdownMenuItem(
                                 value: name,
                                 child: Text(name, style: TextStyle(fontSize: 14)),

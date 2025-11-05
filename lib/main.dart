@@ -16,13 +16,17 @@ class ChordState {
   final Chord currentChord;
   final int currentChordIndex;
   final List<Chord> chordList;
+  final String songName;
   final String progressionName;
+  final List<String> progressionNames;
 
   const ChordState({
     required this.currentChord,
     required this.currentChordIndex,
     required this.chordList,
+    required this.songName,
     required this.progressionName,
+    required this.progressionNames,
   });
 }
 
@@ -31,12 +35,14 @@ class ChordCallbacks {
   final VoidCallback onPrevious;
   final Function(int) onSelect;
   final VoidCallback onUpdate;
+  final Function(String) onSelectProgression;
 
   const ChordCallbacks({
     required this.onNext,
     required this.onPrevious,
     required this.onSelect,
     required this.onUpdate,
+    required this.onSelectProgression,
   });
 }
 
@@ -89,6 +95,8 @@ class _MyAppState extends State<MyApp> {
   int currentChord = 0;
   List<Chord> chords = [];
   String currentProgressionName = '';
+  String currentSongName = '';
+  List<String> progressionNames = [];
   int velocityBoost = 0;
 
   bool _sfLoading = true;
@@ -307,22 +315,46 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _loadChords() {
-    // Load from the new progression system
+    // Load from the new songs system
+    currentSongName = _prefs?.getString('currentSongName') ?? 'Default Song';
     currentProgressionName = _prefs?.getString('currentProgressionName') ?? 'Default';
-    final progressionsJson = _prefs?.getString('savedProgressions');
+    
+    final songsJson = _prefs?.getString('savedSongs');
     
     List<Map<String, String>> chordMaps = [];
+    progressionNames = [];
     
-    if (progressionsJson != null) {
-      final decoded = json.decode(progressionsJson) as Map<String, dynamic>;
-      if (decoded.containsKey(currentProgressionName)) {
-        final progression = decoded[currentProgressionName] as List;
-        chordMaps = progression.map((chord) {
-          return {
-            'key': chord['key'] as String,
-            'type': chord['type'] as String,
-          };
-        }).toList();
+    if (songsJson != null) {
+      final decoded = json.decode(songsJson) as Map<String, dynamic>;
+      if (decoded.containsKey(currentSongName)) {
+        final song = decoded[currentSongName] as Map<String, dynamic>;
+        final progressions = song['progressions'] as Map<String, dynamic>;
+        progressionNames = List<String>.from(song['order'] as List);
+        if (progressions.containsKey(currentProgressionName)) {
+          final progression = progressions[currentProgressionName] as List;
+          chordMaps = progression.map((chord) {
+            return {
+              'key': chord['key'] as String,
+              'type': chord['type'] as String,
+            };
+          }).toList();
+        }
+      }
+    } else {
+      // Fallback to old progression system
+      final progressionsJson = _prefs?.getString('savedProgressions');
+      if (progressionsJson != null) {
+        final decoded = json.decode(progressionsJson) as Map<String, dynamic>;
+        progressionNames = decoded.keys.toList();
+        if (decoded.containsKey(currentProgressionName)) {
+          final progression = decoded[currentProgressionName] as List;
+          chordMaps = progression.map((chord) {
+            return {
+              'key': chord['key'] as String,
+              'type': chord['type'] as String,
+            };
+          }).toList();
+        }
       }
     }
     
@@ -336,6 +368,7 @@ class _MyAppState extends State<MyApp> {
           'type': parts.length > 1 ? parts[1] : 'major',
         };
       }).toList();
+      if (chordMaps.isNotEmpty) progressionNames = ['Default'];
     }
     
     // Convert to Chord objects
@@ -353,6 +386,92 @@ class _MyAppState extends State<MyApp> {
     }).toList();
     
     print('Loaded ${chords.length} chords from progression: $currentProgressionName');
+    print('Song has ${progressionNames.length} progressions');
+  }
+
+  void _loadProgression(String progressionName) {
+    print('_loadProgression called with: $progressionName');
+    setState(() {
+      _stopCurrentChordNotesAndStrings();
+      currentProgressionName = progressionName;
+      
+      // Save the selected progression
+      _prefs?.setString('currentProgressionName', progressionName);
+      
+      // Load chords for this progression
+      // Try new format first (savedSongs)
+      final songsJson = _prefs?.getString('savedSongs');
+      if (songsJson != null) {
+        final decoded = json.decode(songsJson) as Map<String, dynamic>;
+        if (decoded.containsKey(currentSongName)) {
+          final song = decoded[currentSongName] as Map<String, dynamic>;
+          final progressions = song['progressions'] as Map<String, dynamic>;
+          if (progressions.containsKey(progressionName)) {
+            final progression = progressions[progressionName] as List;
+            final chordMaps = progression.map((chord) {
+              return {
+                'key': chord['key'] as String,
+                'type': chord['type'] as String,
+              };
+            }).toList();
+            
+            // Convert to Chord objects
+            chords = chordMaps.map((chordMap) {
+              final keyCenter = KeyCenter.values.firstWhere(
+                (k) => k.name == chordMap['key'],
+                orElse: () => KeyCenter.cNat,
+              );
+              final chordType = ChordType.values.firstWhere(
+                (t) => t.name == chordMap['type'],
+                orElse: () => ChordType.major,
+              );
+              
+              return Chord(keyCenter, chordType);
+            }).toList();
+            
+            // Reset to first chord
+            currentChord = 0;
+            
+            print('Switched to progression: $progressionName with ${chords.length} chords');
+            return;
+          }
+        }
+      }
+      
+      // Fall back to old format (savedProgressions)
+      final progressionsJson = _prefs?.getString('savedProgressions');
+      if (progressionsJson != null) {
+        final decoded = json.decode(progressionsJson) as Map<String, dynamic>;
+        if (decoded.containsKey(progressionName)) {
+          final progression = decoded[progressionName] as List;
+          final chordMaps = progression.map((chord) {
+            return {
+              'key': chord['key'] as String,
+              'type': chord['type'] as String,
+            };
+          }).toList();
+          
+          // Convert to Chord objects
+          chords = chordMaps.map((chordMap) {
+            final keyCenter = KeyCenter.values.firstWhere(
+              (k) => k.name == chordMap['key'],
+              orElse: () => KeyCenter.cNat,
+            );
+            final chordType = ChordType.values.firstWhere(
+              (t) => t.name == chordMap['type'],
+              orElse: () => ChordType.major,
+            );
+            
+            return Chord(keyCenter, chordType);
+          }).toList();
+          
+          // Reset to first chord
+          currentChord = 0;
+          
+          print('Switched to progression (old format): $progressionName with ${chords.length} chords');
+        }
+      }
+    });
   }
 
   @override
@@ -402,7 +521,9 @@ class _MyAppState extends State<MyApp> {
               currentChord: chords.isNotEmpty ? chords[currentChord] : Chord(KeyCenter.cNat, ChordType.major),
               currentChordIndex: currentChord,
               chordList: chords,
+              songName: currentSongName,
               progressionName: currentProgressionName,
+              progressionNames: progressionNames,
             ),
             callbacks: ChordCallbacks(
               onNext: () {
@@ -435,6 +556,9 @@ class _MyAppState extends State<MyApp> {
                   // Reset to first chord when returning from settings
                   currentChord = 0;
                 });
+              },
+              onSelectProgression: (String progressionName) {
+                _loadProgression(progressionName);
               },
             ),
             midiConfig: MidiConfig(
@@ -483,8 +607,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void didUpdateWidget(HomeScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     
-    // Scroll to current chord when it changes
-    if (oldWidget.chordState.currentChordIndex != widget.chordState.currentChordIndex) {
+    // Scroll to current chord when it changes or when progression changes
+    if (oldWidget.chordState.currentChordIndex != widget.chordState.currentChordIndex ||
+        oldWidget.chordState.progressionName != widget.chordState.progressionName) {
       _scrollToCurrentChord();
     }
   }
@@ -529,10 +654,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final titleText = widget.midiConfig.selectedDevice == null 
+        ? 'Not connected' 
+        : widget.chordState.progressionNames.length > 1
+            ? '${widget.chordState.songName} - ${widget.chordState.progressionName}'
+            : widget.chordState.songName;
+    
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(widget.midiConfig.selectedDevice == null ? 'Not connected' : widget.chordState.progressionName),
+        title: Text(titleText),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.settings),
@@ -558,7 +689,7 @@ class _HomeScreenState extends State<HomeScreen> {
               nextChord();
               return KeyEventResult.handled;
             } else if (event.logicalKey == LogicalKeyboardKey.enter) {
-              previousChord();
+              nextProgression();
               return KeyEventResult.handled;
             }
           }
@@ -679,24 +810,86 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                // Chord List
+                // Progression List and Chord List
                 SizedBox(
                   width: 230,
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(0, 12, 12, 12),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black, width: 3),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(9), // Slightly smaller to fit inside border
-                        child: Container(
-                          color: Colors.white,
-                          child: ListView.separated(
-                            controller: _scrollController,
-                            itemCount: widget.chordState.chordList.length,
-                            separatorBuilder: (context, index) => Divider(
+                  child: Column(
+                    children: [
+                      // Progression List (only show if 2+ progressions)
+                      if (widget.chordState.progressionNames.length >= 2) ...[
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(0, 12, 12, 0),
+                          child: Container(
+                            height: widget.chordState.progressionNames.length * 57.0, // 56 for ListTile + 1 for divider
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.black, width: 3),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(9),
+                              child: Container(
+                                color: Colors.grey[200],
+                                child: ListView.separated(
+                                  itemCount: widget.chordState.progressionNames.length,
+                                  separatorBuilder: (context, index) => Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: Colors.grey[800],
+                                  ),
+                                  itemBuilder: (context, index) {
+                                    final progName = widget.chordState.progressionNames[index];
+                                    final isSelected = progName == widget.chordState.progressionName;
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        color: isSelected ? Colors.blue[200] : Colors.grey[200],
+                                      ),
+                                      child: ListTile(
+                                        dense: true,
+                                        minLeadingWidth: 12,
+                                        leading: SizedBox(
+                                          width: 12,
+                                          child: Center(
+                                            child: isSelected
+                                                ? Icon(Icons.play_arrow, size: 18, color: Colors.blue[900])
+                                                : const SizedBox.shrink(),
+                                          ),
+                                        ),
+                                        title: Text(
+                                          '${index + 1}. $progName',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        onTap: () => widget.callbacks.onSelectProgression(progName),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                      ],
+                      // Chord List
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(0, widget.chordState.progressionNames.length >= 2 ? 0 : 12, 12, 12),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.black, width: 3),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(9), // Slightly smaller to fit inside border
+                              child: Container(
+                                color: Colors.white,
+                                child: ListView.separated(
+                                  controller: _scrollController,
+                                  itemCount: widget.chordState.chordList.length,
+                                  separatorBuilder: (context, index) => Divider(
                               height: 1,
                               thickness: 1,
                               color: Colors.grey[800],
@@ -837,18 +1030,21 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
                         },
-                      ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      ),
+                      ), // Close ListView.separated
+                                ), // Close Container (color)
+                              ), // Close ClipRRect
+                            ), // Close Container (border)
+                          ), // Close Padding
+                        ), // Close Expanded
+                      ], // Close Column children (progression + chord list)
+                    ), // Close Column
+                  ), // Close SizedBox (width: 230)
+                ], // Close Row children (big button + chord list)
+              ), // Close Row
+            ), // Close Expanded
+          ], // Close Column children (guitar strings + expanded row)
+        ), // Close Column
+        ), // Close Focus
     );
   }
 
@@ -858,5 +1054,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void previousChord() {
     widget.callbacks.onPrevious();
+  }
+
+  void nextProgression() {
+    // Only switch progressions if there are multiple progressions
+    if (widget.chordState.progressionNames.length > 1) {
+      final currentIndex = widget.chordState.progressionNames.indexOf(widget.chordState.progressionName);
+      final nextIndex = (currentIndex + 1) % widget.chordState.progressionNames.length;
+      final nextProgressionName = widget.chordState.progressionNames[nextIndex];
+      widget.callbacks.onSelectProgression(nextProgressionName);
+    }
   }
 }
