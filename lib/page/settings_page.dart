@@ -932,7 +932,7 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           // Left side: Progression list and Chord list taking full vertical space
           SizedBox(
-            width: 280,
+            width: 400,
             child: Column(
               children: [
                 // Progression List Section
@@ -944,12 +944,42 @@ class _SettingsPageState extends State<SettingsPage> {
                       Text('Progressions',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold)),
-                      IconButton(
-                        icon: Icon(Icons.add),
-                        onPressed: createNewProgression,
-                        tooltip: 'Add Progression',
-                        padding: EdgeInsets.zero,
-                        constraints: BoxConstraints(),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.add),
+                            onPressed: createNewProgression,
+                            tooltip: 'Add Progression',
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                          ),
+                          SizedBox(width: 4),
+                          IconButton(
+                            icon: Icon(Icons.copy),
+                            onPressed: duplicateProgression,
+                            tooltip: 'Duplicate Progression',
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                          ),
+                          SizedBox(width: 4),
+                          IconButton(
+                            icon: Icon(Icons.edit),
+                            onPressed: renameProgression,
+                            tooltip: 'Rename Progression',
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                          ),
+                          SizedBox(width: 4),
+                          IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: deleteProgression,
+                            tooltip: 'Delete Progression',
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                            color: Colors.red,
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -1097,79 +1127,6 @@ class _SettingsPageState extends State<SettingsPage> {
                       onChanged: (newValue) {
                         if (newValue != null) {
                           loadSong(newValue);
-                        }
-                      },
-                    ),
-                    
-                    SizedBox(height: 24),
-                    Divider(),
-                    SizedBox(height: 16),
-                    
-                    // 1. Progression Management Section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Progression',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold)),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.add),
-                              onPressed: createNewProgression,
-                              tooltip: 'New Progression',
-                              padding: EdgeInsets.zero,
-                              constraints: BoxConstraints(),
-                            ),
-                            SizedBox(width: 8),
-                            IconButton(
-                              icon: Icon(Icons.copy),
-                              onPressed: duplicateProgression,
-                              tooltip: 'Duplicate Progression',
-                              padding: EdgeInsets.zero,
-                              constraints: BoxConstraints(),
-                            ),
-                            SizedBox(width: 8),
-                            IconButton(
-                              icon: Icon(Icons.edit),
-                              onPressed: renameProgression,
-                              tooltip: 'Rename Progression',
-                              padding: EdgeInsets.zero,
-                              constraints: BoxConstraints(),
-                            ),
-                            SizedBox(width: 8),
-                            IconButton(
-                              icon: Icon(Icons.delete),
-                              onPressed: deleteProgression,
-                              tooltip: 'Delete Progression',
-                              padding: EdgeInsets.zero,
-                              constraints: BoxConstraints(),
-                              color: Colors.red,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Select Progression',
-                        contentPadding: EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 10.0),
-                        isDense: true,
-                      ),
-                      value: currentProgressionName,
-                      isExpanded: true,
-                      items: currentSongProgressionOrder
-                          .map((name) => DropdownMenuItem(
-                                value: name,
-                                child: Text(name, style: TextStyle(fontSize: 14)),
-                              ))
-                          .toList(),
-                      onChanged: (newValue) {
-                        if (newValue != null) {
-                          loadProgression(newValue);
                         }
                       },
                     ),
