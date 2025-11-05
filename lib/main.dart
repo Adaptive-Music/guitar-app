@@ -725,8 +725,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         child: Material(
                           color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(50),
+                          child: GestureDetector(
                             onTap: nextChord,
                             child: Center(
                               child: AnimatedSwitcher(
