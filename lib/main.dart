@@ -842,7 +842,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     final isSelected = progName == widget.chordState.progressionName;
                                     return Container(
                                       decoration: BoxDecoration(
-                                        color: isSelected ? Theme.of(context).colorScheme.primaryContainer : Colors.white,
+                                        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.white,
                                       ),
                                       child: ListTile(
                                         dense: true,

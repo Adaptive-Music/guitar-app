@@ -743,7 +743,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Container(
       key: ValueKey('progression-$index-$progressionName'),
       decoration: BoxDecoration(
-        color: isSelected ? Theme.of(context).colorScheme.primaryContainer : Colors.white,
+        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.white,
         border: Border(
           bottom: BorderSide(
             color: Colors.grey,
