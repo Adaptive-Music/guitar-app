@@ -863,7 +863,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     SizedBox(height: 16),
                     
                     // 4. Velocity Boost Section
-                    Text('Velocity Boost',
+                    Text('Volume Boost',
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold)),
                     SizedBox(height: 8),

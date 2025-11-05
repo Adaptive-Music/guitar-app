@@ -189,9 +189,11 @@ class _MyAppState extends State<MyApp> {
         int velocity = data.length > 2 ? data[2] : 0;
 
         print("Received MIDI message: status=$status, note=$note, velocity=$velocity");
-        // Apply velocity boost
+        // Apply velocity boost1
+        if (velocity > 0) {
         velocity = (velocity + (127 * velocityBoost / 10).round()).clamp(0, 127);
         print("After velocity boost: velocity=$velocity");
+        }
 
         // Determine which string based on note number
         int stringNumber = getStringNumberFromNote(note);
@@ -200,18 +202,12 @@ class _MyAppState extends State<MyApp> {
         // Illuminate the corresponding guitar string on Note On
         if ((status & 0xF0) == 0x90 && velocity > 0) {
           // Note On
-          _guitarStringsKey.currentState?.illuminateString(stringNumber, velocity);
-          // Play the MIDI note from the current chord
-          int chordNote = chords[currentChord].notes[stringNumber];
-          _midi.playNote(key: chordNote, velocity: velocity, sfId: sfID);
+          _guitarStringsKey.currentState?.playStringNote(stringNumber, velocity);
           
         } else if ((status & 0xF0) == 0x80 ||
             ((status & 0xF0) == 0x90 && velocity == 0)) {
           // Note Off (either explicit 0x80 or Note On with velocity 0)
-          _guitarStringsKey.currentState?.turnOffString(stringNumber);
-          // Stop the MIDI note from the current chord
-          int chordNote = chords[currentChord].notes[stringNumber];
-          _midi.stopNote(key: chordNote, sfId: sfID);
+          _guitarStringsKey.currentState?.stopStringNote(stringNumber);
         }
       }
     });
@@ -434,6 +430,8 @@ class _MyAppState extends State<MyApp> {
               onUpdate: () {
                 setState(() {
                   _loadChords();
+                  // Reload velocity boost from preferences
+                  velocityBoost = _prefs?.getInt('velocityBoost') ?? 0;
                   // Reset to first chord when returning from settings
                   currentChord = 0;
                 });

@@ -61,16 +61,16 @@ class GuitarStringsState extends State<GuitarStrings> {
   }
 
   // Play note for a string
-  void _playStringNote(int stringNumber) {
+  void playStringNote(int stringNumber, int velocity) {
     if (widget.currentChord != null && widget.midiPlayer != null && widget.sfId != null) {
       final note = widget.currentChord!.notes[stringNumber];
-      widget.midiPlayer!.playNote(key: note, velocity: 127, sfId: widget.sfId!);
-      illuminateString(stringNumber, 127);
+      widget.midiPlayer!.playNote(key: note, velocity: velocity, sfId: widget.sfId!);
+      illuminateString(stringNumber, velocity);
     }
   }
 
   // Stop note for a string
-  void _stopStringNote(int stringNumber) {
+  void stopStringNote(int stringNumber) {
     if (widget.currentChord != null && widget.midiPlayer != null && widget.sfId != null) {
       final note = widget.currentChord!.notes[stringNumber];
       widget.midiPlayer!.stopNote(key: note, sfId: widget.sfId!);
@@ -101,9 +101,9 @@ class GuitarStringsState extends State<GuitarStrings> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: GestureDetector(
-                onTapDown: (_) => _playStringNote(index),
-                onTapUp: (_) => _stopStringNote(index),
-                onTapCancel: () => _stopStringNote(index),
+                onTapDown: (_) => playStringNote(index, 127),
+                onTapUp: (_) => stopStringNote(index),
+                onTapCancel: () => stopStringNote(index),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                 decoration: BoxDecoration(
