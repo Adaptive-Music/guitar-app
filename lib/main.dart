@@ -655,10 +655,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final titleText = widget.midiConfig.selectedDevice == null 
-        ? 'Not connected' 
-        : widget.chordState.progressionNames.length > 1
-            ? '${widget.chordState.songName} - ${widget.chordState.progressionName}'
-            : widget.chordState.songName;
+        ? 'Not connected - ${widget.chordState.songName}'
+        : widget.chordState.songName;
     
     return Scaffold(
       appBar: AppBar(
@@ -689,7 +687,11 @@ class _HomeScreenState extends State<HomeScreen> {
               nextChord();
               return KeyEventResult.handled;
             } else if (event.logicalKey == LogicalKeyboardKey.enter) {
-              nextProgression();
+              if (widget.chordState.progressionNames.length > 1) {
+                nextProgression();
+              } else {
+                previousChord();
+              }
               return KeyEventResult.handled;
             }
           }
