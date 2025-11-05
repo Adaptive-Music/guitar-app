@@ -985,7 +985,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
                 Container(
-                  height: currentSongProgressionOrder.length * 57.0, // 56 for ListTile + 1 for divider
+                  height: currentSongProgressionOrder.length * 52.5, // 56 for ListTile + 1 for divider
                   padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
                   child: Container(
                     decoration: BoxDecoration(

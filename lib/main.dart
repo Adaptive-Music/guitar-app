@@ -821,7 +821,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Padding(
                           padding: EdgeInsets.fromLTRB(0, 12, 12, 0),
                           child: Container(
-                            height: widget.chordState.progressionNames.length * 57.0, // 56 for ListTile + 1 for divider
+                            height: widget.chordState.progressionNames.length * 49.5, // 56 for ListTile + 1 for divider
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.black, width: 3),
                               borderRadius: BorderRadius.circular(12),
