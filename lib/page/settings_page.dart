@@ -134,6 +134,10 @@ class _SettingsPageState extends State<SettingsPage> {
       };
     }).toList();
 
+    // Set the selected progression index
+    final order = (currentSong['order'] as List).cast<String>();
+    selectedProgressionIndex = order.indexOf(currentProgressionName);
+
     // Load velocity boost
     velocityBoost = widget.prefs!.getInt('velocityBoost') ?? 0;
 
