@@ -842,7 +842,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     final isSelected = progName == widget.chordState.progressionName;
                                     return Container(
                                       decoration: BoxDecoration(
-                                        color: isSelected ? Colors.blue[200] : Colors.grey[200],
+                                        color: isSelected ? Theme.of(context).colorScheme.primaryContainer : Colors.white,
                                       ),
                                       child: ListTile(
                                         dense: true,
@@ -851,18 +851,110 @@ class _HomeScreenState extends State<HomeScreen> {
                                           width: 12,
                                           child: Center(
                                             child: isSelected
-                                                ? Icon(Icons.play_arrow, size: 18, color: Colors.blue[900])
+                                                ? Stack(
+                                                    alignment: Alignment.center,
+                                                    children: [
+                                                      Text(
+                                                        '→',
+                                                        style: TextStyle(
+                                                          fontSize: 20,
+                                                          foreground: Paint()
+                                                            ..style = PaintingStyle.stroke
+                                                            ..strokeWidth = 3
+                                                            ..color = Colors.black,
+                                                        ),
+                                                      ),
+                                                      const Text(
+                                                        '→',
+                                                        style: TextStyle(
+                                                          fontSize: 20,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  )
                                                 : const SizedBox.shrink(),
                                           ),
                                         ),
-                                        title: Text(
-                                          '${index + 1}. $progName',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                            color: Colors.black,
-                                          ),
-                                        ),
+                                        title: isSelected
+                                            ? Stack(
+                                                children: [
+                                                  // Stroke layer
+                                                  RichText(
+                                                    text: TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: '${index + 1}. ',
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight: FontWeight.bold,
+                                                            foreground: Paint()
+                                                              ..style = PaintingStyle.stroke
+                                                              ..strokeWidth = 3
+                                                              ..color = Colors.black,
+                                                          ),
+                                                        ),
+                                                        TextSpan(
+                                                          text: progName,
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight: FontWeight.bold,
+                                                            foreground: Paint()
+                                                              ..style = PaintingStyle.stroke
+                                                              ..strokeWidth = 3
+                                                              ..color = Colors.black,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  // Fill layer
+                                                  RichText(
+                                                    text: TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: '${index + 1}. ',
+                                                          style: const TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors.white,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        TextSpan(
+                                                          text: progName,
+                                                          style: const TextStyle(
+                                                            fontSize: 16,
+                                                            color: Colors.white,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              )
+                                            : RichText(
+                                                text: TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: '${index + 1}. ',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        color: Colors.black,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    TextSpan(
+                                                      text: progName,
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        color: Colors.black,
+                                                        fontWeight: FontWeight.normal,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                         onTap: () => widget.callbacks.onSelectProgression(progName),
                                       ),
                                     );

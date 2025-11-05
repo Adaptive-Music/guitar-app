@@ -743,7 +743,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Container(
       key: ValueKey('progression-$index-$progressionName'),
       decoration: BoxDecoration(
-        color: isSelected ? Colors.blue[100] : Colors.white,
+        color: isSelected ? Theme.of(context).colorScheme.primaryContainer : Colors.white,
         border: Border(
           bottom: BorderSide(
             color: Colors.grey,
@@ -754,21 +754,8 @@ class _SettingsPageState extends State<SettingsPage> {
       child: ListTile(
         dense: true,
         minLeadingWidth: 12,
-        leading: SizedBox(
-          width: 12,
-          child: Center(
-            child: isSelected
-                ? Icon(Icons.play_arrow, size: 18, color: Colors.blue)
-                : const SizedBox.shrink(),
-          ),
-        ),
-        title: Text(
-          '${index + 1}. $progressionName',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
+        leading: _buildProgressionIndicator(isSelected),
+        title: _buildProgressionTitle(index, progressionName, isSelected),
         trailing: ReorderableDragStartListener(
           index: index,
           child: Icon(Icons.drag_handle, size: 20),
@@ -778,6 +765,122 @@ class _SettingsPageState extends State<SettingsPage> {
         },
       ),
     );
+  }
+
+  Widget _buildProgressionIndicator(bool isSelected) {
+    return SizedBox(
+      width: 12,
+      child: Center(
+        child: isSelected
+            ? Stack(
+                alignment: Alignment.center,
+                children: [
+                  Text(
+                    '→',
+                    style: TextStyle(
+                      fontSize: 20,
+                      foreground: Paint()
+                        ..style = PaintingStyle.stroke
+                        ..strokeWidth = 3
+                        ..color = Colors.black,
+                    ),
+                  ),
+                  const Text(
+                    '→',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              )
+            : const SizedBox.shrink(),
+      ),
+    );
+  }
+
+  Widget _buildProgressionTitle(int index, String progressionName, bool isSelected) {
+    if (isSelected) {
+      return Stack(
+        children: [
+          // Stroke layer
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: '${index + 1}. ',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    foreground: Paint()
+                      ..style = PaintingStyle.stroke
+                      ..strokeWidth = 3
+                      ..color = Colors.black,
+                  ),
+                ),
+                TextSpan(
+                  text: progressionName,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    foreground: Paint()
+                      ..style = PaintingStyle.stroke
+                      ..strokeWidth = 3
+                      ..color = Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Fill layer
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: '${index + 1}. ',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextSpan(
+                  text: progressionName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else {
+      return RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: '${index + 1}. ',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            TextSpan(
+              text: progressionName,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Widget _buildChordIndicator(bool isSelected) {
