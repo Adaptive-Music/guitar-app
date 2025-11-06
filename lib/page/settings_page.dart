@@ -26,6 +26,7 @@ class _SettingsPageState extends State<SettingsPage> {
   int? selectedChordIndex;
   int? selectedProgressionIndex;
   int velocityBoost = 0;
+  final ScrollController _leftSideScrollController = ScrollController();
 
   @override
   void initState() {
@@ -39,6 +40,12 @@ class _SettingsPageState extends State<SettingsPage> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _leftSideScrollController.dispose();
+    super.dispose();
   }
 
   void _extractSettings() {
@@ -209,6 +216,17 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       chords.add({'key': 'C', 'type': 'major'});
       selectedChordIndex = chords.length - 1; // Select the newly added chord
+    });
+    
+    // Scroll to bottom to make the new chord visible
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_leftSideScrollController.hasClients) {
+        _leftSideScrollController.animateTo(
+          _leftSideScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 
@@ -821,15 +839,17 @@ class _SettingsPageState extends State<SettingsPage> {
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Left side: Progression list and Chord list taking full vertical space
+          // Left side: Progression list and Chord list - now scrollable
           SizedBox(
             width: 400,
-            child: Column(
-              children: [
-                // Progression List Section
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-                  child: Row(
+            child: SingleChildScrollView(
+              controller: _leftSideScrollController,
+              child: Column(
+                children: [
+                  // Progression List Section
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+                    child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Progressions',
@@ -917,24 +937,24 @@ class _SettingsPageState extends State<SettingsPage> {
                     ],
                   ),
                 ),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey, width: 3),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(9), // Slightly smaller to fit inside border
-                        child: Container(
-                          color: Colors.white,
-                          child: ReorderableListView.builder(
-                            buildDefaultDragHandles: false,
-                            itemCount: chords.length,
-                            onReorder: reorderChords,
-                            itemBuilder: (context, index) => _buildChordListItem(index),
-                          ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey, width: 3),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(9), // Slightly smaller to fit inside border
+                      child: Container(
+                        color: Colors.white,
+                        child: ReorderableListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          buildDefaultDragHandles: false,
+                          itemCount: chords.length,
+                          onReorder: reorderChords,
+                          itemBuilder: (context, index) => _buildChordListItem(index),
                         ),
                       ),
                     ),
@@ -943,6 +963,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
             ),
           ),
+        ),
           
           VerticalDivider(width: 1),
           
