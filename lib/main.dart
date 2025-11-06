@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/page/settings_page.dart';
 import 'package:flutter_application_1/widgets/chord.dart';
 import 'package:flutter_application_1/widgets/guitar_strings.dart';
+import 'package:flutter_application_1/widgets/styled_text.dart';
 import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 import 'package:flutter_application_1/special/enums.dart';
@@ -747,7 +748,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       // Big key label (sharp name only)
-                                      _buildOutlinedText(
+                                      OutlinedText(
                                         widget.chordState.currentChord.rootKey.name.contains('/')
                                             ? widget.chordState.currentChord.rootKey.name.split('/')[0]
                                             : widget.chordState.currentChord.rootKey.name,
@@ -755,7 +756,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         fontWeight: FontWeight.w600,
                                       ),
                                       // Smaller chord type display name
-                                      _buildOutlinedText(
+                                      OutlinedText(
                                         widget.chordState.currentChord.type.displayName,
                                         fontSize: 90,
                                         fontWeight: FontWeight.w600,
@@ -810,10 +811,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                         leading: SizedBox(
                                           width: 12,
                                           child: Center(
-                                            child: isSelected ? _buildArrowIndicator() : const SizedBox.shrink(),
+                                            child: isSelected ? const ArrowIndicator() : const SizedBox.shrink(),
                                           ),
                                         ),
-                                        title: _buildListItemTitle(index, progName, isSelected),
+                                        title: ListItemTitle(
+                                          index: index,
+                                          label: progName,
+                                          isSelected: isSelected,
+                                        ),
                                         onTap: () => widget.callbacks.onSelectProgression(progName),
                                       ),
                                     );
@@ -873,10 +878,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               leading: SizedBox(
                                 width: 12,
                                 child: Center(
-                                  child: isSelected ? _buildArrowIndicator() : const SizedBox.shrink(),
+                                  child: isSelected ? const ArrowIndicator() : const SizedBox.shrink(),
                                 ),
                               ),
-                              title: _buildListItemTitle(index, chordLabel, isSelected, fontSize: 18),
+                              title: ListItemTitle(
+                                index: index,
+                                label: chordLabel,
+                                isSelected: isSelected,
+                                fontSize: 18,
+                              ),
                               onTap: () => widget.callbacks.onSelect(index),
                             ),
                           );
@@ -915,153 +925,5 @@ class _HomeScreenState extends State<HomeScreen> {
       final nextProgressionName = widget.chordState.progressionNames[nextIndex];
       widget.callbacks.onSelectProgression(nextProgressionName);
     }
-  }
-
-  // Helper method to create outlined text effect
-  Widget _buildOutlinedText(String text, {required double fontSize, required FontWeight fontWeight}) {
-    return Stack(
-      children: [
-        // Stroke layer
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: fontWeight,
-            foreground: Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = fontSize > 100 ? 15 : 8
-              ..color = Colors.black,
-          ),
-          textHeightBehavior: TextHeightBehavior(
-            applyHeightToFirstAscent: false,
-            applyHeightToLastDescent: false,
-          ),
-        ),
-        // Fill layer
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: fontWeight,
-            color: Colors.white,
-          ),
-          textHeightBehavior: TextHeightBehavior(
-            applyHeightToFirstAscent: false,
-            applyHeightToLastDescent: false,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Helper method to build list item title with optional outline
-  Widget _buildListItemTitle(int index, String label, bool isSelected, {double fontSize = 16}) {
-    if (isSelected) {
-      return Stack(
-        children: [
-          // Stroke layer
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: '${index + 1}. ',
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.bold,
-                    foreground: Paint()
-                      ..style = PaintingStyle.stroke
-                      ..strokeWidth = 3
-                      ..color = Colors.black,
-                  ),
-                ),
-                TextSpan(
-                  text: label,
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.bold,
-                    foreground: Paint()
-                      ..style = PaintingStyle.stroke
-                      ..strokeWidth = 3
-                      ..color = Colors.black,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Fill layer
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: '${index + 1}. ',
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                TextSpan(
-                  text: label,
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      );
-    } else {
-      return RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: '${index + 1}. ',
-              style: TextStyle(
-                fontSize: fontSize,
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            TextSpan(
-              text: label,
-              style: TextStyle(
-                fontSize: fontSize,
-                color: Colors.black,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
-  // Helper method to build arrow indicator
-  Widget _buildArrowIndicator() {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Text(
-          '→',
-          style: TextStyle(
-            fontSize: 20,
-            foreground: Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 3
-              ..color = Colors.black,
-          ),
-        ),
-        const Text(
-          '→',
-          style: TextStyle(
-            fontSize: 20,
-            color: Colors.white,
-          ),
-        ),
-      ],
-    );
   }
 }
