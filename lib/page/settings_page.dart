@@ -875,8 +875,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ],
                   ),
                 ),
-                Container(
-                  height: currentSongProgressionOrder.length * 52.5, // 56 for ListTile + 1 for divider
+                Padding(
                   padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
                   child: Container(
                     decoration: BoxDecoration(
@@ -888,6 +887,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Container(
                         color: Colors.white,
                         child: ReorderableListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
                           buildDefaultDragHandles: false,
                           itemCount: currentSongProgressionOrder.length,
                           onReorder: reorderProgressions,
