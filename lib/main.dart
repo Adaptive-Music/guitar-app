@@ -755,12 +755,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     ? widget.chordState.currentChord.rootKey.name.split('/')[0]
                                                     : widget.chordState.currentChord.rootKey.name),
                                             style: TextStyle(
-                                              fontSize: 350,
+                                              fontSize: 500,
                                               fontWeight: FontWeight.w600,
                                               foreground: Paint()
                                                 ..style = PaintingStyle.stroke
                                                 ..strokeWidth = 15
                                                 ..color = Colors.black,
+                                            ),
+                                            textHeightBehavior: TextHeightBehavior(
+                                              applyHeightToFirstAscent: false,
+                                              applyHeightToLastDescent: false,
                                             ),
                                           ),
                                           Text(
@@ -768,9 +772,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     ? widget.chordState.currentChord.rootKey.name.split('/')[0]
                                                     : widget.chordState.currentChord.rootKey.name),
                                             style: TextStyle(
-                                              fontSize: 350,
+                                              fontSize: 500,
                                               fontWeight: FontWeight.w600,
                                               color: Colors.white,
+                                            ),
+                                            textHeightBehavior: TextHeightBehavior(
+                                              applyHeightToFirstAscent: false,
+                                              applyHeightToLastDescent: false,
                                             ),
                                           ),
                                         ],
@@ -782,20 +790,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                           Text(
                                             widget.chordState.currentChord.type.displayName,
                                             style: TextStyle(
-                                              fontSize: 72,
+                                              fontSize: 90,
                                               fontWeight: FontWeight.w600,
                                               foreground: Paint()
                                                 ..style = PaintingStyle.stroke
                                                 ..strokeWidth = 6
                                                 ..color = Colors.black,
                                             ),
+                                            textHeightBehavior: TextHeightBehavior(
+                                              applyHeightToFirstAscent: false,
+                                              applyHeightToLastDescent: false,
+                                            ),
                                           ),
                                           Text(
                                             widget.chordState.currentChord.type.displayName,
                                             style: TextStyle(
-                                              fontSize: 72,
+                                              fontSize: 90,
                                               fontWeight: FontWeight.w600,
                                               color: Colors.white,
+                                            ),
+                                            textHeightBehavior: TextHeightBehavior(
+                                              applyHeightToFirstAscent: false,
+                                              applyHeightToLastDescent: false,
                                             ),
                                           ),
                                         ],
