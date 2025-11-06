@@ -747,74 +747,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       // Big key label (sharp name only)
-                                      Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          Text(
-                                            (widget.chordState.currentChord.rootKey.name.contains('/')
-                                                    ? widget.chordState.currentChord.rootKey.name.split('/')[0]
-                                                    : widget.chordState.currentChord.rootKey.name),
-                                            style: TextStyle(
-                                              fontSize: 500,
-                                              fontWeight: FontWeight.w600,
-                                              foreground: Paint()
-                                                ..style = PaintingStyle.stroke
-                                                ..strokeWidth = 15
-                                                ..color = Colors.black,
-                                            ),
-                                            textHeightBehavior: TextHeightBehavior(
-                                              applyHeightToFirstAscent: false,
-                                              applyHeightToLastDescent: false,
-                                            ),
-                                          ),
-                                          Text(
-                                            (widget.chordState.currentChord.rootKey.name.contains('/')
-                                                    ? widget.chordState.currentChord.rootKey.name.split('/')[0]
-                                                    : widget.chordState.currentChord.rootKey.name),
-                                            style: TextStyle(
-                                              fontSize: 500,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.white,
-                                            ),
-                                            textHeightBehavior: TextHeightBehavior(
-                                              applyHeightToFirstAscent: false,
-                                              applyHeightToLastDescent: false,
-                                            ),
-                                          ),
-                                        ],
+                                      _buildOutlinedText(
+                                        widget.chordState.currentChord.rootKey.name.contains('/')
+                                            ? widget.chordState.currentChord.rootKey.name.split('/')[0]
+                                            : widget.chordState.currentChord.rootKey.name,
+                                        fontSize: 500,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                       // Smaller chord type display name
-                                      Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          Text(
-                                            widget.chordState.currentChord.type.displayName,
-                                            style: TextStyle(
-                                              fontSize: 90,
-                                              fontWeight: FontWeight.w600,
-                                              foreground: Paint()
-                                                ..style = PaintingStyle.stroke
-                                                ..strokeWidth = 6
-                                                ..color = Colors.black,
-                                            ),
-                                            textHeightBehavior: TextHeightBehavior(
-                                              applyHeightToFirstAscent: false,
-                                              applyHeightToLastDescent: false,
-                                            ),
-                                          ),
-                                          Text(
-                                            widget.chordState.currentChord.type.displayName,
-                                            style: TextStyle(
-                                              fontSize: 90,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.white,
-                                            ),
-                                            textHeightBehavior: TextHeightBehavior(
-                                              applyHeightToFirstAscent: false,
-                                              applyHeightToLastDescent: false,
-                                            ),
-                                          ),
-                                        ],
+                                      _buildOutlinedText(
+                                        widget.chordState.currentChord.type.displayName,
+                                        fontSize: 90,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ],
                                   ),
@@ -866,111 +810,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                         leading: SizedBox(
                                           width: 12,
                                           child: Center(
-                                            child: isSelected
-                                                ? Stack(
-                                                    alignment: Alignment.center,
-                                                    children: [
-                                                      Text(
-                                                        '→',
-                                                        style: TextStyle(
-                                                          fontSize: 20,
-                                                          foreground: Paint()
-                                                            ..style = PaintingStyle.stroke
-                                                            ..strokeWidth = 3
-                                                            ..color = Colors.black,
-                                                        ),
-                                                      ),
-                                                      const Text(
-                                                        '→',
-                                                        style: TextStyle(
-                                                          fontSize: 20,
-                                                          color: Colors.white,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  )
-                                                : const SizedBox.shrink(),
+                                            child: isSelected ? _buildArrowIndicator() : const SizedBox.shrink(),
                                           ),
                                         ),
-                                        title: isSelected
-                                            ? Stack(
-                                                children: [
-                                                  // Stroke layer
-                                                  RichText(
-                                                    text: TextSpan(
-                                                      children: [
-                                                        TextSpan(
-                                                          text: '${index + 1}. ',
-                                                          style: TextStyle(
-                                                            fontSize: 16,
-                                                            fontWeight: FontWeight.bold,
-                                                            foreground: Paint()
-                                                              ..style = PaintingStyle.stroke
-                                                              ..strokeWidth = 3
-                                                              ..color = Colors.black,
-                                                          ),
-                                                        ),
-                                                        TextSpan(
-                                                          text: progName,
-                                                          style: TextStyle(
-                                                            fontSize: 16,
-                                                            fontWeight: FontWeight.bold,
-                                                            foreground: Paint()
-                                                              ..style = PaintingStyle.stroke
-                                                              ..strokeWidth = 3
-                                                              ..color = Colors.black,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  // Fill layer
-                                                  RichText(
-                                                    text: TextSpan(
-                                                      children: [
-                                                        TextSpan(
-                                                          text: '${index + 1}. ',
-                                                          style: const TextStyle(
-                                                            fontSize: 16,
-                                                            color: Colors.white,
-                                                            fontWeight: FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                        TextSpan(
-                                                          text: progName,
-                                                          style: const TextStyle(
-                                                            fontSize: 16,
-                                                            color: Colors.white,
-                                                            fontWeight: FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              )
-                                            : RichText(
-                                                text: TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: '${index + 1}. ',
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        color: Colors.black,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                    TextSpan(
-                                                      text: progName,
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        color: Colors.black,
-                                                        fontWeight: FontWeight.normal,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
+                                        title: _buildListItemTitle(index, progName, isSelected),
                                         onTap: () => widget.callbacks.onSelectProgression(progName),
                                       ),
                                     );
@@ -1030,111 +873,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               leading: SizedBox(
                                 width: 12,
                                 child: Center(
-                                  child: isSelected
-                                      ? Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            Text(
-                                              '→',
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                foreground: Paint()
-                                                  ..style = PaintingStyle.stroke
-                                                  ..strokeWidth = 3
-                                                  ..color = Colors.black,
-                                              ),
-                                            ),
-                                            const Text(
-                                              '→',
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      : const SizedBox.shrink(),
+                                  child: isSelected ? _buildArrowIndicator() : const SizedBox.shrink(),
                                 ),
                               ),
-                              title: isSelected
-                                  ? Stack(
-                                      children: [
-                                        // Stroke layer
-                                        RichText(
-                                          text: TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: '${index + 1}. ',
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  foreground: Paint()
-                                                    ..style = PaintingStyle.stroke
-                                                    ..strokeWidth = 3
-                                                    ..color = Colors.black,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: chordLabel,
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  foreground: Paint()
-                                                    ..style = PaintingStyle.stroke
-                                                    ..strokeWidth = 3
-                                                    ..color = Colors.black,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        // Fill layer
-                                        RichText(
-                                          text: TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: '${index + 1}. ',
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: chordLabel,
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: '${index + 1}. ',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: chordLabel,
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.normal,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                              title: _buildListItemTitle(index, chordLabel, isSelected, fontSize: 18),
                               onTap: () => widget.callbacks.onSelect(index),
                             ),
                           );
@@ -1173,5 +915,153 @@ class _HomeScreenState extends State<HomeScreen> {
       final nextProgressionName = widget.chordState.progressionNames[nextIndex];
       widget.callbacks.onSelectProgression(nextProgressionName);
     }
+  }
+
+  // Helper method to create outlined text effect
+  Widget _buildOutlinedText(String text, {required double fontSize, required FontWeight fontWeight}) {
+    return Stack(
+      children: [
+        // Stroke layer
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: fontWeight,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = fontSize > 100 ? 15 : 8
+              ..color = Colors.black,
+          ),
+          textHeightBehavior: TextHeightBehavior(
+            applyHeightToFirstAscent: false,
+            applyHeightToLastDescent: false,
+          ),
+        ),
+        // Fill layer
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: fontWeight,
+            color: Colors.white,
+          ),
+          textHeightBehavior: TextHeightBehavior(
+            applyHeightToFirstAscent: false,
+            applyHeightToLastDescent: false,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Helper method to build list item title with optional outline
+  Widget _buildListItemTitle(int index, String label, bool isSelected, {double fontSize = 16}) {
+    if (isSelected) {
+      return Stack(
+        children: [
+          // Stroke layer
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: '${index + 1}. ',
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                    foreground: Paint()
+                      ..style = PaintingStyle.stroke
+                      ..strokeWidth = 3
+                      ..color = Colors.black,
+                  ),
+                ),
+                TextSpan(
+                  text: label,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                    foreground: Paint()
+                      ..style = PaintingStyle.stroke
+                      ..strokeWidth = 3
+                      ..color = Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Fill layer
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: '${index + 1}. ',
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextSpan(
+                  text: label,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else {
+      return RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: '${index + 1}. ',
+              style: TextStyle(
+                fontSize: fontSize,
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            TextSpan(
+              text: label,
+              style: TextStyle(
+                fontSize: fontSize,
+                color: Colors.black,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  // Helper method to build arrow indicator
+  Widget _buildArrowIndicator() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Text(
+          '→',
+          style: TextStyle(
+            fontSize: 20,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 3
+              ..color = Colors.black,
+          ),
+        ),
+        const Text(
+          '→',
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
   }
 }
