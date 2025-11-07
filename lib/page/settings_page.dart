@@ -278,15 +278,27 @@ class _SettingsPageState extends State<SettingsPage> {
     final progressions = currentSongProgressions;
     print('Available progressions: ${progressions.keys}');
     print('Progression chords: ${progressions[name]}');
+
     setState(() {
+      // First, commit any unsaved edits of the CURRENT progression back to savedSongs
+      if (progressions.containsKey(currentProgressionName)) {
+        progressions[currentProgressionName] = chords
+            .map((chord) => {
+                  'key': chord['key']!,
+                  'type': chord['type']!,
+                })
+            .toList();
+      }
+
+      // Now switch to the requested progression and load its chords
       currentProgressionName = name;
       final progressionData = progressions[name] as List;
-      chords = progressionData.map((chord) {
-        return {
-          'key': chord['key'] as String,
-          'type': chord['type'] as String,
-        };
-      }).toList();
+      chords = progressionData
+          .map((chord) => {
+                'key': chord['key'] as String,
+                'type': chord['type'] as String,
+              })
+          .toList();
       selectedChordIndex = chords.isNotEmpty ? 0 : null; // Select first chord
       selectedProgressionIndex = currentSongProgressionOrder.indexOf(name);
     });
@@ -490,6 +502,21 @@ class _SettingsPageState extends State<SettingsPage> {
   // Song management methods
   void loadSong(String name) {
     setState(() {
+      // Commit current progression's chords for the currently selected song before switching songs
+      if (savedSongs.containsKey(currentSongName)) {
+        final currentSong = savedSongs[currentSongName] as Map<String, dynamic>;
+        final progressions = currentSong['progressions'] as Map<String, dynamic>;
+        if (progressions.containsKey(currentProgressionName)) {
+          progressions[currentProgressionName] = chords
+              .map((chord) => {
+                    'key': chord['key']!,
+                    'type': chord['type']!,
+                  })
+              .toList();
+        }
+      }
+
+      // Now switch to the new song
       currentSongName = name;
       final song = savedSongs[name] as Map<String, dynamic>;
       final order = List<String>.from(song['order']);
