@@ -331,7 +331,18 @@ class _SettingsPageState extends State<SettingsPage> {
 
     if (result != null && result.isNotEmpty && !currentSongProgressions.containsKey(result)) {
       setState(() {
+        // First, commit any unsaved edits of the CURRENT progression back to savedSongs
         final progressions = currentSongProgressions;
+        if (progressions.containsKey(currentProgressionName)) {
+          progressions[currentProgressionName] = chords
+              .map((chord) => {
+                    'key': chord['key']!,
+                    'type': chord['type']!,
+                  })
+              .toList();
+        }
+        
+        // Now create the new progression
         progressions[result] = [{'key': 'C', 'type': 'major'}];
         // Add to order list
         final order = currentSongProgressionOrder;
@@ -339,7 +350,8 @@ class _SettingsPageState extends State<SettingsPage> {
         setCurrentSongProgressionOrder(order);
         currentProgressionName = result;
         chords = [{'key': 'C', 'type': 'major'}];
-        selectedProgressionIndex = order.length - 1;
+        selectedChordIndex = 0;
+        selectedProgressionIndex = order.indexOf(result); // Use indexOf instead of length - 1
       });
     }
   }
@@ -521,7 +533,18 @@ class _SettingsPageState extends State<SettingsPage> {
       final song = savedSongs[name] as Map<String, dynamic>;
       final order = List<String>.from(song['order']);
       currentProgressionName = order.first;
-      loadProgression(currentProgressionName);
+      
+      // Load the first progression's chords directly (don't call loadProgression to avoid double-commit)
+      final newSongProgressions = song['progressions'] as Map<String, dynamic>;
+      final progressionData = newSongProgressions[currentProgressionName] as List;
+      chords = progressionData
+          .map((chord) => {
+                'key': chord['key'] as String,
+                'type': chord['type'] as String,
+              })
+          .toList();
+      selectedChordIndex = chords.isNotEmpty ? 0 : null;
+      selectedProgressionIndex = 0;
     });
   }
 
@@ -551,6 +574,21 @@ class _SettingsPageState extends State<SettingsPage> {
 
     if (result != null && result.isNotEmpty && !savedSongs.containsKey(result)) {
       setState(() {
+        // First, commit any unsaved edits of the CURRENT progression for the current song
+        if (savedSongs.containsKey(currentSongName)) {
+          final currentSong = savedSongs[currentSongName] as Map<String, dynamic>;
+          final progressions = currentSong['progressions'] as Map<String, dynamic>;
+          if (progressions.containsKey(currentProgressionName)) {
+            progressions[currentProgressionName] = chords
+                .map((chord) => {
+                      'key': chord['key']!,
+                      'type': chord['type']!,
+                    })
+                .toList();
+          }
+        }
+        
+        // Now create the new song
         savedSongs[result] = {
           'progressions': {
             'Default': [{'key': 'C', 'type': 'major'}]
@@ -560,6 +598,7 @@ class _SettingsPageState extends State<SettingsPage> {
         currentSongName = result;
         currentProgressionName = 'Default';
         chords = [{'key': 'C', 'type': 'major'}];
+        selectedChordIndex = 0;
         selectedProgressionIndex = 0;
       });
     }
