@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_application_1/special/enums.dart';
 import 'package:flutter_application_1/widgets/styled_text.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
@@ -27,6 +28,17 @@ class _SettingsPageState extends State<SettingsPage> {
   int? selectedProgressionIndex;
   int velocityBoost = 0;
   final ScrollController _leftSideScrollController = ScrollController();
+
+  // Keyboard control settings
+  String nextChordKey = 'Space';
+  bool nextChordLongPress = false;
+  String prevChordKey = 'Enter';
+  bool prevChordLongPress = false;
+  String nextProgressionKey = 'Space';
+  bool nextProgressionLongPress = true;
+  String prevProgressionKey = 'Enter';
+  bool prevProgressionLongPress = true;
+  int longPressDuration = 500; // in milliseconds
 
   @override
   void initState() {
@@ -149,6 +161,17 @@ class _SettingsPageState extends State<SettingsPage> {
     // Load velocity boost
     velocityBoost = widget.prefs!.getInt('velocityBoost') ?? 0;
 
+    // Load keyboard control settings
+    nextChordKey = widget.prefs!.getString('nextChordKey') ?? 'Space';
+    nextChordLongPress = widget.prefs!.getBool('nextChordLongPress') ?? false;
+    prevChordKey = widget.prefs!.getString('prevChordKey') ?? 'Enter';
+    prevChordLongPress = widget.prefs!.getBool('prevChordLongPress') ?? false;
+    nextProgressionKey = widget.prefs!.getString('nextProgressionKey') ?? 'Space';
+    nextProgressionLongPress = widget.prefs!.getBool('nextProgressionLongPress') ?? true;
+    prevProgressionKey = widget.prefs!.getString('prevProgressionKey') ?? 'Enter';
+    prevProgressionLongPress = widget.prefs!.getBool('prevProgressionLongPress') ?? true;
+    longPressDuration = widget.prefs!.getInt('longPressDuration') ?? 500;
+
     print("Instrument: $selectedInstrument");
     print("Current Song: $currentSongName");
     print("Current Progression: $currentProgressionName");
@@ -178,6 +201,17 @@ class _SettingsPageState extends State<SettingsPage> {
       await widget.prefs?.setString('currentSongName', currentSongName);
       await widget.prefs?.setString('currentProgressionName', currentProgressionName);
       await widget.prefs?.setInt('velocityBoost', velocityBoost);
+
+      // Save keyboard control settings
+      await widget.prefs?.setString('nextChordKey', nextChordKey);
+      await widget.prefs?.setBool('nextChordLongPress', nextChordLongPress);
+      await widget.prefs?.setString('prevChordKey', prevChordKey);
+      await widget.prefs?.setBool('prevChordLongPress', prevChordLongPress);
+      await widget.prefs?.setString('nextProgressionKey', nextProgressionKey);
+      await widget.prefs?.setBool('nextProgressionLongPress', nextProgressionLongPress);
+      await widget.prefs?.setString('prevProgressionKey', prevProgressionKey);
+      await widget.prefs?.setBool('prevProgressionLongPress', prevProgressionLongPress);
+      await widget.prefs?.setInt('longPressDuration', longPressDuration);
 
       MidiPro().selectInstrument(
           sfId: widget.sfID,
@@ -871,6 +905,303 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  void _showControlsPopup() {
+    // Save original values in case user cancels
+    final originalNextChordKey = nextChordKey;
+    final originalNextChordLongPress = nextChordLongPress;
+    final originalPrevChordKey = prevChordKey;
+    final originalPrevChordLongPress = prevChordLongPress;
+    final originalNextProgressionKey = nextProgressionKey;
+    final originalNextProgressionLongPress = nextProgressionLongPress;
+    final originalPrevProgressionKey = prevProgressionKey;
+    final originalPrevProgressionLongPress = prevProgressionLongPress;
+    final originalLongPressDuration = longPressDuration;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          // Check for duplicate key bindings
+          Set<String> getDuplicateBindings() {
+            final bindings = <String, List<String>>{};
+            final duplicates = <String>{};
+            
+            void checkBinding(String key, bool isLongPress, String action) {
+              final bindingKey = '$key${isLongPress ? ':long' : ':short'}';
+              if (!bindings.containsKey(bindingKey)) {
+                bindings[bindingKey] = [];
+              }
+              bindings[bindingKey]!.add(action);
+            }
+            
+            checkBinding(nextChordKey, nextChordLongPress, 'Next Chord');
+            checkBinding(prevChordKey, prevChordLongPress, 'Previous Chord');
+            checkBinding(nextProgressionKey, nextProgressionLongPress, 'Next Progression');
+            checkBinding(prevProgressionKey, prevProgressionLongPress, 'Previous Progression');
+            
+            // Find which actions have duplicates
+            bindings.forEach((key, actions) {
+              if (actions.length > 1) {
+                duplicates.addAll(actions);
+              }
+            });
+            
+            return duplicates;
+          }
+          
+          final duplicateActions = getDuplicateBindings();
+          
+          return AlertDialog(
+            title: Text('Keyboard / Accessibility Switch Controls'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Long Press Duration',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Slider(
+                            value: longPressDuration.toDouble(),
+                            min: 100,
+                            max: 1000,
+                            divisions: 9,
+                            label: '${longPressDuration}ms',
+                            onChanged: (value) {
+                              setDialogState(() {
+                                setState(() {
+                                  longPressDuration = value.round();
+                                });
+                              });
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        SizedBox(
+                          width: 60,
+                          child: Text(
+                            '${longPressDuration}ms',
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Divider(),
+                    SizedBox(height: 16),
+                    _buildKeyBindingControl(
+                      'Next Chord',
+                      nextChordKey,
+                      nextChordLongPress,
+                      duplicateActions.contains('Next Chord'),
+                      (key) {
+                        setDialogState(() {
+                          setState(() {
+                            nextChordKey = key;
+                          });
+                        });
+                      },
+                      (value) {
+                        setDialogState(() {
+                          setState(() {
+                            nextChordLongPress = value;
+                          });
+                        });
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    Divider(),
+                    SizedBox(height: 16),
+                    _buildKeyBindingControl(
+                      'Previous Chord',
+                      prevChordKey,
+                      prevChordLongPress,
+                      duplicateActions.contains('Previous Chord'),
+                      (key) {
+                        setDialogState(() {
+                          setState(() {
+                            prevChordKey = key;
+                          });
+                        });
+                      },
+                      (value) {
+                        setDialogState(() {
+                          setState(() {
+                            prevChordLongPress = value;
+                          });
+                        });
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    Divider(),
+                    SizedBox(height: 16),
+                    _buildKeyBindingControl(
+                      'Next Progression',
+                      nextProgressionKey,
+                      nextProgressionLongPress,
+                      duplicateActions.contains('Next Progression'),
+                      (key) {
+                        setDialogState(() {
+                          setState(() {
+                            nextProgressionKey = key;
+                          });
+                        });
+                      },
+                      (value) {
+                        setDialogState(() {
+                          setState(() {
+                            nextProgressionLongPress = value;
+                          });
+                        });
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    Divider(),
+                    SizedBox(height: 16),
+                    _buildKeyBindingControl(
+                      'Previous Progression',
+                      prevProgressionKey,
+                      prevProgressionLongPress,
+                      duplicateActions.contains('Previous Progression'),
+                      (key) {
+                        setDialogState(() {
+                          setState(() {
+                            prevProgressionKey = key;
+                          });
+                        });
+                      },
+                      (value) {
+                        setDialogState(() {
+                          setState(() {
+                            prevProgressionLongPress = value;
+                          });
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(Icons.close, color: Colors.black),
+                onPressed: () {
+                  // Restore original values
+                  setState(() {
+                    nextChordKey = originalNextChordKey;
+                    nextChordLongPress = originalNextChordLongPress;
+                    prevChordKey = originalPrevChordKey;
+                    prevChordLongPress = originalPrevChordLongPress;
+                    nextProgressionKey = originalNextProgressionKey;
+                    nextProgressionLongPress = originalNextProgressionLongPress;
+                    prevProgressionKey = originalPrevProgressionKey;
+                    prevProgressionLongPress = originalPrevProgressionLongPress;
+                    longPressDuration = originalLongPressDuration;
+                  });
+                  Navigator.pop(context);
+                },
+                tooltip: 'Cancel',
+              ),
+              IconButton(
+                icon: Icon(Icons.check, color: duplicateActions.isEmpty ? Colors.black : Colors.grey),
+                onPressed: duplicateActions.isEmpty ? () {
+                  // No duplicates, close the dialog
+                  Navigator.pop(context);
+                } : null,
+                tooltip: duplicateActions.isEmpty ? 'Save' : 'Fix duplicates first',
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildKeyBindingControl(
+    String label,
+    String currentKey,
+    bool isLongPress,
+    bool isDuplicate,
+    Function(String) onKeyChanged,
+    Function(bool) onLongPressChanged,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold, 
+            fontSize: 15,
+            color: isDuplicate ? Colors.red : Colors.black,
+          ),
+        ),
+        SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _showKeyCapture(label, currentKey, onKeyChanged),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: isDuplicate ? Colors.red : Colors.grey,
+                      width: isDuplicate ? 2 : 1,
+                    ),
+                    borderRadius: BorderRadius.circular(4),
+                    color: isDuplicate ? Colors.red[50] : Colors.grey[100],
+                  ),
+                  child: Text(
+                    currentKey,
+                    style: TextStyle(
+                      fontSize: 14, 
+                      fontWeight: FontWeight.w500,
+                      color: isDuplicate ? Colors.red[900] : Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 12),
+            Text(
+              'Long Press:', 
+              style: TextStyle(
+                fontSize: 13,
+                color: isDuplicate ? Colors.red : Colors.black,
+              ),
+            ),
+            SizedBox(width: 8),
+            Switch(
+              value: isLongPress,
+              onChanged: onLongPressChanged,
+              activeColor: isDuplicate ? Colors.red : null,
+              activeTrackColor: isDuplicate ? Colors.red[200] : null,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _showKeyCapture(String label, String currentKey, Function(String) onKeyChanged) {
+    showDialog(
+      context: context,
+      builder: (context) => KeyCaptureDialog(
+        label: label,
+        currentKey: currentKey,
+        onKeyChanged: onKeyChanged,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -879,6 +1210,14 @@ class _SettingsPageState extends State<SettingsPage> {
         centerTitle: true,
         automaticallyImplyLeading: false, // Disable default back button
         actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 4.0),
+            child: IconButton(
+              icon: Icon(Icons.keyboard),
+              onPressed: _showControlsPopup,
+              tooltip: 'Controls',
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 4.0),
             child: IconButton(
@@ -1303,6 +1642,174 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Key capture dialog for binding keyboard keys
+class KeyCaptureDialog extends StatefulWidget {
+  final String label;
+  final String currentKey;
+  final Function(String) onKeyChanged;
+
+  const KeyCaptureDialog({
+    Key? key,
+    required this.label,
+    required this.currentKey,
+    required this.onKeyChanged,
+  }) : super(key: key);
+
+  @override
+  State<KeyCaptureDialog> createState() => _KeyCaptureDialogState();
+}
+
+class _KeyCaptureDialogState extends State<KeyCaptureDialog> {
+  String? capturedKey;
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  String _getKeyLabel(LogicalKeyboardKey key) {
+    // Handle special keys
+    if (key == LogicalKeyboardKey.arrowLeft) return 'Arrow Left';
+    if (key == LogicalKeyboardKey.arrowRight) return 'Arrow Right';
+    if (key == LogicalKeyboardKey.arrowUp) return 'Arrow Up';
+    if (key == LogicalKeyboardKey.arrowDown) return 'Arrow Down';
+    if (key == LogicalKeyboardKey.space) return 'Space';
+    if (key == LogicalKeyboardKey.enter) return 'Enter';
+    if (key == LogicalKeyboardKey.numpadEnter) return 'Numpad Enter';
+    if (key == LogicalKeyboardKey.tab) return 'Tab';
+    if (key == LogicalKeyboardKey.escape) return 'Escape';
+    if (key == LogicalKeyboardKey.backspace) return 'Backspace';
+    if (key == LogicalKeyboardKey.delete) return 'Delete';
+    if (key == LogicalKeyboardKey.home) return 'Home';
+    if (key == LogicalKeyboardKey.end) return 'End';
+    if (key == LogicalKeyboardKey.pageUp) return 'Page Up';
+    if (key == LogicalKeyboardKey.pageDown) return 'Page Down';
+    
+    // Handle modifier keys
+    if (key == LogicalKeyboardKey.shiftLeft) return 'Shift Left';
+    if (key == LogicalKeyboardKey.shiftRight) return 'Shift Right';
+    if (key == LogicalKeyboardKey.controlLeft) return 'Control Left';
+    if (key == LogicalKeyboardKey.controlRight) return 'Control Right';
+    if (key == LogicalKeyboardKey.altLeft) return 'Alt Left';
+    if (key == LogicalKeyboardKey.altRight) return 'Alt Right';
+    if (key == LogicalKeyboardKey.metaLeft) return 'Meta Left';
+    if (key == LogicalKeyboardKey.metaRight) return 'Meta Right';
+    
+    // Handle function keys
+    if (key.keyLabel.startsWith('F') && key.keyLabel.length <= 3) {
+      return key.keyLabel;
+    }
+    
+    // Handle regular keys
+    if (key.keyLabel.length == 1) {
+      return key.keyLabel.toUpperCase();
+    }
+    
+    // Return the key label as is for anything else
+    return key.keyLabel;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      focusNode: _focusNode,
+      autofocus: true,
+      onKeyEvent: (FocusNode node, KeyEvent event) {
+        if (event is KeyDownEvent) {
+          print('Key pressed: ${event.logicalKey}');
+          print('Key label: ${event.logicalKey.keyLabel}');
+          
+          final keyLabel = _getKeyLabel(event.logicalKey);
+          print('Converted label: $keyLabel');
+          
+          // Check if user is pressing Escape to cancel
+          if (event.logicalKey == LogicalKeyboardKey.escape) {
+            // Cancel with Escape
+            Navigator.pop(context);
+            return KeyEventResult.handled;
+          } else {
+            // Capture or update the key
+            setState(() {
+              capturedKey = keyLabel;
+            });
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: PopScope(
+        canPop: true,
+        child: AlertDialog(
+          title: Text('Press a key for ${widget.label}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Current: ${widget.currentKey}',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+              SizedBox(height: 16),
+              Container(
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue, width: 2),
+                ),
+                child: Text(
+                  capturedKey ?? 'Press any key...',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: capturedKey != null ? Colors.blue[900] : Colors.grey,
+                  ),
+                ),
+              ),
+              if (capturedKey != null) ...[
+                SizedBox(height: 12),
+                Text(
+                  'Use tick/cross buttons below to confirm/cancel',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.close, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
+              tooltip: 'Cancel',
+            ),
+            if (capturedKey != null)
+              IconButton(
+                icon: Icon(Icons.check, color: Colors.black),
+                onPressed: () {
+                  widget.onKeyChanged(capturedKey!);
+                  Navigator.pop(context);
+                },
+                tooltip: 'Set Key',
+              ),
+          ],
+        ),
       ),
     );
   }
