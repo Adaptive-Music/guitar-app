@@ -65,6 +65,30 @@ class MidiConfig {
   });
 }
 
+class KeyboardControls {
+  final String nextChordKey;
+  final bool nextChordLongPress;
+  final String prevChordKey;
+  final bool prevChordLongPress;
+  final String nextProgressionKey;
+  final bool nextProgressionLongPress;
+  final String prevProgressionKey;
+  final bool prevProgressionLongPress;
+  final int longPressDuration;
+
+  const KeyboardControls({
+    required this.nextChordKey,
+    required this.nextChordLongPress,
+    required this.prevChordKey,
+    required this.prevChordLongPress,
+    required this.nextProgressionKey,
+    required this.nextProgressionLongPress,
+    required this.prevProgressionKey,
+    required this.prevProgressionLongPress,
+    required this.longPressDuration,
+  });
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -99,6 +123,17 @@ class _MyAppState extends State<MyApp> {
   String currentSongName = '';
   List<String> progressionNames = [];
   int velocityBoost = 0;
+
+  // Keyboard control settings
+  String nextChordKey = 'Space';
+  bool nextChordLongPress = false;
+  String prevChordKey = 'Enter';
+  bool prevChordLongPress = false;
+  String nextProgressionKey = 'Space';
+  bool nextProgressionLongPress = true;
+  String prevProgressionKey = 'Enter';
+  bool prevProgressionLongPress = true;
+  int longPressDuration = 500;
 
   bool _sfLoading = true;
   bool _midiConnecting = false;
@@ -295,6 +330,17 @@ class _MyAppState extends State<MyApp> {
 
     // Load velocity boost
     velocityBoost = _prefs?.getInt('velocityBoost') ?? 0;
+
+    // Load keyboard control settings
+    nextChordKey = _prefs?.getString('nextChordKey') ?? 'Space';
+    nextChordLongPress = _prefs?.getBool('nextChordLongPress') ?? false;
+    prevChordKey = _prefs?.getString('prevChordKey') ?? 'Enter';
+    prevChordLongPress = _prefs?.getBool('prevChordLongPress') ?? false;
+    nextProgressionKey = _prefs?.getString('nextProgressionKey') ?? 'Space';
+    nextProgressionLongPress = _prefs?.getBool('nextProgressionLongPress') ?? true;
+    prevProgressionKey = _prefs?.getString('prevProgressionKey') ?? 'Enter';
+    prevProgressionLongPress = _prefs?.getBool('prevProgressionLongPress') ?? true;
+    longPressDuration = _prefs?.getInt('longPressDuration') ?? 500;
 
     // if (_prefs?.getString('visuals') == null) {
     //   _prefs?.setString('visuals', 'Grid');
@@ -554,6 +600,16 @@ class _MyAppState extends State<MyApp> {
                   _loadChords();
                   // Reload velocity boost from preferences
                   velocityBoost = _prefs?.getInt('velocityBoost') ?? 0;
+                  // Reload keyboard control settings
+                  nextChordKey = _prefs?.getString('nextChordKey') ?? 'Space';
+                  nextChordLongPress = _prefs?.getBool('nextChordLongPress') ?? false;
+                  prevChordKey = _prefs?.getString('prevChordKey') ?? 'Enter';
+                  prevChordLongPress = _prefs?.getBool('prevChordLongPress') ?? false;
+                  nextProgressionKey = _prefs?.getString('nextProgressionKey') ?? 'Space';
+                  nextProgressionLongPress = _prefs?.getBool('nextProgressionLongPress') ?? true;
+                  prevProgressionKey = _prefs?.getString('prevProgressionKey') ?? 'Enter';
+                  prevProgressionLongPress = _prefs?.getBool('prevProgressionLongPress') ?? true;
+                  longPressDuration = _prefs?.getInt('longPressDuration') ?? 500;
                   // Reset to first chord when returning from settings
                   currentChord = 0;
                 });
@@ -570,6 +626,17 @@ class _MyAppState extends State<MyApp> {
               midiPlayer: _midi,
               velocityBoost: velocityBoost,
             ),
+            keyboardControls: KeyboardControls(
+              nextChordKey: nextChordKey,
+              nextChordLongPress: nextChordLongPress,
+              prevChordKey: prevChordKey,
+              prevChordLongPress: prevChordLongPress,
+              nextProgressionKey: nextProgressionKey,
+              nextProgressionLongPress: nextProgressionLongPress,
+              prevProgressionKey: prevProgressionKey,
+              prevProgressionLongPress: prevProgressionLongPress,
+              longPressDuration: longPressDuration,
+            ),
           );
         },
       ),
@@ -581,12 +648,14 @@ class HomeScreen extends StatefulWidget {
   final ChordState chordState;
   final ChordCallbacks callbacks;
   final MidiConfig midiConfig;
+  final KeyboardControls keyboardControls;
 
   const HomeScreen({
     super.key,
     required this.chordState,
     required this.callbacks,
     required this.midiConfig,
+    required this.keyboardControls,
   });
 
   @override
@@ -595,6 +664,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
+  final Map<LogicalKeyboardKey, int> _keyPressTimes = {};
 
   @override
   void initState() {
@@ -683,17 +753,39 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Focus(
         autofocus: true,
         onKeyEvent: (FocusNode node, KeyEvent event) {
+          final keyLabel = _getKeyLabel(event.logicalKey);
+          
           if (event is KeyDownEvent) {
-            if (event.logicalKey == LogicalKeyboardKey.space) {
-              nextChord();
-              return KeyEventResult.handled;
-            } else if (event.logicalKey == LogicalKeyboardKey.enter) {
-              if (widget.chordState.progressionNames.length > 1) {
-                nextProgression();
-              } else {
+            // Record key press time
+            _keyPressTimes[event.logicalKey] = DateTime.now().millisecondsSinceEpoch;
+            return KeyEventResult.handled;
+          } else if (event is KeyUpEvent) {
+            // Calculate press duration
+            final pressTime = _keyPressTimes[event.logicalKey];
+            if (pressTime != null) {
+              final duration = DateTime.now().millisecondsSinceEpoch - pressTime;
+              _keyPressTimes.remove(event.logicalKey);
+              
+              final isLongPress = duration >= widget.keyboardControls.longPressDuration;
+              
+              // Check which action this key+press combo maps to
+              if (keyLabel == widget.keyboardControls.nextChordKey && 
+                  isLongPress == widget.keyboardControls.nextChordLongPress) {
+                nextChord();
+                return KeyEventResult.handled;
+              } else if (keyLabel == widget.keyboardControls.prevChordKey && 
+                  isLongPress == widget.keyboardControls.prevChordLongPress) {
                 previousChord();
+                return KeyEventResult.handled;
+              } else if (keyLabel == widget.keyboardControls.nextProgressionKey && 
+                  isLongPress == widget.keyboardControls.nextProgressionLongPress) {
+                nextProgression();
+                return KeyEventResult.handled;
+              } else if (keyLabel == widget.keyboardControls.prevProgressionKey && 
+                  isLongPress == widget.keyboardControls.prevProgressionLongPress) {
+                previousProgression();
+                return KeyEventResult.handled;
               }
-              return KeyEventResult.handled;
             }
           }
           return KeyEventResult.ignored;
@@ -925,5 +1017,57 @@ class _HomeScreenState extends State<HomeScreen> {
       final nextProgressionName = widget.chordState.progressionNames[nextIndex];
       widget.callbacks.onSelectProgression(nextProgressionName);
     }
+  }
+
+  void previousProgression() {
+    // Only switch progressions if there are multiple progressions
+    if (widget.chordState.progressionNames.length > 1) {
+      final currentIndex = widget.chordState.progressionNames.indexOf(widget.chordState.progressionName);
+      final prevIndex = (currentIndex - 1 + widget.chordState.progressionNames.length) % widget.chordState.progressionNames.length;
+      final prevProgressionName = widget.chordState.progressionNames[prevIndex];
+      widget.callbacks.onSelectProgression(prevProgressionName);
+    }
+  }
+
+  String _getKeyLabel(LogicalKeyboardKey key) {
+    // Handle special keys
+    if (key == LogicalKeyboardKey.arrowLeft) return 'Arrow Left';
+    if (key == LogicalKeyboardKey.arrowRight) return 'Arrow Right';
+    if (key == LogicalKeyboardKey.arrowUp) return 'Arrow Up';
+    if (key == LogicalKeyboardKey.arrowDown) return 'Arrow Down';
+    if (key == LogicalKeyboardKey.space) return 'Space';
+    if (key == LogicalKeyboardKey.enter) return 'Enter';
+    if (key == LogicalKeyboardKey.numpadEnter) return 'Numpad Enter';
+    if (key == LogicalKeyboardKey.tab) return 'Tab';
+    if (key == LogicalKeyboardKey.escape) return 'Escape';
+    if (key == LogicalKeyboardKey.backspace) return 'Backspace';
+    if (key == LogicalKeyboardKey.delete) return 'Delete';
+    if (key == LogicalKeyboardKey.home) return 'Home';
+    if (key == LogicalKeyboardKey.end) return 'End';
+    if (key == LogicalKeyboardKey.pageUp) return 'Page Up';
+    if (key == LogicalKeyboardKey.pageDown) return 'Page Down';
+    
+    // Handle modifier keys
+    if (key == LogicalKeyboardKey.shiftLeft) return 'Shift Left';
+    if (key == LogicalKeyboardKey.shiftRight) return 'Shift Right';
+    if (key == LogicalKeyboardKey.controlLeft) return 'Control Left';
+    if (key == LogicalKeyboardKey.controlRight) return 'Control Right';
+    if (key == LogicalKeyboardKey.altLeft) return 'Alt Left';
+    if (key == LogicalKeyboardKey.altRight) return 'Alt Right';
+    if (key == LogicalKeyboardKey.metaLeft) return 'Meta Left';
+    if (key == LogicalKeyboardKey.metaRight) return 'Meta Right';
+    
+    // Handle function keys
+    if (key.keyLabel.startsWith('F') && key.keyLabel.length <= 3) {
+      return key.keyLabel;
+    }
+    
+    // Handle regular keys
+    if (key.keyLabel.length == 1) {
+      return key.keyLabel.toUpperCase();
+    }
+    
+    // Return the key label as is for anything else
+    return key.keyLabel;
   }
 }
