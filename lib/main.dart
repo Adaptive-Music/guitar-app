@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/page/settings_page.dart';
@@ -664,7 +665,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
-  final Map<LogicalKeyboardKey, int> _keyPressTimes = {};
+  final Map<LogicalKeyboardKey, Timer> _longPressTimers = {};
+  final Set<LogicalKeyboardKey> _triggeredKeys = {};
 
   @override
   void initState() {
@@ -720,6 +722,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    // Cancel any active timers
+    for (var timer in _longPressTimers.values) {
+      timer.cancel();
+    }
+    _longPressTimers.clear();
     super.dispose();
   }
 
@@ -756,37 +763,66 @@ class _HomeScreenState extends State<HomeScreen> {
           final keyLabel = _getKeyLabel(event.logicalKey);
           
           if (event is KeyDownEvent) {
-            // Record key press time
-            _keyPressTimes[event.logicalKey] = DateTime.now().millisecondsSinceEpoch;
+            // Skip if this key already triggered an action
+            if (_triggeredKeys.contains(event.logicalKey)) {
+              return KeyEventResult.handled;
+            }
+            
+            // Check if this key has a SHORT press action configured
+            bool hasShortPressAction = false;
+            if ((keyLabel == widget.keyboardControls.nextChordKey && !widget.keyboardControls.nextChordLongPress) ||
+                (keyLabel == widget.keyboardControls.prevChordKey && !widget.keyboardControls.prevChordLongPress) ||
+                (keyLabel == widget.keyboardControls.nextProgressionKey && !widget.keyboardControls.nextProgressionLongPress) ||
+                (keyLabel == widget.keyboardControls.prevProgressionKey && !widget.keyboardControls.prevProgressionLongPress)) {
+              hasShortPressAction = true;
+            }
+            
+            // Check if this key has a LONG press action configured
+            bool hasLongPressAction = false;
+            if ((keyLabel == widget.keyboardControls.nextChordKey && widget.keyboardControls.nextChordLongPress) ||
+                (keyLabel == widget.keyboardControls.prevChordKey && widget.keyboardControls.prevChordLongPress) ||
+                (keyLabel == widget.keyboardControls.nextProgressionKey && widget.keyboardControls.nextProgressionLongPress) ||
+                (keyLabel == widget.keyboardControls.prevProgressionKey && widget.keyboardControls.prevProgressionLongPress)) {
+              hasLongPressAction = true;
+            }
+            
+            // If only short press configured, trigger immediately
+            if (hasShortPressAction && !hasLongPressAction) {
+              _executeAction(keyLabel, false);
+              _triggeredKeys.add(event.logicalKey);
+              return KeyEventResult.handled;
+            }
+            
+            // If long press configured, start timer
+            if (hasLongPressAction) {
+              _longPressTimers[event.logicalKey] = Timer(
+                Duration(milliseconds: widget.keyboardControls.longPressDuration),
+                () {
+                  // Timer expired - trigger long press action
+                  _executeAction(keyLabel, true);
+                  _triggeredKeys.add(event.logicalKey);
+                },
+              );
+            }
+            
             return KeyEventResult.handled;
           } else if (event is KeyUpEvent) {
-            // Calculate press duration
-            final pressTime = _keyPressTimes[event.logicalKey];
-            if (pressTime != null) {
-              final duration = DateTime.now().millisecondsSinceEpoch - pressTime;
-              _keyPressTimes.remove(event.logicalKey);
+            // Cancel timer if key released before long press duration
+            final timer = _longPressTimers[event.logicalKey];
+            if (timer != null && timer.isActive) {
+              timer.cancel();
+              _longPressTimers.remove(event.logicalKey);
               
-              final isLongPress = duration >= widget.keyboardControls.longPressDuration;
-              
-              // Check which action this key+press combo maps to
-              if (keyLabel == widget.keyboardControls.nextChordKey && 
-                  isLongPress == widget.keyboardControls.nextChordLongPress) {
-                nextChord();
-                return KeyEventResult.handled;
-              } else if (keyLabel == widget.keyboardControls.prevChordKey && 
-                  isLongPress == widget.keyboardControls.prevChordLongPress) {
-                previousChord();
-                return KeyEventResult.handled;
-              } else if (keyLabel == widget.keyboardControls.nextProgressionKey && 
-                  isLongPress == widget.keyboardControls.nextProgressionLongPress) {
-                nextProgression();
-                return KeyEventResult.handled;
-              } else if (keyLabel == widget.keyboardControls.prevProgressionKey && 
-                  isLongPress == widget.keyboardControls.prevProgressionLongPress) {
-                previousProgression();
-                return KeyEventResult.handled;
+              // Key was released before long press - trigger short press if configured
+              if (!_triggeredKeys.contains(event.logicalKey)) {
+                _executeAction(keyLabel, false);
               }
             }
+            
+            // Clear triggered flag
+            _triggeredKeys.remove(event.logicalKey);
+            _longPressTimers.remove(event.logicalKey);
+            return KeyEventResult.handled;
           }
           return KeyEventResult.ignored;
         },
@@ -999,6 +1035,23 @@ class _HomeScreenState extends State<HomeScreen> {
         ), // Close Column
         ), // Close Focus
     );
+  }
+
+  void _executeAction(String keyLabel, bool isLongPress) {
+    // Check which action this key+press combo maps to
+    if (keyLabel == widget.keyboardControls.nextChordKey && 
+        isLongPress == widget.keyboardControls.nextChordLongPress) {
+      nextChord();
+    } else if (keyLabel == widget.keyboardControls.prevChordKey && 
+        isLongPress == widget.keyboardControls.prevChordLongPress) {
+      previousChord();
+    } else if (keyLabel == widget.keyboardControls.nextProgressionKey && 
+        isLongPress == widget.keyboardControls.nextProgressionLongPress) {
+      nextProgression();
+    } else if (keyLabel == widget.keyboardControls.prevProgressionKey && 
+        isLongPress == widget.keyboardControls.prevProgressionLongPress) {
+      previousProgression();
+    }
   }
 
   void nextChord() {
