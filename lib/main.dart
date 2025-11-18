@@ -67,13 +67,13 @@ class MidiConfig {
 }
 
 class KeyboardControls {
-  final String nextChordKey;
+  final String? nextChordKey;
   final bool nextChordLongPress;
-  final String prevChordKey;
+  final String? prevChordKey;
   final bool prevChordLongPress;
-  final String nextProgressionKey;
+  final String? nextProgressionKey;
   final bool nextProgressionLongPress;
-  final String prevProgressionKey;
+  final String? prevProgressionKey;
   final bool prevProgressionLongPress;
   final int longPressDuration;
 
@@ -126,13 +126,13 @@ class _MyAppState extends State<MyApp> {
   int velocityBoost = 0;
 
   // Keyboard control settings
-  String nextChordKey = 'Space';
+  String? nextChordKey = 'Space';
   bool nextChordLongPress = false;
-  String prevChordKey = 'Enter';
+  String? prevChordKey = 'Enter';
   bool prevChordLongPress = false;
-  String nextProgressionKey = 'Space';
+  String? nextProgressionKey = 'Space';
   bool nextProgressionLongPress = true;
-  String prevProgressionKey = 'Enter';
+  String? prevProgressionKey = 'Enter';
   bool prevProgressionLongPress = true;
   int longPressDuration = 500;
 
@@ -233,11 +233,13 @@ class _MyAppState extends State<MyApp> {
         int note = data.length > 1 ? data[1] : 0;
         int velocity = data.length > 2 ? data[2] : 0;
 
-        print("Received MIDI message: status=$status, note=$note, velocity=$velocity");
+        print(
+            "Received MIDI message: status=$status, note=$note, velocity=$velocity");
         // Apply velocity boost1
         if (velocity > 0) {
-        velocity = (velocity + (127 * velocityBoost / 10).round()).clamp(0, 127);
-        print("After velocity boost: velocity=$velocity");
+          velocity =
+              (velocity + (127 * velocityBoost / 10).round()).clamp(0, 127);
+          print("After velocity boost: velocity=$velocity");
         }
 
         // Determine which string based on note number
@@ -247,8 +249,8 @@ class _MyAppState extends State<MyApp> {
         // Illuminate the corresponding guitar string on Note On
         if ((status & 0xF0) == 0x90 && velocity > 0) {
           // Note On
-          _guitarStringsKey.currentState?.playStringNote(stringNumber, velocity);
-          
+          _guitarStringsKey.currentState
+              ?.playStringNote(stringNumber, velocity);
         } else if ((status & 0xF0) == 0x80 ||
             ((status & 0xF0) == 0x90 && velocity == 0)) {
           // Note Off (either explicit 0x80 or Note On with velocity 0)
@@ -333,14 +335,16 @@ class _MyAppState extends State<MyApp> {
     velocityBoost = _prefs?.getInt('velocityBoost') ?? 0;
 
     // Load keyboard control settings
-    nextChordKey = _prefs?.getString('nextChordKey') ?? 'Space';
+    nextChordKey = _prefs?.getString('nextChordKey');
     nextChordLongPress = _prefs?.getBool('nextChordLongPress') ?? false;
-    prevChordKey = _prefs?.getString('prevChordKey') ?? 'Enter';
+    prevChordKey = _prefs?.getString('prevChordKey');
     prevChordLongPress = _prefs?.getBool('prevChordLongPress') ?? false;
-    nextProgressionKey = _prefs?.getString('nextProgressionKey') ?? 'Space';
-    nextProgressionLongPress = _prefs?.getBool('nextProgressionLongPress') ?? true;
-    prevProgressionKey = _prefs?.getString('prevProgressionKey') ?? 'Enter';
-    prevProgressionLongPress = _prefs?.getBool('prevProgressionLongPress') ?? true;
+    nextProgressionKey = _prefs?.getString('nextProgressionKey');
+    nextProgressionLongPress =
+        _prefs?.getBool('nextProgressionLongPress') ?? true;
+    prevProgressionKey = _prefs?.getString('prevProgressionKey');
+    prevProgressionLongPress =
+        _prefs?.getBool('prevProgressionLongPress') ?? true;
     longPressDuration = _prefs?.getInt('longPressDuration') ?? 500;
 
     // if (_prefs?.getString('visuals') == null) {
@@ -365,13 +369,14 @@ class _MyAppState extends State<MyApp> {
   void _loadChords() {
     // Load from the new songs system
     currentSongName = _prefs?.getString('currentSongName') ?? 'Default Song';
-    currentProgressionName = _prefs?.getString('currentProgressionName') ?? 'Default';
-    
+    currentProgressionName =
+        _prefs?.getString('currentProgressionName') ?? 'Default';
+
     final songsJson = _prefs?.getString('savedSongs');
-    
+
     List<Map<String, String>> chordMaps = [];
     progressionNames = [];
-    
+
     if (songsJson != null) {
       final decoded = json.decode(songsJson) as Map<String, dynamic>;
       if (decoded.containsKey(currentSongName)) {
@@ -405,7 +410,7 @@ class _MyAppState extends State<MyApp> {
         }
       }
     }
-    
+
     // Fallback to old 'chords' key for backwards compatibility (only if no progressions found)
     if (chordMaps.isEmpty) {
       final chordStrings = _prefs?.getStringList('chords') ?? [];
@@ -418,7 +423,7 @@ class _MyAppState extends State<MyApp> {
       }).toList();
       if (chordMaps.isNotEmpty) progressionNames = ['Default'];
     }
-    
+
     // Convert to Chord objects
     chords = chordMaps.map((chordMap) {
       final keyCenter = KeyCenter.values.firstWhere(
@@ -429,11 +434,12 @@ class _MyAppState extends State<MyApp> {
         (t) => t.name == chordMap['type'],
         orElse: () => ChordType.major,
       );
-      
+
       return Chord(keyCenter, chordType);
     }).toList();
-    
-    print('Loaded ${chords.length} chords from progression: $currentProgressionName');
+
+    print(
+        'Loaded ${chords.length} chords from progression: $currentProgressionName');
     print('Song has ${progressionNames.length} progressions');
   }
 
@@ -442,10 +448,10 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _stopCurrentChordNotesAndStrings();
       currentProgressionName = progressionName;
-      
+
       // Save the selected progression
       _prefs?.setString('currentProgressionName', progressionName);
-      
+
       // Load chords for this progression
       // Try new format first (savedSongs)
       final songsJson = _prefs?.getString('savedSongs');
@@ -462,7 +468,7 @@ class _MyAppState extends State<MyApp> {
                 'type': chord['type'] as String,
               };
             }).toList();
-            
+
             // Convert to Chord objects
             chords = chordMaps.map((chordMap) {
               final keyCenter = KeyCenter.values.firstWhere(
@@ -473,19 +479,20 @@ class _MyAppState extends State<MyApp> {
                 (t) => t.name == chordMap['type'],
                 orElse: () => ChordType.major,
               );
-              
+
               return Chord(keyCenter, chordType);
             }).toList();
-            
+
             // Reset to first chord
             currentChord = 0;
-            
-            print('Switched to progression: $progressionName with ${chords.length} chords');
+
+            print(
+                'Switched to progression: $progressionName with ${chords.length} chords');
             return;
           }
         }
       }
-      
+
       // Fall back to old format (savedProgressions)
       final progressionsJson = _prefs?.getString('savedProgressions');
       if (progressionsJson != null) {
@@ -498,7 +505,7 @@ class _MyAppState extends State<MyApp> {
               'type': chord['type'] as String,
             };
           }).toList();
-          
+
           // Convert to Chord objects
           chords = chordMaps.map((chordMap) {
             final keyCenter = KeyCenter.values.firstWhere(
@@ -509,14 +516,15 @@ class _MyAppState extends State<MyApp> {
               (t) => t.name == chordMap['type'],
               orElse: () => ChordType.major,
             );
-            
+
             return Chord(keyCenter, chordType);
           }).toList();
-          
+
           // Reset to first chord
           currentChord = 0;
-          
-          print('Switched to progression (old format): $progressionName with ${chords.length} chords');
+
+          print(
+              'Switched to progression (old format): $progressionName with ${chords.length} chords');
         }
       }
     });
@@ -566,7 +574,9 @@ class _MyAppState extends State<MyApp> {
           }
           return HomeScreen(
             chordState: ChordState(
-              currentChord: chords.isNotEmpty ? chords[currentChord] : Chord(KeyCenter.cNat, ChordType.major),
+              currentChord: chords.isNotEmpty
+                  ? chords[currentChord]
+                  : Chord(KeyCenter.cNat, ChordType.major),
               currentChordIndex: currentChord,
               chordList: chords,
               songName: currentSongName,
@@ -586,7 +596,8 @@ class _MyAppState extends State<MyApp> {
                 setState(() {
                   _stopCurrentChordNotesAndStrings();
                   if (chords.isNotEmpty) {
-                    currentChord = (currentChord - 1 + chords.length) % chords.length;
+                    currentChord =
+                        (currentChord - 1 + chords.length) % chords.length;
                   }
                 });
               },
@@ -602,15 +613,20 @@ class _MyAppState extends State<MyApp> {
                   // Reload velocity boost from preferences
                   velocityBoost = _prefs?.getInt('velocityBoost') ?? 0;
                   // Reload keyboard control settings
-                  nextChordKey = _prefs?.getString('nextChordKey') ?? 'Space';
-                  nextChordLongPress = _prefs?.getBool('nextChordLongPress') ?? false;
-                  prevChordKey = _prefs?.getString('prevChordKey') ?? 'Enter';
-                  prevChordLongPress = _prefs?.getBool('prevChordLongPress') ?? false;
-                  nextProgressionKey = _prefs?.getString('nextProgressionKey') ?? 'Space';
-                  nextProgressionLongPress = _prefs?.getBool('nextProgressionLongPress') ?? true;
-                  prevProgressionKey = _prefs?.getString('prevProgressionKey') ?? 'Enter';
-                  prevProgressionLongPress = _prefs?.getBool('prevProgressionLongPress') ?? true;
-                  longPressDuration = _prefs?.getInt('longPressDuration') ?? 500;
+                  nextChordKey = _prefs?.getString('nextChordKey');
+                  nextChordLongPress =
+                      _prefs?.getBool('nextChordLongPress') ?? false;
+                  prevChordKey = _prefs?.getString('prevChordKey');
+                  prevChordLongPress =
+                      _prefs?.getBool('prevChordLongPress') ?? false;
+                  nextProgressionKey = _prefs?.getString('nextProgressionKey');
+                  nextProgressionLongPress =
+                      _prefs?.getBool('nextProgressionLongPress') ?? true;
+                  prevProgressionKey = _prefs?.getString('prevProgressionKey');
+                  prevProgressionLongPress =
+                      _prefs?.getBool('prevProgressionLongPress') ?? true;
+                  longPressDuration =
+                      _prefs?.getInt('longPressDuration') ?? 500;
                   // Reset to first chord when returning from settings
                   currentChord = 0;
                 });
@@ -679,16 +695,19 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void didUpdateWidget(HomeScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Scroll to current chord when it changes or when progression changes
-    if (oldWidget.chordState.currentChordIndex != widget.chordState.currentChordIndex ||
-        oldWidget.chordState.progressionName != widget.chordState.progressionName) {
+    if (oldWidget.chordState.currentChordIndex !=
+            widget.chordState.currentChordIndex ||
+        oldWidget.chordState.progressionName !=
+            widget.chordState.progressionName) {
       _scrollToCurrentChord();
     }
   }
 
   void _scrollToCurrentChord() {
-    if (_scrollController.hasClients && widget.chordState.chordList.isNotEmpty) {
+    if (_scrollController.hasClients &&
+        widget.chordState.chordList.isNotEmpty) {
       // Use ensureVisible for smoother, less jumpy scrolling
       // This only scrolls if the item is not already visible
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -697,17 +716,18 @@ class _HomeScreenState extends State<HomeScreen> {
           final targetOffset = widget.chordState.currentChordIndex * itemHeight;
           final viewportHeight = _scrollController.position.viewportDimension;
           final currentOffset = _scrollController.offset;
-          
+
           // Only scroll if the item is outside the visible area
-          if (targetOffset < currentOffset || 
+          if (targetOffset < currentOffset ||
               targetOffset > currentOffset + viewportHeight - itemHeight) {
             // Center the item in the viewport
-            final centerOffset = targetOffset - (viewportHeight / 2) + (itemHeight / 2);
+            final centerOffset =
+                targetOffset - (viewportHeight / 2) + (itemHeight / 2);
             final clampedOffset = centerOffset.clamp(
               _scrollController.position.minScrollExtent,
               _scrollController.position.maxScrollExtent,
             );
-            
+
             _scrollController.animateTo(
               clampedOffset,
               duration: const Duration(milliseconds: 300),
@@ -732,10 +752,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final titleText = widget.midiConfig.selectedDevice == null 
+    final titleText = widget.midiConfig.selectedDevice == null
         ? 'Not connected - ${widget.chordState.songName}'
         : widget.chordState.songName;
-    
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -748,8 +768,9 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) =>
-                        SettingsPage(prefs: widget.midiConfig.prefs, sfID: widget.midiConfig.sfID)),
+                    builder: (context) => SettingsPage(
+                        prefs: widget.midiConfig.prefs,
+                        sfID: widget.midiConfig.sfID)),
               ).then((_) {
                 widget.callbacks.onUpdate();
               });
@@ -761,42 +782,59 @@ class _HomeScreenState extends State<HomeScreen> {
         autofocus: true,
         onKeyEvent: (FocusNode node, KeyEvent event) {
           final keyLabel = _getKeyLabel(event.logicalKey);
-          
+
           if (event is KeyDownEvent) {
             // Skip if this key already triggered an action
             if (_triggeredKeys.contains(event.logicalKey)) {
               return KeyEventResult.handled;
             }
-            
+
             // Check if this key has a SHORT press action configured
             bool hasShortPressAction = false;
-            if ((keyLabel == widget.keyboardControls.nextChordKey && !widget.keyboardControls.nextChordLongPress) ||
-                (keyLabel == widget.keyboardControls.prevChordKey && !widget.keyboardControls.prevChordLongPress) ||
-                (keyLabel == widget.keyboardControls.nextProgressionKey && !widget.keyboardControls.nextProgressionLongPress) ||
-                (keyLabel == widget.keyboardControls.prevProgressionKey && !widget.keyboardControls.prevProgressionLongPress)) {
+            if ((widget.keyboardControls.nextChordKey != null &&
+                    keyLabel == widget.keyboardControls.nextChordKey &&
+                    !widget.keyboardControls.nextChordLongPress) ||
+                (widget.keyboardControls.prevChordKey != null &&
+                    keyLabel == widget.keyboardControls.prevChordKey &&
+                    !widget.keyboardControls.prevChordLongPress) ||
+                (widget.keyboardControls.nextProgressionKey != null &&
+                    keyLabel == widget.keyboardControls.nextProgressionKey &&
+                    !widget.keyboardControls.nextProgressionLongPress) ||
+                (widget.keyboardControls.prevProgressionKey != null &&
+                    keyLabel == widget.keyboardControls.prevProgressionKey &&
+                    !widget.keyboardControls.prevProgressionLongPress)) {
               hasShortPressAction = true;
             }
-            
+
             // Check if this key has a LONG press action configured
             bool hasLongPressAction = false;
-            if ((keyLabel == widget.keyboardControls.nextChordKey && widget.keyboardControls.nextChordLongPress) ||
-                (keyLabel == widget.keyboardControls.prevChordKey && widget.keyboardControls.prevChordLongPress) ||
-                (keyLabel == widget.keyboardControls.nextProgressionKey && widget.keyboardControls.nextProgressionLongPress) ||
-                (keyLabel == widget.keyboardControls.prevProgressionKey && widget.keyboardControls.prevProgressionLongPress)) {
+            if ((widget.keyboardControls.nextChordKey != null &&
+                    keyLabel == widget.keyboardControls.nextChordKey &&
+                    widget.keyboardControls.nextChordLongPress) ||
+                (widget.keyboardControls.prevChordKey != null &&
+                    keyLabel == widget.keyboardControls.prevChordKey &&
+                    widget.keyboardControls.prevChordLongPress) ||
+                (widget.keyboardControls.nextProgressionKey != null &&
+                    keyLabel == widget.keyboardControls.nextProgressionKey &&
+                    widget.keyboardControls.nextProgressionLongPress) ||
+                (widget.keyboardControls.prevProgressionKey != null &&
+                    keyLabel == widget.keyboardControls.prevProgressionKey &&
+                    widget.keyboardControls.prevProgressionLongPress)) {
               hasLongPressAction = true;
             }
-            
+
             // If only short press configured, trigger immediately
             if (hasShortPressAction && !hasLongPressAction) {
               _executeAction(keyLabel, false);
               _triggeredKeys.add(event.logicalKey);
               return KeyEventResult.handled;
             }
-            
+
             // If long press configured, start timer
             if (hasLongPressAction) {
               _longPressTimers[event.logicalKey] = Timer(
-                Duration(milliseconds: widget.keyboardControls.longPressDuration),
+                Duration(
+                    milliseconds: widget.keyboardControls.longPressDuration),
                 () {
                   // Timer expired - trigger long press action
                   _executeAction(keyLabel, true);
@@ -804,7 +842,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               );
             }
-            
+
             return KeyEventResult.handled;
           } else if (event is KeyUpEvent) {
             // Cancel timer if key released before long press duration
@@ -812,13 +850,13 @@ class _HomeScreenState extends State<HomeScreen> {
             if (timer != null && timer.isActive) {
               timer.cancel();
               _longPressTimers.remove(event.logicalKey);
-              
+
               // Key was released before long press - trigger short press if configured
               if (!_triggeredKeys.contains(event.logicalKey)) {
                 _executeAction(keyLabel, false);
               }
             }
-            
+
             // Clear triggered flag
             _triggeredKeys.remove(event.logicalKey);
             _longPressTimers.remove(event.logicalKey);
@@ -827,69 +865,80 @@ class _HomeScreenState extends State<HomeScreen> {
           return KeyEventResult.ignored;
         },
         child: Column(
-        children: [
-          // Guitar Strings Visualization
-          GuitarStrings(
-            key: widget.midiConfig.guitarStringsKey,
-            currentChord: widget.chordState.currentChord,
-            midiPlayer: widget.midiConfig.midiPlayer,
-            sfId: widget.midiConfig.sfID,
-          ),
-          // Keyboard and Chord List
-          Expanded(
-            child: Row(
-              children: [
-                // Big Button
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.all(12),
-                    child: GestureDetector(
-                      onTap: nextChord,
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: double.infinity,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.easeInOut,
-                          decoration: BoxDecoration(
-                            color: widget.chordState.currentChord.rootKey.color,
-                            border: Border.all(color: Colors.black, width: 3),
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: Center(
-                              child: AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 300),
-                                switchInCurve: Curves.easeInOut,
-                                switchOutCurve: Curves.easeInOut,
-                                transitionBuilder: (Widget child, Animation<double> animation) {
-                                  return FadeTransition(
-                                    opacity: animation,
-                                    child: child,
-                                  );
-                                },
-                                child: FittedBox(
-                                  key: ValueKey<String>('${widget.chordState.currentChord.rootKey.name}-${widget.chordState.currentChord.type.displayName}'),
-                                  fit: BoxFit.scaleDown,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      // Big key label (sharp name only)
-                                      OutlinedText(
-                                        widget.chordState.currentChord.rootKey.name.contains('/')
-                                            ? widget.chordState.currentChord.rootKey.name.split('/')[0]
-                                            : widget.chordState.currentChord.rootKey.name,
-                                        fontSize: 500,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      // Smaller chord type display name
-                                      OutlinedText(
-                                        widget.chordState.currentChord.type.displayName,
-                                        fontSize: 90,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ],
+          children: [
+            // Guitar Strings Visualization
+            GuitarStrings(
+              key: widget.midiConfig.guitarStringsKey,
+              currentChord: widget.chordState.currentChord,
+              midiPlayer: widget.midiConfig.midiPlayer,
+              sfId: widget.midiConfig.sfID,
+            ),
+            // Keyboard and Chord List
+            Expanded(
+              child: Row(
+                children: [
+                  // Big Button
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(12),
+                      child: GestureDetector(
+                        onTap: nextChord,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeInOut,
+                            decoration: BoxDecoration(
+                              color:
+                                  widget.chordState.currentChord.rootKey.color,
+                              border: Border.all(color: Colors.black, width: 3),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: Center(
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  switchInCurve: Curves.easeInOut,
+                                  switchOutCurve: Curves.easeInOut,
+                                  transitionBuilder: (Widget child,
+                                      Animation<double> animation) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    );
+                                  },
+                                  child: FittedBox(
+                                    key: ValueKey<String>(
+                                        '${widget.chordState.currentChord.rootKey.name}-${widget.chordState.currentChord.type.displayName}'),
+                                    fit: BoxFit.scaleDown,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        // Big key label (sharp name only)
+                                        OutlinedText(
+                                          widget.chordState.currentChord.rootKey
+                                                  .name
+                                                  .contains('/')
+                                              ? widget.chordState.currentChord
+                                                  .rootKey.name
+                                                  .split('/')[0]
+                                              : widget.chordState.currentChord
+                                                  .rootKey.name,
+                                          fontSize: 500,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        // Smaller chord type display name
+                                        OutlinedText(
+                                          widget.chordState.currentChord.type
+                                              .displayName,
+                                          fontSize: 90,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -899,127 +948,162 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                ),
-                // Progression List and Chord List
-                SizedBox(
-                  width: 230,
-                  child: Column(
-                    children: [
-                      // Progression List (only show if 2+ progressions)
-                      if (widget.chordState.progressionNames.length >= 2) ...[
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(0, 12, 12, 0),
-                          child: Container(
-                            height: widget.chordState.progressionNames.length * 49.5, // 56 for ListTile + 1 for divider
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.black, width: 3),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(9),
-                              child: Container(
-                                color: Colors.grey[200],
-                                child: ListView.separated(
-                                  itemCount: widget.chordState.progressionNames.length,
-                                  separatorBuilder: (context, index) => Divider(
-                                    height: 1,
-                                    thickness: 1,
-                                    color: Colors.grey[800],
-                                  ),
-                                  itemBuilder: (context, index) {
-                                    final progName = widget.chordState.progressionNames[index];
-                                    final isSelected = progName == widget.chordState.progressionName;
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.white,
-                                      ),
-                                      child: ListTile(
-                                        dense: true,
-                                        minLeadingWidth: 12,
-                                        leading: SizedBox(
-                                          width: 12,
-                                          child: Center(
-                                            child: isSelected ? const ArrowIndicator() : const SizedBox.shrink(),
+                  // Progression List and Chord List
+                  SizedBox(
+                    width: 230,
+                    child: Column(
+                      children: [
+                        // Progression List (only show if 2+ progressions)
+                        if (widget.chordState.progressionNames.length >= 2) ...[
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(0, 12, 12, 0),
+                            child: Container(
+                              height:
+                                  widget.chordState.progressionNames.length *
+                                      49.5, // 56 for ListTile + 1 for divider
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.black, width: 3),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(9),
+                                child: Container(
+                                  color: Colors.grey[200],
+                                  child: ListView.separated(
+                                    itemCount: widget
+                                        .chordState.progressionNames.length,
+                                    separatorBuilder: (context, index) =>
+                                        Divider(
+                                      height: 1,
+                                      thickness: 1,
+                                      color: Colors.grey[800],
+                                    ),
+                                    itemBuilder: (context, index) {
+                                      final progName = widget
+                                          .chordState.progressionNames[index];
+                                      final isSelected = progName ==
+                                          widget.chordState.progressionName;
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                              : Colors.white,
+                                        ),
+                                        child: ListTile(
+                                          dense: true,
+                                          minLeadingWidth: 12,
+                                          leading: SizedBox(
+                                            width: 12,
+                                            child: Center(
+                                              child: isSelected
+                                                  ? const ArrowIndicator()
+                                                  : const SizedBox.shrink(),
+                                            ),
                                           ),
+                                          title: ListItemTitle(
+                                            index: index,
+                                            label: progName,
+                                            isSelected: isSelected,
+                                          ),
+                                          onTap: () => widget.callbacks
+                                              .onSelectProgression(progName),
                                         ),
-                                        title: ListItemTitle(
-                                          index: index,
-                                          label: progName,
-                                          isSelected: isSelected,
-                                        ),
-                                        onTap: () => widget.callbacks.onSelectProgression(progName),
-                                      ),
-                                    );
-                                  },
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 8),
-                      ],
-                      // Chord List
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(0, widget.chordState.progressionNames.length >= 2 ? 0 : 12, 12, 12),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.black, width: 3),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(9), // Slightly smaller to fit inside border
-                              child: Container(
-                                color: Colors.white,
-                                child: ListView.separated(
-                                  controller: _scrollController,
-                                  itemCount: widget.chordState.chordList.length,
-                                  separatorBuilder: (context, index) => Divider(
-                              height: 1,
-                              thickness: 1,
-                              color: Colors.grey[800],
-                            ),
-                        itemBuilder: (context, index) {
-                          final chord = widget.chordState.chordList[index];
-                          final isSelected = index == widget.chordState.currentChordIndex;
-                          // Build compact chord label using sharp key name + chord type symbol
-                          final keyLabel = chord.rootKey.name.contains('/')
-                              ? chord.rootKey.name.split('/')[0]
-                              : chord.rootKey.name;
-                          final chordLabel = '${keyLabel} ${chord.type.symbol}';
-                          final isLastItem = index == widget.chordState.chordList.length - 1;
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: isSelected ? chord.rootKey.color : chord.rootKey.color.withOpacity(0.3),
-                              border: isLastItem
-                                  ? Border(
-                                      bottom: BorderSide(
-                                        color: Colors.grey[800]!,
-                                        width: 1,
-                                      ),
-                                    )
-                                  : null,
-                            ),
-                            child: ListTile(
-                              // Keep horizontal alignment by reserving space for the indicator
-                              minLeadingWidth: 12,
-                              leading: SizedBox(
-                                width: 12,
-                                child: Center(
-                                  child: isSelected ? const ArrowIndicator() : const SizedBox.shrink(),
-                                ),
+                          SizedBox(height: 8),
+                        ],
+                        // Chord List
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(
+                                0,
+                                widget.chordState.progressionNames.length >= 2
+                                    ? 0
+                                    : 12,
+                                12,
+                                12),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.black, width: 3),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              title: ListItemTitle(
-                                index: index,
-                                label: chordLabel,
-                                isSelected: isSelected,
-                                fontSize: 18,
-                              ),
-                              onTap: () => widget.callbacks.onSelect(index),
-                            ),
-                          );
-                        },
-                      ), // Close ListView.separated
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(
+                                    9), // Slightly smaller to fit inside border
+                                child: Container(
+                                  color: Colors.white,
+                                  child: ListView.separated(
+                                    controller: _scrollController,
+                                    itemCount:
+                                        widget.chordState.chordList.length,
+                                    separatorBuilder: (context, index) =>
+                                        Divider(
+                                      height: 1,
+                                      thickness: 1,
+                                      color: Colors.grey[800],
+                                    ),
+                                    itemBuilder: (context, index) {
+                                      final chord =
+                                          widget.chordState.chordList[index];
+                                      final isSelected = index ==
+                                          widget.chordState.currentChordIndex;
+                                      // Build compact chord label using sharp key name + chord type symbol
+                                      final keyLabel =
+                                          chord.rootKey.name.contains('/')
+                                              ? chord.rootKey.name.split('/')[0]
+                                              : chord.rootKey.name;
+                                      final chordLabel =
+                                          '${keyLabel} ${chord.type.symbol}';
+                                      final isLastItem = index ==
+                                          widget.chordState.chordList.length -
+                                              1;
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? chord.rootKey.color
+                                              : chord.rootKey.color
+                                                  .withOpacity(0.3),
+                                          border: isLastItem
+                                              ? Border(
+                                                  bottom: BorderSide(
+                                                    color: Colors.grey[800]!,
+                                                    width: 1,
+                                                  ),
+                                                )
+                                              : null,
+                                        ),
+                                        child: ListTile(
+                                          // Keep horizontal alignment by reserving space for the indicator
+                                          minLeadingWidth: 12,
+                                          leading: SizedBox(
+                                            width: 12,
+                                            child: Center(
+                                              child: isSelected
+                                                  ? const ArrowIndicator()
+                                                  : const SizedBox.shrink(),
+                                            ),
+                                          ),
+                                          title: ListItemTitle(
+                                            index: index,
+                                            label: chordLabel,
+                                            isSelected: isSelected,
+                                            fontSize: 18,
+                                          ),
+                                          onTap: () =>
+                                              widget.callbacks.onSelect(index),
+                                        ),
+                                      );
+                                    },
+                                  ), // Close ListView.separated
                                 ), // Close Container (color)
                               ), // Close ClipRRect
                             ), // Close Container (border)
@@ -1033,22 +1117,26 @@ class _HomeScreenState extends State<HomeScreen> {
             ), // Close Expanded
           ], // Close Column children (guitar strings + expanded row)
         ), // Close Column
-        ), // Close Focus
+      ), // Close Focus
     );
   }
 
   void _executeAction(String keyLabel, bool isLongPress) {
     // Check which action this key+press combo maps to
-    if (keyLabel == widget.keyboardControls.nextChordKey && 
+    if (widget.keyboardControls.nextChordKey != null &&
+        keyLabel == widget.keyboardControls.nextChordKey &&
         isLongPress == widget.keyboardControls.nextChordLongPress) {
       nextChord();
-    } else if (keyLabel == widget.keyboardControls.prevChordKey && 
+    } else if (widget.keyboardControls.prevChordKey != null &&
+        keyLabel == widget.keyboardControls.prevChordKey &&
         isLongPress == widget.keyboardControls.prevChordLongPress) {
       previousChord();
-    } else if (keyLabel == widget.keyboardControls.nextProgressionKey && 
+    } else if (widget.keyboardControls.nextProgressionKey != null &&
+        keyLabel == widget.keyboardControls.nextProgressionKey &&
         isLongPress == widget.keyboardControls.nextProgressionLongPress) {
       nextProgression();
-    } else if (keyLabel == widget.keyboardControls.prevProgressionKey && 
+    } else if (widget.keyboardControls.prevProgressionKey != null &&
+        keyLabel == widget.keyboardControls.prevProgressionKey &&
         isLongPress == widget.keyboardControls.prevProgressionLongPress) {
       previousProgression();
     }
@@ -1065,8 +1153,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void nextProgression() {
     // Only switch progressions if there are multiple progressions
     if (widget.chordState.progressionNames.length > 1) {
-      final currentIndex = widget.chordState.progressionNames.indexOf(widget.chordState.progressionName);
-      final nextIndex = (currentIndex + 1) % widget.chordState.progressionNames.length;
+      final currentIndex = widget.chordState.progressionNames
+          .indexOf(widget.chordState.progressionName);
+      final nextIndex =
+          (currentIndex + 1) % widget.chordState.progressionNames.length;
       final nextProgressionName = widget.chordState.progressionNames[nextIndex];
       widget.callbacks.onSelectProgression(nextProgressionName);
     }
@@ -1075,8 +1165,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void previousProgression() {
     // Only switch progressions if there are multiple progressions
     if (widget.chordState.progressionNames.length > 1) {
-      final currentIndex = widget.chordState.progressionNames.indexOf(widget.chordState.progressionName);
-      final prevIndex = (currentIndex - 1 + widget.chordState.progressionNames.length) % widget.chordState.progressionNames.length;
+      final currentIndex = widget.chordState.progressionNames
+          .indexOf(widget.chordState.progressionName);
+      final prevIndex =
+          (currentIndex - 1 + widget.chordState.progressionNames.length) %
+              widget.chordState.progressionNames.length;
       final prevProgressionName = widget.chordState.progressionNames[prevIndex];
       widget.callbacks.onSelectProgression(prevProgressionName);
     }
@@ -1099,7 +1192,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (key == LogicalKeyboardKey.end) return 'End';
     if (key == LogicalKeyboardKey.pageUp) return 'Page Up';
     if (key == LogicalKeyboardKey.pageDown) return 'Page Down';
-    
+
     // Handle modifier keys
     if (key == LogicalKeyboardKey.shiftLeft) return 'Shift Left';
     if (key == LogicalKeyboardKey.shiftRight) return 'Shift Right';
@@ -1109,17 +1202,17 @@ class _HomeScreenState extends State<HomeScreen> {
     if (key == LogicalKeyboardKey.altRight) return 'Alt Right';
     if (key == LogicalKeyboardKey.metaLeft) return 'Meta Left';
     if (key == LogicalKeyboardKey.metaRight) return 'Meta Right';
-    
+
     // Handle function keys
     if (key.keyLabel.startsWith('F') && key.keyLabel.length <= 3) {
       return key.keyLabel;
     }
-    
+
     // Handle regular keys
     if (key.keyLabel.length == 1) {
       return key.keyLabel.toUpperCase();
     }
-    
+
     // Return the key label as is for anything else
     return key.keyLabel;
   }

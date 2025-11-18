@@ -21,7 +21,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   late Instrument selectedInstrument;
   late List<Map<String, String>> chords;
-  late Map<String, dynamic> savedSongs; // Song name -> {progressions: {progName: [chords]}, order: [progNames]}
+  late Map<String, dynamic>
+      savedSongs; // Song name -> {progressions: {progName: [chords]}, order: [progNames]}
   late String currentSongName;
   late String currentProgressionName;
   int? selectedChordIndex;
@@ -30,13 +31,13 @@ class _SettingsPageState extends State<SettingsPage> {
   final ScrollController _leftSideScrollController = ScrollController();
 
   // Keyboard control settings
-  String nextChordKey = 'Space';
+  String? nextChordKey = 'Space';
   bool nextChordLongPress = false;
-  String prevChordKey = 'Enter';
+  String? prevChordKey = 'Enter';
   bool prevChordLongPress = false;
-  String nextProgressionKey = 'Space';
+  String? nextProgressionKey = 'Space';
   bool nextProgressionLongPress = true;
-  String prevProgressionKey = 'Enter';
+  String? prevProgressionKey = 'Enter';
   bool prevProgressionLongPress = true;
   int longPressDuration = 500; // in milliseconds
 
@@ -65,8 +66,10 @@ class _SettingsPageState extends State<SettingsPage> {
         .firstWhere((e) => e.name == widget.prefs!.getString('instrument')!);
 
     // Load current song and progression names
-    currentSongName = widget.prefs!.getString('currentSongName') ?? 'Default Song';
-    currentProgressionName = widget.prefs!.getString('currentProgressionName') ?? 'Default';
+    currentSongName =
+        widget.prefs!.getString('currentSongName') ?? 'Default Song';
+    currentProgressionName =
+        widget.prefs!.getString('currentProgressionName') ?? 'Default';
 
     // Load saved songs structure
     final songsJson = widget.prefs!.getString('savedSongs');
@@ -137,14 +140,15 @@ class _SettingsPageState extends State<SettingsPage> {
     if (!savedSongs.containsKey(currentSongName)) {
       currentSongName = savedSongs.keys.first;
     }
-    
+
     final currentSong = savedSongs[currentSongName] as Map<String, dynamic>;
     final progressions = currentSong['progressions'] as Map<String, dynamic>;
-    
+
     if (!progressions.containsKey(currentProgressionName)) {
-      currentProgressionName = (currentSong['order'] as List<dynamic>).first.toString();
+      currentProgressionName =
+          (currentSong['order'] as List<dynamic>).first.toString();
     }
-    
+
     // Load chords from current progression
     final progressionData = progressions[currentProgressionName] as List;
     chords = progressionData.map((chord) {
@@ -162,14 +166,16 @@ class _SettingsPageState extends State<SettingsPage> {
     velocityBoost = widget.prefs!.getInt('velocityBoost') ?? 0;
 
     // Load keyboard control settings
-    nextChordKey = widget.prefs!.getString('nextChordKey') ?? 'Space';
+    nextChordKey = widget.prefs!.getString('nextChordKey');
     nextChordLongPress = widget.prefs!.getBool('nextChordLongPress') ?? false;
-    prevChordKey = widget.prefs!.getString('prevChordKey') ?? 'Enter';
+    prevChordKey = widget.prefs!.getString('prevChordKey');
     prevChordLongPress = widget.prefs!.getBool('prevChordLongPress') ?? false;
-    nextProgressionKey = widget.prefs!.getString('nextProgressionKey') ?? 'Space';
-    nextProgressionLongPress = widget.prefs!.getBool('nextProgressionLongPress') ?? true;
-    prevProgressionKey = widget.prefs!.getString('prevProgressionKey') ?? 'Enter';
-    prevProgressionLongPress = widget.prefs!.getBool('prevProgressionLongPress') ?? true;
+    nextProgressionKey = widget.prefs!.getString('nextProgressionKey');
+    nextProgressionLongPress =
+        widget.prefs!.getBool('nextProgressionLongPress') ?? true;
+    prevProgressionKey = widget.prefs!.getString('prevProgressionKey');
+    prevProgressionLongPress =
+        widget.prefs!.getBool('prevProgressionLongPress') ?? true;
     longPressDuration = widget.prefs!.getInt('longPressDuration') ?? 500;
 
     print("Instrument: $selectedInstrument");
@@ -188,10 +194,12 @@ class _SettingsPageState extends State<SettingsPage> {
       // Save current chords back to current progression
       final currentSong = savedSongs[currentSongName] as Map<String, dynamic>;
       final progressions = currentSong['progressions'] as Map<String, dynamic>;
-      progressions[currentProgressionName] = chords.map((chord) => {
-        'key': chord['key']!,
-        'type': chord['type']!,
-      }).toList();
+      progressions[currentProgressionName] = chords
+          .map((chord) => {
+                'key': chord['key']!,
+                'type': chord['type']!,
+              })
+          .toList();
 
       // Convert to JSON
       final songsJson = json.encode(savedSongs);
@@ -199,18 +207,39 @@ class _SettingsPageState extends State<SettingsPage> {
       await widget.prefs?.setString('instrument', selectedInstrument.name);
       await widget.prefs?.setString('savedSongs', songsJson);
       await widget.prefs?.setString('currentSongName', currentSongName);
-      await widget.prefs?.setString('currentProgressionName', currentProgressionName);
+      await widget.prefs
+          ?.setString('currentProgressionName', currentProgressionName);
       await widget.prefs?.setInt('velocityBoost', velocityBoost);
 
       // Save keyboard control settings
-      await widget.prefs?.setString('nextChordKey', nextChordKey);
+      if (nextChordKey != null) {
+        await widget.prefs?.setString('nextChordKey', nextChordKey!);
+      } else {
+        await widget.prefs?.remove('nextChordKey');
+      }
       await widget.prefs?.setBool('nextChordLongPress', nextChordLongPress);
-      await widget.prefs?.setString('prevChordKey', prevChordKey);
+      if (prevChordKey != null) {
+        await widget.prefs?.setString('prevChordKey', prevChordKey!);
+      } else {
+        await widget.prefs?.remove('prevChordKey');
+      }
       await widget.prefs?.setBool('prevChordLongPress', prevChordLongPress);
-      await widget.prefs?.setString('nextProgressionKey', nextProgressionKey);
-      await widget.prefs?.setBool('nextProgressionLongPress', nextProgressionLongPress);
-      await widget.prefs?.setString('prevProgressionKey', prevProgressionKey);
-      await widget.prefs?.setBool('prevProgressionLongPress', prevProgressionLongPress);
+      if (nextProgressionKey != null) {
+        await widget.prefs
+            ?.setString('nextProgressionKey', nextProgressionKey!);
+      } else {
+        await widget.prefs?.remove('nextProgressionKey');
+      }
+      await widget.prefs
+          ?.setBool('nextProgressionLongPress', nextProgressionLongPress);
+      if (prevProgressionKey != null) {
+        await widget.prefs
+            ?.setString('prevProgressionKey', prevProgressionKey!);
+      } else {
+        await widget.prefs?.remove('prevProgressionKey');
+      }
+      await widget.prefs
+          ?.setBool('prevProgressionLongPress', prevProgressionLongPress);
       await widget.prefs?.setInt('longPressDuration', longPressDuration);
 
       MidiPro().selectInstrument(
@@ -251,7 +280,7 @@ class _SettingsPageState extends State<SettingsPage> {
       chords.add({'key': 'C', 'type': 'major'});
       selectedChordIndex = chords.length - 1; // Select the newly added chord
     });
-    
+
     // Scroll to bottom to make the new chord visible
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_leftSideScrollController.hasClients) {
@@ -293,14 +322,15 @@ class _SettingsPageState extends State<SettingsPage> {
       }
       final chord = chords.removeAt(oldIndex);
       chords.insert(newIndex, chord);
-      
+
       // Update selection to follow the moved chord
       if (selectedChordIndex == oldIndex) {
         selectedChordIndex = newIndex;
       } else if (selectedChordIndex != null) {
         if (oldIndex < selectedChordIndex! && newIndex >= selectedChordIndex!) {
           selectedChordIndex = selectedChordIndex! - 1;
-        } else if (oldIndex > selectedChordIndex! && newIndex <= selectedChordIndex!) {
+        } else if (oldIndex > selectedChordIndex! &&
+            newIndex <= selectedChordIndex!) {
           selectedChordIndex = selectedChordIndex! + 1;
         }
       }
@@ -363,7 +393,9 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
 
-    if (result != null && result.isNotEmpty && !currentSongProgressions.containsKey(result)) {
+    if (result != null &&
+        result.isNotEmpty &&
+        !currentSongProgressions.containsKey(result)) {
       setState(() {
         // First, commit any unsaved edits of the CURRENT progression back to savedSongs
         final progressions = currentSongProgressions;
@@ -375,17 +407,22 @@ class _SettingsPageState extends State<SettingsPage> {
                   })
               .toList();
         }
-        
+
         // Now create the new progression
-        progressions[result] = [{'key': 'C', 'type': 'major'}];
+        progressions[result] = [
+          {'key': 'C', 'type': 'major'}
+        ];
         // Add to order list
         final order = currentSongProgressionOrder;
         order.add(result);
         setCurrentSongProgressionOrder(order);
         currentProgressionName = result;
-        chords = [{'key': 'C', 'type': 'major'}];
+        chords = [
+          {'key': 'C', 'type': 'major'}
+        ];
         selectedChordIndex = 0;
-        selectedProgressionIndex = order.indexOf(result); // Use indexOf instead of length - 1
+        selectedProgressionIndex =
+            order.indexOf(result); // Use indexOf instead of length - 1
       });
     }
   }
@@ -414,10 +451,13 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
 
-    if (result != null && result.isNotEmpty && result != currentProgressionName) {
+    if (result != null &&
+        result.isNotEmpty &&
+        result != currentProgressionName) {
       if (currentSongProgressions.containsKey(result)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('A progression with that name already exists')),
+          SnackBar(
+              content: Text('A progression with that name already exists')),
         );
         return;
       }
@@ -448,7 +488,8 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Delete Progression'),
-        content: Text('Are you sure you want to delete "$currentProgressionName"?'),
+        content:
+            Text('Are you sure you want to delete "$currentProgressionName"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -484,7 +525,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void duplicateProgression() async {
-    final nameController = TextEditingController(text: '$currentProgressionName (Copy)');
+    final nameController =
+        TextEditingController(text: '$currentProgressionName (Copy)');
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -507,10 +549,13 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
 
-    if (result != null && result.isNotEmpty && !currentSongProgressions.containsKey(result)) {
+    if (result != null &&
+        result.isNotEmpty &&
+        !currentSongProgressions.containsKey(result)) {
       setState(() {
         final progressions = currentSongProgressions;
-        progressions[result] = List.from(chords.map((chord) => Map<String, String>.from(chord)));
+        progressions[result] =
+            List.from(chords.map((chord) => Map<String, String>.from(chord)));
         // Add to order list
         final order = currentSongProgressionOrder;
         order.add(result);
@@ -531,14 +576,16 @@ class _SettingsPageState extends State<SettingsPage> {
       final progression = order.removeAt(oldIndex);
       order.insert(newIndex, progression);
       setCurrentSongProgressionOrder(order);
-      
+
       // Update selection to follow the moved progression
       if (selectedProgressionIndex == oldIndex) {
         selectedProgressionIndex = newIndex;
       } else if (selectedProgressionIndex != null) {
-        if (oldIndex < selectedProgressionIndex! && newIndex >= selectedProgressionIndex!) {
+        if (oldIndex < selectedProgressionIndex! &&
+            newIndex >= selectedProgressionIndex!) {
           selectedProgressionIndex = selectedProgressionIndex! - 1;
-        } else if (oldIndex > selectedProgressionIndex! && newIndex <= selectedProgressionIndex!) {
+        } else if (oldIndex > selectedProgressionIndex! &&
+            newIndex <= selectedProgressionIndex!) {
           selectedProgressionIndex = selectedProgressionIndex! + 1;
         }
       }
@@ -551,7 +598,8 @@ class _SettingsPageState extends State<SettingsPage> {
       // Commit current progression's chords for the currently selected song before switching songs
       if (savedSongs.containsKey(currentSongName)) {
         final currentSong = savedSongs[currentSongName] as Map<String, dynamic>;
-        final progressions = currentSong['progressions'] as Map<String, dynamic>;
+        final progressions =
+            currentSong['progressions'] as Map<String, dynamic>;
         if (progressions.containsKey(currentProgressionName)) {
           progressions[currentProgressionName] = chords
               .map((chord) => {
@@ -567,10 +615,11 @@ class _SettingsPageState extends State<SettingsPage> {
       final song = savedSongs[name] as Map<String, dynamic>;
       final order = List<String>.from(song['order']);
       currentProgressionName = order.first;
-      
+
       // Load the first progression's chords directly (don't call loadProgression to avoid double-commit)
       final newSongProgressions = song['progressions'] as Map<String, dynamic>;
-      final progressionData = newSongProgressions[currentProgressionName] as List;
+      final progressionData =
+          newSongProgressions[currentProgressionName] as List;
       chords = progressionData
           .map((chord) => {
                 'key': chord['key'] as String,
@@ -606,12 +655,16 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
 
-    if (result != null && result.isNotEmpty && !savedSongs.containsKey(result)) {
+    if (result != null &&
+        result.isNotEmpty &&
+        !savedSongs.containsKey(result)) {
       setState(() {
         // First, commit any unsaved edits of the CURRENT progression for the current song
         if (savedSongs.containsKey(currentSongName)) {
-          final currentSong = savedSongs[currentSongName] as Map<String, dynamic>;
-          final progressions = currentSong['progressions'] as Map<String, dynamic>;
+          final currentSong =
+              savedSongs[currentSongName] as Map<String, dynamic>;
+          final progressions =
+              currentSong['progressions'] as Map<String, dynamic>;
           if (progressions.containsKey(currentProgressionName)) {
             progressions[currentProgressionName] = chords
                 .map((chord) => {
@@ -621,17 +674,21 @@ class _SettingsPageState extends State<SettingsPage> {
                 .toList();
           }
         }
-        
+
         // Now create the new song
         savedSongs[result] = {
           'progressions': {
-            'Default': [{'key': 'C', 'type': 'major'}]
+            'Default': [
+              {'key': 'C', 'type': 'major'}
+            ]
           },
           'order': ['Default'],
         };
         currentSongName = result;
         currentProgressionName = 'Default';
-        chords = [{'key': 'C', 'type': 'major'}];
+        chords = [
+          {'key': 'C', 'type': 'major'}
+        ];
         selectedChordIndex = 0;
         selectedProgressionIndex = 0;
       });
@@ -713,7 +770,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void duplicateSong() async {
-    final nameController = TextEditingController(text: '$currentSongName (Copy)');
+    final nameController =
+        TextEditingController(text: '$currentSongName (Copy)');
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -736,14 +794,19 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
 
-    if (result != null && result.isNotEmpty && !savedSongs.containsKey(result)) {
+    if (result != null &&
+        result.isNotEmpty &&
+        !savedSongs.containsKey(result)) {
       setState(() {
         // Deep copy the song
-        final originalSong = savedSongs[currentSongName] as Map<String, dynamic>;
-        final originalProgressions = originalSong['progressions'] as Map<String, dynamic>;
+        final originalSong =
+            savedSongs[currentSongName] as Map<String, dynamic>;
+        final originalProgressions =
+            originalSong['progressions'] as Map<String, dynamic>;
         final newProgressions = <String, dynamic>{};
         originalProgressions.forEach((key, value) {
-          newProgressions[key] = List.from((value as List).map((chord) => Map<String, String>.from(chord)));
+          newProgressions[key] = List.from(
+              (value as List).map((chord) => Map<String, String>.from(chord)));
         });
         savedSongs[result] = {
           'progressions': newProgressions,
@@ -818,18 +881,16 @@ class _SettingsPageState extends State<SettingsPage> {
       (t) => t.name == chord['type'],
       orElse: () => ChordType.major,
     );
-    
+
     final keyLabel = keyCenter.name.contains('/')
         ? keyCenter.name.split('/')[0]
         : keyCenter.name;
     final chordLabel = '${keyLabel} ${chordType.symbol}';
-    
+
     return Container(
       key: ValueKey('$index-${chord['key']}-${chord['type']}'),
       decoration: BoxDecoration(
-        color: isSelected 
-            ? keyCenter.color
-            : keyCenter.color.withOpacity(0.3),
+        color: isSelected ? keyCenter.color : keyCenter.color.withOpacity(0.3),
         border: Border(
           bottom: BorderSide(
             color: Colors.grey,
@@ -842,7 +903,8 @@ class _SettingsPageState extends State<SettingsPage> {
         leading: SizedBox(
           width: 12,
           child: Center(
-            child: isSelected ? const ArrowIndicator() : const SizedBox.shrink(),
+            child:
+                isSelected ? const ArrowIndicator() : const SizedBox.shrink(),
           ),
         ),
         title: ListItemTitle(
@@ -868,11 +930,12 @@ class _SettingsPageState extends State<SettingsPage> {
     final order = currentSongProgressionOrder;
     final progressionName = order[index];
     final isSelected = selectedProgressionIndex == index;
-    
+
     return Container(
       key: ValueKey('progression-$index-$progressionName'),
       decoration: BoxDecoration(
-        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.white,
+        color:
+            isSelected ? Theme.of(context).colorScheme.primary : Colors.white,
         border: Border(
           bottom: BorderSide(
             color: Colors.grey,
@@ -886,7 +949,8 @@ class _SettingsPageState extends State<SettingsPage> {
         leading: SizedBox(
           width: 12,
           child: Center(
-            child: isSelected ? const ArrowIndicator() : const SizedBox.shrink(),
+            child:
+                isSelected ? const ArrowIndicator() : const SizedBox.shrink(),
           ),
         ),
         title: ListItemTitle(
@@ -925,32 +989,35 @@ class _SettingsPageState extends State<SettingsPage> {
           Set<String> getDuplicateBindings() {
             final bindings = <String, List<String>>{};
             final duplicates = <String>{};
-            
-            void checkBinding(String key, bool isLongPress, String action) {
+
+            void checkBinding(String? key, bool isLongPress, String action) {
+              if (key == null) return; // Skip null keys
               final bindingKey = '$key${isLongPress ? ':long' : ':short'}';
               if (!bindings.containsKey(bindingKey)) {
                 bindings[bindingKey] = [];
               }
               bindings[bindingKey]!.add(action);
             }
-            
+
             checkBinding(nextChordKey, nextChordLongPress, 'Next Chord');
             checkBinding(prevChordKey, prevChordLongPress, 'Previous Chord');
-            checkBinding(nextProgressionKey, nextProgressionLongPress, 'Next Progression');
-            checkBinding(prevProgressionKey, prevProgressionLongPress, 'Previous Progression');
-            
+            checkBinding(nextProgressionKey, nextProgressionLongPress,
+                'Next Progression');
+            checkBinding(prevProgressionKey, prevProgressionLongPress,
+                'Previous Progression');
+
             // Find which actions have duplicates
             bindings.forEach((key, actions) {
               if (actions.length > 1) {
                 duplicates.addAll(actions);
               }
             });
-            
+
             return duplicates;
           }
-          
+
           final duplicateActions = getDuplicateBindings();
-          
+
           return AlertDialog(
             title: Text('Keyboard / Accessibility Switch Controls'),
             content: SizedBox(
@@ -962,7 +1029,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     Text(
                       'Long Press Duration',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                     SizedBox(height: 8),
                     Row(
@@ -988,7 +1056,8 @@ class _SettingsPageState extends State<SettingsPage> {
                           width: 60,
                           child: Text(
                             '${longPressDuration}ms',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                                fontSize: 13, fontWeight: FontWeight.w500),
                           ),
                         ),
                       ],
@@ -1110,12 +1179,17 @@ class _SettingsPageState extends State<SettingsPage> {
                 tooltip: 'Cancel',
               ),
               IconButton(
-                icon: Icon(Icons.check, color: duplicateActions.isEmpty ? Colors.black : Colors.grey),
-                onPressed: duplicateActions.isEmpty ? () {
-                  // No duplicates, close the dialog
-                  Navigator.pop(context);
-                } : null,
-                tooltip: duplicateActions.isEmpty ? 'Save' : 'Fix duplicates first',
+                icon: Icon(Icons.check,
+                    color:
+                        duplicateActions.isEmpty ? Colors.black : Colors.grey),
+                onPressed: duplicateActions.isEmpty
+                    ? () {
+                        // No duplicates, close the dialog
+                        Navigator.pop(context);
+                      }
+                    : null,
+                tooltip:
+                    duplicateActions.isEmpty ? 'Save' : 'Fix duplicates first',
               ),
             ],
           );
@@ -1126,10 +1200,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildKeyBindingControl(
     String label,
-    String currentKey,
+    String? currentKey,
     bool isLongPress,
     bool isDuplicate,
-    Function(String) onKeyChanged,
+    Function(String?) onKeyChanged,
     Function(bool) onLongPressChanged,
   ) {
     return Column(
@@ -1138,7 +1212,7 @@ class _SettingsPageState extends State<SettingsPage> {
         Text(
           label,
           style: TextStyle(
-            fontWeight: FontWeight.bold, 
+            fontWeight: FontWeight.bold,
             fontSize: 15,
             color: isDuplicate ? Colors.red : Colors.black,
           ),
@@ -1157,22 +1231,40 @@ class _SettingsPageState extends State<SettingsPage> {
                       width: isDuplicate ? 2 : 1,
                     ),
                     borderRadius: BorderRadius.circular(4),
-                    color: isDuplicate ? Colors.red[50] : Colors.grey[100],
+                    color: isDuplicate
+                        ? Colors.red[50]
+                        : (currentKey == null
+                            ? Colors.grey[200]
+                            : Colors.grey[100]),
                   ),
                   child: Text(
-                    currentKey,
+                    currentKey ?? 'Not Set',
                     style: TextStyle(
-                      fontSize: 14, 
+                      fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: isDuplicate ? Colors.red[900] : Colors.black,
+                      color: currentKey == null
+                          ? Colors.grey[600]
+                          : (isDuplicate ? Colors.red[900] : Colors.black),
+                      fontStyle: currentKey == null
+                          ? FontStyle.italic
+                          : FontStyle.normal,
                     ),
                   ),
                 ),
               ),
             ),
+            SizedBox(width: 8),
+            IconButton(
+              icon: Icon(Icons.clear, size: 20),
+              onPressed: currentKey != null ? () => onKeyChanged(null) : null,
+              tooltip: currentKey != null ? 'Clear binding' : 'No binding set',
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+              color: currentKey != null ? Colors.grey[700] : Colors.grey[300],
+            ),
             SizedBox(width: 12),
             Text(
-              'Long Press:', 
+              'Long Press:',
               style: TextStyle(
                 fontSize: 13,
                 color: isDuplicate ? Colors.red : Colors.black,
@@ -1191,7 +1283,8 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showKeyCapture(String label, String currentKey, Function(String) onKeyChanged) {
+  void _showKeyCapture(
+      String label, String? currentKey, Function(String?) onKeyChanged) {
     showDialog(
       context: context,
       builder: (context) => KeyCaptureDialog(
@@ -1255,123 +1348,126 @@ class _SettingsPageState extends State<SettingsPage> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
                     child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Progressions',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.add),
-                            onPressed: createNewProgression,
-                            tooltip: 'Add Progression',
-                            padding: EdgeInsets.zero,
-                            constraints: BoxConstraints(),
-                          ),
-                          SizedBox(width: 4),
-                          IconButton(
-                            icon: Icon(Icons.copy),
-                            onPressed: duplicateProgression,
-                            tooltip: 'Duplicate Progression',
-                            padding: EdgeInsets.zero,
-                            constraints: BoxConstraints(),
-                          ),
-                          SizedBox(width: 4),
-                          IconButton(
-                            icon: Icon(Icons.edit),
-                            onPressed: renameProgression,
-                            tooltip: 'Rename Progression',
-                            padding: EdgeInsets.zero,
-                            constraints: BoxConstraints(),
-                          ),
-                          SizedBox(width: 4),
-                          IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: deleteProgression,
-                            tooltip: 'Delete Progression',
-                            padding: EdgeInsets.zero,
-                            constraints: BoxConstraints(),
-                            color: Colors.red,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey, width: 3),
-                      borderRadius: BorderRadius.circular(12),
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Progressions',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.add),
+                              onPressed: createNewProgression,
+                              tooltip: 'Add Progression',
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(),
+                            ),
+                            SizedBox(width: 4),
+                            IconButton(
+                              icon: Icon(Icons.copy),
+                              onPressed: duplicateProgression,
+                              tooltip: 'Duplicate Progression',
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(),
+                            ),
+                            SizedBox(width: 4),
+                            IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: renameProgression,
+                              tooltip: 'Rename Progression',
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(),
+                            ),
+                            SizedBox(width: 4),
+                            IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: deleteProgression,
+                              tooltip: 'Delete Progression',
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(),
+                              color: Colors.red,
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(9),
-                      child: Container(
-                        color: Colors.white,
-                        child: ReorderableListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          buildDefaultDragHandles: false,
-                          itemCount: currentSongProgressionOrder.length,
-                          onReorder: reorderProgressions,
-                          itemBuilder: (context, index) => _buildProgressionListItem(index),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey, width: 3),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(9),
+                        child: Container(
+                          color: Colors.white,
+                          child: ReorderableListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            buildDefaultDragHandles: false,
+                            itemCount: currentSongProgressionOrder.length,
+                            onReorder: reorderProgressions,
+                            itemBuilder: (context, index) =>
+                                _buildProgressionListItem(index),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                // Chord List Section
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Chords',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
-                      IconButton(
-                        icon: Icon(Icons.add),
-                        onPressed: addChord,
-                        tooltip: 'Add Chord',
-                        padding: EdgeInsets.zero,
-                        constraints: BoxConstraints(),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey, width: 3),
-                      borderRadius: BorderRadius.circular(12),
+                  // Chord List Section
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Chords',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        IconButton(
+                          icon: Icon(Icons.add),
+                          onPressed: addChord,
+                          tooltip: 'Add Chord',
+                          padding: EdgeInsets.zero,
+                          constraints: BoxConstraints(),
+                        ),
+                      ],
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(9), // Slightly smaller to fit inside border
-                      child: Container(
-                        color: Colors.white,
-                        child: ReorderableListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          buildDefaultDragHandles: false,
-                          itemCount: chords.length,
-                          onReorder: reorderChords,
-                          itemBuilder: (context, index) => _buildChordListItem(index),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey, width: 3),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(
+                            9), // Slightly smaller to fit inside border
+                        child: Container(
+                          color: Colors.white,
+                          child: ReorderableListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            buildDefaultDragHandles: false,
+                            itemCount: chords.length,
+                            onReorder: reorderChords,
+                            itemBuilder: (context, index) =>
+                                _buildChordListItem(index),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-          
+
           VerticalDivider(width: 1),
-          
+
           // Right side: Song selector, Progression selector, Chord editor, and Instrument selector stacked
           Expanded(
             child: SingleChildScrollView(
@@ -1439,7 +1535,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       items: savedSongs.keys
                           .map((name) => DropdownMenuItem(
                                 value: name,
-                                child: Text(name, style: TextStyle(fontSize: 14)),
+                                child:
+                                    Text(name, style: TextStyle(fontSize: 14)),
                               ))
                           .toList(),
                       onChanged: (newValue) {
@@ -1448,17 +1545,18 @@ class _SettingsPageState extends State<SettingsPage> {
                         }
                       },
                     ),
-                    
+
                     SizedBox(height: 24),
                     Divider(),
                     SizedBox(height: 16),
-                    
+
                     // 2. Chord Editor Section
                     selectedChordIndex == null
                         ? Center(
                             child: Padding(
                               padding: const EdgeInsets.all(32.0),
-                              child: Text('Select a chord from the list to edit',
+                              child: Text(
+                                  'Select a chord from the list to edit',
                                   style: TextStyle(color: Colors.grey)),
                             ),
                           )
@@ -1466,7 +1564,8 @@ class _SettingsPageState extends State<SettingsPage> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     'Edit Chord ${selectedChordIndex! + 1}',
@@ -1482,25 +1581,27 @@ class _SettingsPageState extends State<SettingsPage> {
                                         icon: Icon(Icons.info_outline),
                                         onPressed: _showChordTypeInfo,
                                         tooltip: 'Chord type info',
-                                      ),                                      IconButton(
+                                      ),
+                                      IconButton(
                                         icon: Icon(Icons.delete),
                                         onPressed: chords.length > 1
-                                            ? () => removeChord(selectedChordIndex!)
+                                            ? () =>
+                                                removeChord(selectedChordIndex!)
                                             : null,
                                         tooltip: 'Remove chord',
                                         color: Colors.red,
                                       ),
-
                                     ],
                                   ),
                                 ],
                               ),
                               SizedBox(height: 16),
-                              
+
                               // Key selector
                               Text('Root Note',
                                   style: TextStyle(
-                                      fontSize: 14, fontWeight: FontWeight.w500)),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500)),
                               SizedBox(height: 8),
                               SegmentedButton<String>(
                                 showSelectedIcon: false,
@@ -1509,18 +1610,16 @@ class _SettingsPageState extends State<SettingsPage> {
                                     EdgeInsets.symmetric(horizontal: 4),
                                   ),
                                 ),
-                                segments: KeyCenter.values
-                                    .map((k) {
-                                      final displayName = k.name.contains('/') 
-                                          ? k.name.split('/')[0]
-                                          : k.name;
-                                      return ButtonSegment<String>(
-                                        value: k.name,
-                                        label: Text(displayName,
-                                            style: TextStyle(fontSize: 11)),
-                                      );
-                                    })
-                                    .toList(),
+                                segments: KeyCenter.values.map((k) {
+                                  final displayName = k.name.contains('/')
+                                      ? k.name.split('/')[0]
+                                      : k.name;
+                                  return ButtonSegment<String>(
+                                    value: k.name,
+                                    label: Text(displayName,
+                                        style: TextStyle(fontSize: 11)),
+                                  );
+                                }).toList(),
                                 selected: {chords[selectedChordIndex!]['key']!},
                                 onSelectionChanged: (Set<String> newSelection) {
                                   updateChord(
@@ -1531,11 +1630,12 @@ class _SettingsPageState extends State<SettingsPage> {
                                 },
                               ),
                               SizedBox(height: 24),
-                              
+
                               // Type selector
                               Text('Type',
                                   style: TextStyle(
-                                      fontSize: 14, fontWeight: FontWeight.w500)),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500)),
                               SizedBox(height: 8),
                               SegmentedButton<String>(
                                 showSelectedIcon: false,
@@ -1553,7 +1653,9 @@ class _SettingsPageState extends State<SettingsPage> {
                                           ),
                                         ))
                                     .toList(),
-                                selected: {chords[selectedChordIndex!]['type']!},
+                                selected: {
+                                  chords[selectedChordIndex!]['type']!
+                                },
                                 onSelectionChanged: (Set<String> newSelection) {
                                   updateChord(
                                     selectedChordIndex!,
@@ -1564,11 +1666,11 @@ class _SettingsPageState extends State<SettingsPage> {
                               ),
                             ],
                           ),
-                    
+
                     SizedBox(height: 24),
                     Divider(),
                     SizedBox(height: 16),
-                    
+
                     // 3. Instrument Selector Section
                     Text('Instrument',
                         style: TextStyle(
@@ -1596,11 +1698,11 @@ class _SettingsPageState extends State<SettingsPage> {
                         });
                       },
                     ),
-                    
+
                     SizedBox(height: 24),
                     Divider(),
                     SizedBox(height: 16),
-                    
+
                     // 4. Velocity Boost Section
                     Text('Volume Boost',
                         style: TextStyle(
@@ -1650,8 +1752,8 @@ class _SettingsPageState extends State<SettingsPage> {
 // Key capture dialog for binding keyboard keys
 class KeyCaptureDialog extends StatefulWidget {
   final String label;
-  final String currentKey;
-  final Function(String) onKeyChanged;
+  final String? currentKey;
+  final Function(String?) onKeyChanged;
 
   const KeyCaptureDialog({
     Key? key,
@@ -1665,7 +1767,6 @@ class KeyCaptureDialog extends StatefulWidget {
 }
 
 class _KeyCaptureDialogState extends State<KeyCaptureDialog> {
-  String? capturedKey;
   final FocusNode _focusNode = FocusNode();
 
   @override
@@ -1699,7 +1800,7 @@ class _KeyCaptureDialogState extends State<KeyCaptureDialog> {
     if (key == LogicalKeyboardKey.end) return 'End';
     if (key == LogicalKeyboardKey.pageUp) return 'Page Up';
     if (key == LogicalKeyboardKey.pageDown) return 'Page Down';
-    
+
     // Handle modifier keys
     if (key == LogicalKeyboardKey.shiftLeft) return 'Shift Left';
     if (key == LogicalKeyboardKey.shiftRight) return 'Shift Right';
@@ -1709,17 +1810,17 @@ class _KeyCaptureDialogState extends State<KeyCaptureDialog> {
     if (key == LogicalKeyboardKey.altRight) return 'Alt Right';
     if (key == LogicalKeyboardKey.metaLeft) return 'Meta Left';
     if (key == LogicalKeyboardKey.metaRight) return 'Meta Right';
-    
+
     // Handle function keys
     if (key.keyLabel.startsWith('F') && key.keyLabel.length <= 3) {
       return key.keyLabel;
     }
-    
+
     // Handle regular keys
     if (key.keyLabel.length == 1) {
       return key.keyLabel.toUpperCase();
     }
-    
+
     // Return the key label as is for anything else
     return key.keyLabel;
   }
@@ -1733,20 +1834,19 @@ class _KeyCaptureDialogState extends State<KeyCaptureDialog> {
         if (event is KeyDownEvent) {
           print('Key pressed: ${event.logicalKey}');
           print('Key label: ${event.logicalKey.keyLabel}');
-          
+
           final keyLabel = _getKeyLabel(event.logicalKey);
           print('Converted label: $keyLabel');
-          
+
           // Check if user is pressing Escape to cancel
           if (event.logicalKey == LogicalKeyboardKey.escape) {
             // Cancel with Escape
             Navigator.pop(context);
             return KeyEventResult.handled;
           } else {
-            // Capture or update the key
-            setState(() {
-              capturedKey = keyLabel;
-            });
+            // Capture key and immediately confirm
+            widget.onKeyChanged(keyLabel);
+            Navigator.pop(context);
             return KeyEventResult.handled;
           }
         }
@@ -1755,14 +1855,10 @@ class _KeyCaptureDialogState extends State<KeyCaptureDialog> {
       child: PopScope(
         canPop: true,
         child: AlertDialog(
-          title: Text('Press a key for ${widget.label}'),
+          title: Text('Press a key or switch for ${widget.label}'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Current: ${widget.currentKey}',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
               SizedBox(height: 16),
               Container(
                 padding: EdgeInsets.all(20),
@@ -1772,25 +1868,16 @@ class _KeyCaptureDialogState extends State<KeyCaptureDialog> {
                   border: Border.all(color: Colors.blue, width: 2),
                 ),
                 child: Text(
-                  capturedKey ?? 'Press any key...',
+                  'Press any key...',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: capturedKey != null ? Colors.blue[900] : Colors.grey,
+                    color: Colors.grey,
                   ),
                 ),
               ),
-              if (capturedKey != null) ...[
-                SizedBox(height: 12),
-                Text(
-                  'Use tick/cross buttons below to confirm/cancel',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ],
+              SizedBox(height: 12),
+
             ],
           ),
           actions: [
@@ -1799,15 +1886,6 @@ class _KeyCaptureDialogState extends State<KeyCaptureDialog> {
               onPressed: () => Navigator.pop(context),
               tooltip: 'Cancel',
             ),
-            if (capturedKey != null)
-              IconButton(
-                icon: Icon(Icons.check, color: Colors.black),
-                onPressed: () {
-                  widget.onKeyChanged(capturedKey!);
-                  Navigator.pop(context);
-                },
-                tooltip: 'Set Key',
-              ),
           ],
         ),
       ),
