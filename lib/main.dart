@@ -128,11 +128,11 @@ class _MyAppState extends State<MyApp> {
   // Keyboard control settings
   String? nextChordKey = 'Space';
   bool nextChordLongPress = false;
-  String? prevChordKey = 'Enter';
+  String? prevChordKey = null;
   bool prevChordLongPress = false;
-  String? nextProgressionKey = 'Space';
-  bool nextProgressionLongPress = true;
-  String? prevProgressionKey = 'Enter';
+  String? nextProgressionKey = 'Enter';
+  bool nextProgressionLongPress = false;
+  String? prevProgressionKey = null;
   bool prevProgressionLongPress = true;
   int longPressDuration = 500;
 
@@ -262,6 +262,8 @@ class _MyAppState extends State<MyApp> {
 
   int getStringNumberFromNote(int note) {
     // Should work with standard or Open C tuning
+    // Standard EADGBE: E2(40), A2(45), D3(50), G3(55), B3(59), E4(64)
+    // Open C: C2(36), G2(43), C3(48), G3(55), C4(60), E4(64)
     if (note < 42)
       return 0;
     else if (note < 47)
@@ -334,17 +336,17 @@ class _MyAppState extends State<MyApp> {
     // Load velocity boost
     velocityBoost = _prefs?.getInt('velocityBoost') ?? 0;
 
-    // Load keyboard control settings
-    nextChordKey = _prefs?.getString('nextChordKey');
+    // Load keyboard control settings with proper defaults
+    nextChordKey = _prefs?.getString('nextChordKey') ?? 'Space';
     nextChordLongPress = _prefs?.getBool('nextChordLongPress') ?? false;
-    prevChordKey = _prefs?.getString('prevChordKey');
+    prevChordKey = _prefs?.getString('prevChordKey'); // No default, stays null
     prevChordLongPress = _prefs?.getBool('prevChordLongPress') ?? false;
-    nextProgressionKey = _prefs?.getString('nextProgressionKey');
+    nextProgressionKey = _prefs?.getString('nextProgressionKey') ?? 'Enter';
     nextProgressionLongPress =
-        _prefs?.getBool('nextProgressionLongPress') ?? true;
-    prevProgressionKey = _prefs?.getString('prevProgressionKey');
+        _prefs?.getBool('nextProgressionLongPress') ?? false;
+    prevProgressionKey = _prefs?.getString('prevProgressionKey'); // No default, stays null
     prevProgressionLongPress =
-        _prefs?.getBool('prevProgressionLongPress') ?? true;
+        _prefs?.getBool('prevProgressionLongPress') ?? false;
     longPressDuration = _prefs?.getInt('longPressDuration') ?? 500;
 
     // if (_prefs?.getString('visuals') == null) {
@@ -1159,6 +1161,8 @@ class _HomeScreenState extends State<HomeScreen> {
           (currentIndex + 1) % widget.chordState.progressionNames.length;
       final nextProgressionName = widget.chordState.progressionNames[nextIndex];
       widget.callbacks.onSelectProgression(nextProgressionName);
+    } else {
+      previousChord();
     }
   }
 
@@ -1172,6 +1176,8 @@ class _HomeScreenState extends State<HomeScreen> {
               widget.chordState.progressionNames.length;
       final prevProgressionName = widget.chordState.progressionNames[prevIndex];
       widget.callbacks.onSelectProgression(prevProgressionName);
+    } else {
+      previousChord();
     }
   }
 

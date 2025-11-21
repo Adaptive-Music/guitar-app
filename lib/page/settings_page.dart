@@ -33,11 +33,11 @@ class _SettingsPageState extends State<SettingsPage> {
   // Keyboard control settings
   String? nextChordKey = 'Space';
   bool nextChordLongPress = false;
-  String? prevChordKey = 'Enter';
+  String? prevChordKey = null;
   bool prevChordLongPress = false;
-  String? nextProgressionKey = 'Space';
-  bool nextProgressionLongPress = true;
-  String? prevProgressionKey = 'Enter';
+  String? nextProgressionKey = 'Enter';
+  bool nextProgressionLongPress = false;
+  String? prevProgressionKey = null;
   bool prevProgressionLongPress = true;
   int longPressDuration = 500; // in milliseconds
 
@@ -165,17 +165,17 @@ class _SettingsPageState extends State<SettingsPage> {
     // Load velocity boost
     velocityBoost = widget.prefs!.getInt('velocityBoost') ?? 0;
 
-    // Load keyboard control settings
-    nextChordKey = widget.prefs!.getString('nextChordKey');
+    // Load keyboard control settings with proper defaults
+    nextChordKey = widget.prefs!.getString('nextChordKey') ?? 'Space';
     nextChordLongPress = widget.prefs!.getBool('nextChordLongPress') ?? false;
-    prevChordKey = widget.prefs!.getString('prevChordKey');
+    prevChordKey = widget.prefs!.getString('prevChordKey'); // No default, stays null
     prevChordLongPress = widget.prefs!.getBool('prevChordLongPress') ?? false;
-    nextProgressionKey = widget.prefs!.getString('nextProgressionKey');
+    nextProgressionKey = widget.prefs!.getString('nextProgressionKey') ?? 'Enter';
     nextProgressionLongPress =
-        widget.prefs!.getBool('nextProgressionLongPress') ?? true;
-    prevProgressionKey = widget.prefs!.getString('prevProgressionKey');
+        widget.prefs!.getBool('nextProgressionLongPress') ?? false;
+    prevProgressionKey = widget.prefs!.getString('prevProgressionKey'); // No default, stays null
     prevProgressionLongPress =
-        widget.prefs!.getBool('prevProgressionLongPress') ?? true;
+        widget.prefs!.getBool('prevProgressionLongPress') ?? false;
     longPressDuration = widget.prefs!.getInt('longPressDuration') ?? 500;
 
     print("Instrument: $selectedInstrument");
