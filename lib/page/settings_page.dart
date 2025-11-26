@@ -1295,6 +1295,103 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  void _showConnectionPopup() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('MIDI Device Connection'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Available MIDI Devices',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              SizedBox(height: 16),
+              Container(
+                height: 300,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: 5, // Placeholder count
+                  separatorBuilder: (context, index) => Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Colors.grey[300],
+                  ),
+                  itemBuilder: (context, index) {
+                    // Placeholder devices
+                    final deviceNames = [
+                      'TP Guitar MIDI',
+                      'MIDI Connector',
+                      'BLE MIDI Device',
+                      'Generic MIDI Input',
+                      'USB MIDI Interface',
+                    ];
+                    final isConnected = index == 0; // First device is "connected"
+                    
+                    return ListTile(
+                      leading: Icon(
+                        isConnected ? Icons.check_circle : Icons.circle_outlined,
+                        color: isConnected ? Colors.green : Colors.grey,
+                      ),
+                      title: Text(
+                        deviceNames[index],
+                        style: TextStyle(
+                          fontWeight: isConnected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      subtitle: Text(
+                        isConnected ? 'Connected' : 'Available',
+                        style: TextStyle(
+                          color: isConnected ? Colors.green : Colors.grey,
+                          fontSize: 12,
+                        ),
+                      ),
+                      trailing: isConnected
+                          ? TextButton(
+                              onPressed: () {
+                                // TODO: Implement disconnect
+                              },
+                              child: Text('Disconnect'),
+                            )
+                          : TextButton(
+                              onPressed: () {
+                                // TODO: Implement connect
+                              },
+                              child: Text('Connect'),
+                            ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  // TODO: Implement scan for devices
+                },
+                icon: Icon(Icons.refresh),
+                label: Text('Scan for Devices'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.close, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+            tooltip: 'Close',
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1303,6 +1400,14 @@ class _SettingsPageState extends State<SettingsPage> {
         centerTitle: true,
         automaticallyImplyLeading: false, // Disable default back button
         actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 4.0),
+            child: IconButton(
+              icon: Icon(Icons.bluetooth),
+              onPressed: _showConnectionPopup,
+              tooltip: 'Connection',
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 4.0),
             child: IconButton(

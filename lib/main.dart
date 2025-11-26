@@ -190,7 +190,9 @@ class _MyAppState extends State<MyApp> {
     }
     for (var device in newMidiDevices!) {
       if (device.name.contains("TP Guitar") ||
-          device.name.contains("MIDI Connector")) {
+          device.name.contains("MIDI Connector") || 
+          device.name.contains("BLE MIDI") || 
+          device.name.contains("MIDI GUITAR")) {
         print('Connecting to device: ${device.name}');
         if (device.connected) {
           print('Device ${device.name} is already connected.');
@@ -226,6 +228,7 @@ class _MyAppState extends State<MyApp> {
     _midi_cmd.onMidiDataReceived?.listen((MidiPacket packet) {
       // packet.data is a Uint8List containing raw MIDI bytes
       Uint8List data = packet.data;
+      print('MIDI Data Received: $data');
 
       // Example: interpret a Note On (0x90) message
       if (data.isNotEmpty) {
