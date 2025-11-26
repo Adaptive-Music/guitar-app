@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_application_1/special/enums.dart';
 import 'package:flutter_application_1/widgets/styled_text.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
+import 'package:flutter_midi_command/flutter_midi_command.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -18,6 +19,7 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool prefLoaded = false;
+  final MidiCommand _midiCommand = MidiCommand();
 
   late Instrument selectedInstrument;
   late List<Map<String, String>> chords;
@@ -1295,99 +1297,123 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showConnectionPopup() {
+  void _showConnectionPopup() async {
+    // Fetch devices immediately
+    final devices = await _midiCommand.devices ?? [];
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('MIDI Device Connection'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Available MIDI Devices',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              SizedBox(height: 16),
-              Container(
-                height: 300,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey, width: 2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: 5, // Placeholder count
-                  separatorBuilder: (context, index) => Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: Colors.grey[300],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: Text('MIDI Device Connection'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Available MIDI Devices',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
-                  itemBuilder: (context, index) {
-                    // Placeholder devices
-                    final deviceNames = [
-                      'TP Guitar MIDI',
-                      'MIDI Connector',
-                      'BLE MIDI Device',
-                      'Generic MIDI Input',
-                      'USB MIDI Interface',
-                    ];
-                    final isConnected = index == 0; // First device is "connected"
-                    
-                    return ListTile(
-                      leading: Icon(
-                        isConnected ? Icons.check_circle : Icons.circle_outlined,
-                        color: isConnected ? Colors.green : Colors.grey,
-                      ),
-                      title: Text(
-                        deviceNames[index],
-                        style: TextStyle(
-                          fontWeight: isConnected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                      subtitle: Text(
-                        isConnected ? 'Connected' : 'Available',
-                        style: TextStyle(
-                          color: isConnected ? Colors.green : Colors.grey,
-                          fontSize: 12,
-                        ),
-                      ),
-                      trailing: isConnected
-                          ? TextButton(
-                              onPressed: () {
-                                // TODO: Implement disconnect
-                              },
-                              child: Text('Disconnect'),
-                            )
-                          : TextButton(
-                              onPressed: () {
-                                // TODO: Implement connect
-                              },
-                              child: Text('Connect'),
+                  SizedBox(height: 16),
+                  Container(
+                    height: 300,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: devices.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.search_off, size: 48, color: Colors.grey),
+                                SizedBox(height: 16),
+                                Text(
+                                  'No MIDI devices found',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Try scanning for devices',
+                                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                                ),
+                              ],
                             ),
-                    );
-                  },
-                ),
+                          )
+                        : ListView.separated(
+                            shrinkWrap: true,
+                            itemCount: devices.length,
+                            separatorBuilder: (context, index) => Divider(
+                              height: 1,
+                              thickness: 1,
+                              color: Colors.grey[300],
+                            ),
+                            itemBuilder: (context, index) {
+                              final device = devices[index];
+                              final isConnected = device.connected;
+                              
+                              return ListTile(
+                                leading: Icon(
+                                  isConnected ? Icons.check_circle : Icons.circle_outlined,
+                                  color: isConnected ? Colors.green : Colors.grey,
+                                ),
+                                title: Text(
+                                  device.name,
+                                  style: TextStyle(
+                                    fontWeight: isConnected ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  isConnected ? 'Connected' : 'Available',
+                                  style: TextStyle(
+                                    color: isConnected ? Colors.green : Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                trailing: isConnected
+                                    ? TextButton(
+                                        onPressed: () {
+                                          // TODO: Implement disconnect
+                                        },
+                                        child: Text('Disconnect'),
+                                      )
+                                    : TextButton(
+                                        onPressed: () {
+                                          // TODO: Implement connect
+                                        },
+                                        child: Text('Connect'),
+                                      ),
+                              );
+                            },
+                          ),
+                  ),
+                  SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      // Scan for devices and update the dialog
+                      final newDevices = await _midiCommand.devices ?? [];
+                      setDialogState(() {
+                        devices.clear();
+                        devices.addAll(newDevices);
+                      });
+                    },
+                    icon: Icon(Icons.refresh),
+                    label: Text('Scan for Devices'),
+                  ),
+                ],
               ),
-              SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Implement scan for devices
-                },
-                icon: Icon(Icons.refresh),
-                label: Text('Scan for Devices'),
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(Icons.close, color: Colors.black),
+                onPressed: () => Navigator.pop(context),
+                tooltip: 'Close',
               ),
             ],
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.close, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
-            tooltip: 'Close',
-          ),
-        ],
+          );
+        },
       ),
     );
   }
