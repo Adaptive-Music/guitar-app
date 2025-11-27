@@ -65,8 +65,10 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _extractSettings() {
-    selectedInstrument = Instrument.values
-        .firstWhere((e) => e.name == widget.prefs!.getString('instrument')!);
+    selectedInstrument = Instrument.values.firstWhere(
+      (e) => e.name == widget.prefs!.getString('instrument'),
+      orElse: () => Instrument.values[0],
+    );
 
     // Load current song and progression names
     currentSongName =

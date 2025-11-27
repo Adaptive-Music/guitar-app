@@ -153,7 +153,10 @@ class _MyAppState extends State<MyApp> {
 
     String? instrumentName = _prefs?.getString('instrument');
     selectedInstrument = instrumentName != null
-        ? Instrument.values.firstWhere((e) => e.name == instrumentName)
+        ? Instrument.values.firstWhere(
+            (e) => e.name == instrumentName,
+            orElse: () => Instrument.values[0],
+          )
         : Instrument.values[0];
 
     sfID = await _midi.loadSoundfont(
