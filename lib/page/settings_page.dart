@@ -1374,14 +1374,72 @@ class _SettingsPageState extends State<SettingsPage> {
                                 ),
                                 trailing: isConnected
                                     ? TextButton(
-                                        onPressed: () {
-                                          // TODO: Implement disconnect
+                                        onPressed: () async {
+                                          try {
+                                            // Clear the selected device from prefs
+                                            await widget.prefs?.setString('selectedMidiDevice', '');
+                                            _midiCommand.disconnectDevice(device);
+                                            // Wait a moment for disconnect to process
+                                            await Future.delayed(Duration(milliseconds: 300));
+                                            // Refresh the device list
+                                            final newDevices = await _midiCommand.devices ?? [];
+                                            setDialogState(() {
+                                              devices.clear();
+                                              devices.addAll(newDevices);
+                                            });
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Disconnected from ${device.name}'),
+                                                  duration: Duration(seconds: 2),
+                                                ),
+                                              );
+                                            }
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Failed to disconnect: $e'),
+                                                  duration: Duration(seconds: 2),
+                                                ),
+                                              );
+                                            }
+                                          }
                                         },
                                         child: Text('Disconnect'),
                                       )
                                     : TextButton(
-                                        onPressed: () {
-                                          // TODO: Implement connect
+                                        onPressed: () async {
+                                          try {
+                                            await _midiCommand.connectToDevice(device);
+                                            // Save the selected device name to prefs
+                                            await widget.prefs?.setString('selectedMidiDevice', device.name);
+                                            // Wait a moment for connection to establish
+                                            await Future.delayed(Duration(milliseconds: 300));
+                                            // Refresh the device list
+                                            final newDevices = await _midiCommand.devices ?? [];
+                                            setDialogState(() {
+                                              devices.clear();
+                                              devices.addAll(newDevices);
+                                            });
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Connected to ${device.name}'),
+                                                  duration: Duration(seconds: 2),
+                                                ),
+                                              );
+                                            }
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Failed to connect: $e'),
+                                                  duration: Duration(seconds: 2),
+                                                ),
+                                              );
+                                            }
+                                          }
                                         },
                                         child: Text('Connect'),
                                       ),
@@ -1429,7 +1487,7 @@ class _SettingsPageState extends State<SettingsPage> {
           Padding(
             padding: const EdgeInsets.only(right: 4.0),
             child: IconButton(
-              icon: Icon(Icons.bluetooth),
+              icon: Icon(Icons.cable),
               onPressed: _showConnectionPopup,
               tooltip: 'Connection',
             ),

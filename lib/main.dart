@@ -124,6 +124,7 @@ class _MyAppState extends State<MyApp> {
   String currentSongName = '';
   List<String> progressionNames = [];
   int velocityBoost = 0;
+  String selectedMidiDeviceName = '';
 
   // Keyboard control settings
   String? nextChordKey = 'Space';
@@ -166,6 +167,7 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _midiConnecting = true;
     });
+    selectedMidiDeviceName = _prefs?.getString('selectedMidiDevice') ?? '';
     if (selectedMidiDevice != null) {
       print('Device: ${selectedMidiDevice!.name}');
       print('Connected: ${selectedMidiDevice!.connected}');
@@ -189,10 +191,7 @@ class _MyAppState extends State<MyApp> {
       return;
     }
     for (var device in newMidiDevices!) {
-      if (device.name.contains("TP Guitar") ||
-          device.name.contains("MIDI Connector") || 
-          device.name.contains("BLE MIDI") || 
-          device.name.contains("MIDI GUITAR")) {
+      if (device.name == selectedMidiDeviceName) {
         print('Connecting to device: ${device.name}');
         if (device.connected) {
           print('Device ${device.name} is already connected.');
@@ -203,7 +202,6 @@ class _MyAppState extends State<MyApp> {
           return;
         }
         await _midi_cmd.connectToDevice(device);
-        initMidiListening();
         print('Connected to ${device.name}.');
         setState(() {
           selectedMidiDevice = device;
@@ -285,6 +283,7 @@ class _MyAppState extends State<MyApp> {
     _prefs = await SharedPreferences.getInstance();
     await _checkPrefs();
     await loadSoundFont(); // Move soundfont loading here
+    initMidiListening(); // Set up MIDI listener once
     await connectMidiDevice();
     _midi_cmd.onMidiSetupChanged?.listen((data) async {
       // Handle MIDI setup changes
@@ -322,6 +321,10 @@ class _MyAppState extends State<MyApp> {
       _prefs?.setInt('velocityBoost', 0);
     }
 
+    if (_prefs?.getString('selectedMidiDevice') == null) {
+      await _prefs?.setString('selectedMidiDevice', '');
+    }
+
     // Initialize default chords if not set
     if (_prefs?.getStringList('chords') == null) {
       final defaultChords = [
@@ -338,6 +341,9 @@ class _MyAppState extends State<MyApp> {
 
     // Load velocity boost
     velocityBoost = _prefs?.getInt('velocityBoost') ?? 0;
+
+    // Load selected MIDI device name
+    selectedMidiDeviceName = _prefs?.getString('selectedMidiDevice') ?? '';
 
     // Load keyboard control settings with proper defaults
     nextChordKey = _prefs?.getString('nextChordKey') ?? 'Space';
@@ -617,6 +623,12 @@ class _MyAppState extends State<MyApp> {
                   _loadChords();
                   // Reload velocity boost from preferences
                   velocityBoost = _prefs?.getInt('velocityBoost') ?? 0;
+                  // Reload selected MIDI device name
+                  selectedMidiDeviceName = _prefs?.getString('selectedMidiDevice') ?? '';
+                  // Clear selectedMidiDevice if no device name is saved
+                  if (selectedMidiDeviceName.isEmpty) {
+                    selectedMidiDevice = null;
+                  }
                   // Reload keyboard control settings
                   nextChordKey = _prefs?.getString('nextChordKey');
                   nextChordLongPress =
@@ -635,6 +647,8 @@ class _MyAppState extends State<MyApp> {
                   // Reset to first chord when returning from settings
                   currentChord = 0;
                 });
+                // Reconnect to MIDI device if device name changed
+                connectMidiDevice();
               },
               onSelectProgression: (String progressionName) {
                 _loadProgression(progressionName);
