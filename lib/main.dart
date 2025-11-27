@@ -13,6 +13,9 @@ import 'package:flutter_application_1/special/enums.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+
+const String virtualInstrumentName = "GuitarApp";
+
 // Configuration classes to group related parameters
 class ChordState {
   final Chord currentChord;
@@ -55,6 +58,7 @@ class MidiConfig {
   final GlobalKey<GuitarStringsState> guitarStringsKey;
   final MidiPro midiPlayer;
   final int velocityBoost;
+  final MidiCommand midiCommand;
 
   const MidiConfig({
     required this.prefs,
@@ -63,6 +67,7 @@ class MidiConfig {
     required this.guitarStringsKey,
     required this.midiPlayer,
     required this.velocityBoost,
+    required this.midiCommand,
   });
 }
 
@@ -284,6 +289,19 @@ class _MyAppState extends State<MyApp> {
     await _checkPrefs();
     await loadSoundFont(); // Move soundfont loading here
     initMidiListening(); // Set up MIDI listener once
+
+    // Create virtual MIDI device and connect to it
+    _midi_cmd.addVirtualDevice(name: virtualInstrumentName);
+    final devices = await _midi_cmd.devices;
+    if (devices != null) {
+      for (MidiDevice device in devices) {
+        if (device.name == virtualInstrumentName) {
+          await _midi_cmd.connectToDevice(device);
+          break;
+        }
+      }
+    }
+
     await connectMidiDevice();
     _midi_cmd.onMidiSetupChanged?.listen((data) async {
       // Handle MIDI setup changes
@@ -661,6 +679,7 @@ class _MyAppState extends State<MyApp> {
               guitarStringsKey: _guitarStringsKey,
               midiPlayer: _midi,
               velocityBoost: velocityBoost,
+              midiCommand: _midi_cmd,
             ),
             keyboardControls: KeyboardControls(
               nextChordKey: nextChordKey,
@@ -891,6 +910,7 @@ class _HomeScreenState extends State<HomeScreen> {
               currentChord: widget.chordState.currentChord,
               midiPlayer: widget.midiConfig.midiPlayer,
               sfId: widget.midiConfig.sfID,
+              midiCommand: widget.midiConfig.midiCommand,
             ),
             // Keyboard and Chord List
             Expanded(

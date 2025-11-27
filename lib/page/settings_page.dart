@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_1/main.dart';
 import 'package:flutter_application_1/special/enums.dart';
 import 'package:flutter_application_1/widgets/styled_text.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
@@ -1300,6 +1301,8 @@ class _SettingsPageState extends State<SettingsPage> {
   void _showConnectionPopup() async {
     // Fetch devices immediately
     final devices = await _midiCommand.devices ?? [];
+    // remove virtual device from the list
+    devices.removeWhere((device) => device.name == virtualInstrumentName);
     
     showDialog(
       context: context,
@@ -1386,6 +1389,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                             setDialogState(() {
                                               devices.clear();
                                               devices.addAll(newDevices);
+                                              devices.removeWhere((device) => device.name == virtualInstrumentName);
                                             });
                                             if (context.mounted) {
                                               ScaffoldMessenger.of(context).showSnackBar(
@@ -1421,6 +1425,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                             setDialogState(() {
                                               devices.clear();
                                               devices.addAll(newDevices);
+                                              devices.removeWhere((device) => device.name == virtualInstrumentName);
                                             });
                                             if (context.mounted) {
                                               ScaffoldMessenger.of(context).showSnackBar(
@@ -1455,10 +1460,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       setDialogState(() {
                         devices.clear();
                         devices.addAll(newDevices);
+                        devices.removeWhere((device) => device.name == virtualInstrumentName);
                       });
                     },
                     icon: Icon(Icons.refresh),
-                    label: Text('Scan for Devices'),
+                    label: Text('Refresh'),
                   ),
                 ],
               ),

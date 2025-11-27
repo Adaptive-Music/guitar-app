@@ -1,17 +1,21 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/widgets/chord.dart';
 import 'package:flutter_midi_pro/flutter_midi_pro.dart';
+import 'package:flutter_midi_command/flutter_midi_command.dart';
 
 class GuitarStrings extends StatefulWidget {
   final Chord? currentChord;
   final MidiPro? midiPlayer;
   final int? sfId;
+  final MidiCommand? midiCommand;
   
   const GuitarStrings({
     super.key, 
     this.currentChord,
     this.midiPlayer,
     this.sfId,
+    this.midiCommand,
   });
 
   @override
@@ -65,6 +69,12 @@ class GuitarStringsState extends State<GuitarStrings> {
     if (widget.currentChord != null && widget.midiPlayer != null && widget.sfId != null) {
       final note = widget.currentChord!.notes[stringNumber];
       widget.midiPlayer!.playNote(key: note, velocity: velocity, sfId: widget.sfId!);
+      
+      // Send MIDI note on command (0x90 = note on channel 1)
+      if (widget.midiCommand != null) {
+        widget.midiCommand!.sendData(Uint8List.fromList([0x90, note, velocity]));
+      }
+      
       illuminateString(stringNumber, velocity);
     }
   }
@@ -74,6 +84,12 @@ class GuitarStringsState extends State<GuitarStrings> {
     if (widget.currentChord != null && widget.midiPlayer != null && widget.sfId != null) {
       final note = widget.currentChord!.notes[stringNumber];
       widget.midiPlayer!.stopNote(key: note, sfId: widget.sfId!);
+      
+      // Send MIDI note off command (0x80 = note off channel 1)
+      if (widget.midiCommand != null) {
+        widget.midiCommand!.sendData(Uint8List.fromList([0x80, note, 0]));
+      }
+      
       turnOffString(stringNumber);
     }
   }
