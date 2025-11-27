@@ -23,6 +23,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final MidiCommand _midiCommand = MidiCommand();
 
   late Instrument selectedInstrument;
+  bool instrumentEnabled = true;
   late List<Map<String, String>> chords;
   late Map<String, dynamic>
       savedSongs; // Song name -> {progressions: {progName: [chords]}, order: [progNames]}
@@ -69,6 +70,7 @@ class _SettingsPageState extends State<SettingsPage> {
       (e) => e.name == widget.prefs!.getString('instrument'),
       orElse: () => Instrument.values[0],
     );
+    instrumentEnabled = widget.prefs!.getBool('instrumentEnabled') ?? true;
 
     // Load current song and progression names
     currentSongName =
@@ -210,6 +212,7 @@ class _SettingsPageState extends State<SettingsPage> {
       final songsJson = json.encode(savedSongs);
 
       await widget.prefs?.setString('instrument', selectedInstrument.name);
+      await widget.prefs?.setBool('instrumentEnabled', instrumentEnabled);
       await widget.prefs?.setString('savedSongs', songsJson);
       await widget.prefs?.setString('currentSongName', currentSongName);
       await widget.prefs
@@ -1869,9 +1872,29 @@ class _SettingsPageState extends State<SettingsPage> {
                     SizedBox(height: 16),
 
                     // 3. Instrument Selector Section
-                    Text('Instrument',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Instrument',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        Row(
+                          children: [
+                            Text('Enabled',
+                                style: TextStyle(fontSize: 14)),
+                            SizedBox(width: 8),
+                            Switch(
+                              value: instrumentEnabled,
+                              onChanged: (value) {
+                                setState(() {
+                                  instrumentEnabled = value;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                     SizedBox(height: 8),
                     DropdownButtonFormField<Instrument>(
                       decoration: InputDecoration(

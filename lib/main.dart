@@ -59,6 +59,7 @@ class MidiConfig {
   final MidiPro midiPlayer;
   final int velocityBoost;
   final MidiCommand midiCommand;
+  final bool instrumentEnabled;
 
   const MidiConfig({
     required this.prefs,
@@ -68,6 +69,7 @@ class MidiConfig {
     required this.midiPlayer,
     required this.velocityBoost,
     required this.midiCommand,
+    required this.instrumentEnabled,
   });
 }
 
@@ -123,6 +125,7 @@ class _MyAppState extends State<MyApp> {
 
   SharedPreferences? _prefs;
   Instrument selectedInstrument = Instrument.values[0]; // Default value
+  bool instrumentEnabled = true;
   int currentChord = 0;
   List<Chord> chords = [];
   String currentProgressionName = '';
@@ -298,7 +301,7 @@ class _MyAppState extends State<MyApp> {
     final devices = await _midi_cmd.devices;
     if (devices != null) {
       for (MidiDevice device in devices) {
-        if (device.name == virtualInstrumentName) {
+        if (device.name == virtualInstrumentName && !device.connected) {
           await _midi_cmd.connectToDevice(device);
           break;
         }
@@ -342,6 +345,10 @@ class _MyAppState extends State<MyApp> {
       _prefs?.setInt('velocityBoost', 0);
     }
 
+    if (_prefs?.getBool('instrumentEnabled') == null) {
+      _prefs?.setBool('instrumentEnabled', true);
+    }
+
     if (_prefs?.getString('selectedMidiDevice') == null) {
       await _prefs?.setString('selectedMidiDevice', '');
     }
@@ -362,6 +369,9 @@ class _MyAppState extends State<MyApp> {
 
     // Load velocity boost
     velocityBoost = _prefs?.getInt('velocityBoost') ?? 0;
+
+    // Load instrument enabled
+    instrumentEnabled = _prefs?.getBool('instrumentEnabled') ?? true;
 
     // Load selected MIDI device name
     selectedMidiDeviceName = _prefs?.getString('selectedMidiDevice') ?? '';
@@ -644,6 +654,8 @@ class _MyAppState extends State<MyApp> {
                   _loadChords();
                   // Reload velocity boost from preferences
                   velocityBoost = _prefs?.getInt('velocityBoost') ?? 0;
+                  // Reload instrument enabled from preferences
+                  instrumentEnabled = _prefs?.getBool('instrumentEnabled') ?? true;
                   // Reload selected MIDI device name
                   selectedMidiDeviceName = _prefs?.getString('selectedMidiDevice') ?? '';
                   // Clear selectedMidiDevice if no device name is saved
@@ -683,6 +695,7 @@ class _MyAppState extends State<MyApp> {
               midiPlayer: _midi,
               velocityBoost: velocityBoost,
               midiCommand: _midi_cmd,
+              instrumentEnabled: instrumentEnabled,
             ),
             keyboardControls: KeyboardControls(
               nextChordKey: nextChordKey,
@@ -914,6 +927,7 @@ class _HomeScreenState extends State<HomeScreen> {
               midiPlayer: widget.midiConfig.midiPlayer,
               sfId: widget.midiConfig.sfID,
               midiCommand: widget.midiConfig.midiCommand,
+              instrumentEnabled: widget.midiConfig.instrumentEnabled,
             ),
             // Keyboard and Chord List
             Expanded(

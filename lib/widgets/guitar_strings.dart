@@ -9,6 +9,7 @@ class GuitarStrings extends StatefulWidget {
   final MidiPro? midiPlayer;
   final int? sfId;
   final MidiCommand? midiCommand;
+  final bool instrumentEnabled;
   
   const GuitarStrings({
     super.key, 
@@ -16,6 +17,7 @@ class GuitarStrings extends StatefulWidget {
     this.midiPlayer,
     this.sfId,
     this.midiCommand,
+    this.instrumentEnabled = true,
   });
 
   @override
@@ -68,8 +70,12 @@ class GuitarStringsState extends State<GuitarStrings> {
   void playStringNote(int stringNumber, int velocity) {
     if (widget.currentChord != null && widget.midiPlayer != null && widget.sfId != null) {
       final note = widget.currentChord!.notes[stringNumber];
-      widget.midiPlayer!.playNote(key: note, velocity: velocity, sfId: widget.sfId!);
       
+      // Only play sound if instrument is enabled
+      if (widget.instrumentEnabled) {
+        widget.midiPlayer!.playNote(key: note, velocity: velocity, sfId: widget.sfId!);
+        
+      }
       // Send MIDI note on command (0x90 = note on channel 1)
       if (widget.midiCommand != null) {
         widget.midiCommand!.sendData(Uint8List.fromList([0x90, note, velocity]));
@@ -83,13 +89,17 @@ class GuitarStringsState extends State<GuitarStrings> {
   void stopStringNote(int stringNumber) {
     if (widget.currentChord != null && widget.midiPlayer != null && widget.sfId != null) {
       final note = widget.currentChord!.notes[stringNumber];
-      widget.midiPlayer!.stopNote(key: note, sfId: widget.sfId!);
+      
+      // Only stop sound if instrument is enabled
+      if (widget.instrumentEnabled) {
+        widget.midiPlayer!.stopNote(key: note, sfId: widget.sfId!);
+      }
       
       // Send MIDI note off command (0x80 = note off channel 1)
       if (widget.midiCommand != null) {
         widget.midiCommand!.sendData(Uint8List.fromList([0x80, note, 0]));
       }
-      
+    
       turnOffString(stringNumber);
     }
   }
