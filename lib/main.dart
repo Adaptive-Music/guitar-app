@@ -12,6 +12,7 @@ import 'package:flutter_midi_pro/flutter_midi_pro.dart';
 import 'package:flutter_application_1/special/enums.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:audio_session/audio_session.dart';
 
 
 const String virtualInstrumentName = "GuitarApp";
@@ -106,6 +107,25 @@ void main() async {
     DeviceOrientation.landscapeRight,
   ]);
 
+  // Configure audio session for background playback on iOS
+  if (Platform.isIOS) {
+    final session = await AudioSession.instance;
+    await session.configure(AudioSessionConfiguration(
+      avAudioSessionCategory: AVAudioSessionCategory.playback,
+      avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.mixWithOthers,
+      avAudioSessionMode: AVAudioSessionMode.defaultMode,
+      avAudioSessionRouteSharingPolicy: AVAudioSessionRouteSharingPolicy.defaultPolicy,
+      avAudioSessionSetActiveOptions: AVAudioSessionSetActiveOptions.none,
+      androidAudioAttributes: const AndroidAudioAttributes(
+        contentType: AndroidAudioContentType.music,
+        usage: AndroidAudioUsage.media,
+      ),
+      androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+      androidWillPauseWhenDucked: false,
+    ));
+    await session.setActive(true);
+  }
+
   runApp(MyApp());
 }
 
@@ -116,7 +136,7 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final MidiPro _midi = MidiPro();
   final MidiCommand _midi_cmd = MidiCommand();
   late int sfID;
@@ -575,6 +595,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initPrefs(); // Only call _initPrefs, which will handle loadSoundFont
 
     // Enable wakelock to prevent screen timeout
@@ -584,7 +605,37 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    
+    if (Platform.isIOS) {
+      switch (state) {
+        case AppLifecycleState.paused:
+          // App is in background - maintain audio session
+          print('App paused - maintaining background audio');
+          break;
+        case AppLifecycleState.resumed:
+          // App returned to foreground
+          print('App resumed');
+          // Reconnect MIDI if needed
+          connectMidiDevice();
+          break;
+        case AppLifecycleState.inactive:
+          // App is transitioning
+          break;
+        case AppLifecycleState.detached:
+          // App is about to be terminated
+          break;
+        case AppLifecycleState.hidden:
+          // App is hidden
+          break;
+      }
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     // Disable wakelock when the app is closed
     if (Platform.isAndroid || Platform.isIOS) {
       WakelockPlus.disable();
