@@ -595,8 +595,7 @@ class _MyAppState extends State<MyApp> {
   void _stopCurrentChordNotesAndStrings() {
     if (chords.isNotEmpty && currentChord < chords.length) {
       for (int i = 0; i < chords[currentChord].notes.length; i++) {
-        _midi.stopNote(key: chords[currentChord].notes[i], sfId: sfID);
-        _guitarStringsKey.currentState?.turnOffString(i);
+        _guitarStringsKey.currentState?.stopStringNote(i);
       }
     }
   }
