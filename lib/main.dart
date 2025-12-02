@@ -55,7 +55,7 @@ class ChordCallbacks {
 class MidiConfig {
   final SharedPreferences? prefs;
   final int sfID;
-  final MidiDevice? selectedDevice;
+  final List<MidiDevice> selectedDevices;
   final GlobalKey<GuitarStringsState> guitarStringsKey;
   final MidiPro midiPlayer;
   final int velocityBoost;
@@ -66,7 +66,7 @@ class MidiConfig {
   const MidiConfig({
     required this.prefs,
     required this.sfID,
-    required this.selectedDevice,
+    required this.selectedDevices,
     required this.guitarStringsKey,
     required this.midiPlayer,
     required this.velocityBoost,
@@ -154,7 +154,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   String currentSongName = '';
   List<String> progressionNames = [];
   int velocityBoost = 0;
-  String selectedMidiDeviceName = '';
+  List<String> selectedMidiDeviceNames = [];
 
   // Keyboard control settings
   String? nextChordKey = 'Space';
@@ -171,7 +171,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   bool _midiConnecting = false;
   bool _prefLoading = true;
 
-  MidiDevice? selectedMidiDevice;
+  List<MidiDevice> selectedMidiDevices = [];
   MidiDevice? virtualOutputDevice;
 
   Future<void> loadSoundFont() async {
@@ -201,52 +201,60 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     setState(() {
       _midiConnecting = true;
     });
-    selectedMidiDeviceName = _prefs?.getString('selectedMidiDevice') ?? '';
-    if (selectedMidiDevice != null) {
-      print('Device: ${selectedMidiDevice!.name}');
-      print('Connected: ${selectedMidiDevice!.connected}');
-    }
+    selectedMidiDeviceNames = _prefs?.getStringList('selectedMidiDevices') ?? [];
+    print('Attempting to connect to saved devices: $selectedMidiDeviceNames');
+    
     final newMidiDevices = await _midi_cmd.devices;
     print('Found MIDI devices:');
     for (var device in newMidiDevices ?? []) {
       print(' - ${device.name} (connected: ${device.connected})');
     }
-    if (newMidiDevices != null &&
-        !newMidiDevices.contains(selectedMidiDevice)) {
-      print('Previously selected MIDI device no longer available');
-      selectedMidiDevice = null;
-    }
-    if (selectedMidiDevice != null && selectedMidiDevice!.connected) {
-      print('MIDI device ${selectedMidiDevice!.name} is already connected.');
-      print(selectedMidiDevice!.connected);
-      setState(() {
-        _midiConnecting = false;
-      });
-      return;
-    }
-    for (var device in newMidiDevices!) {
-      if (device.name == selectedMidiDeviceName) {
+    
+    // Remove devices that are no longer available
+    selectedMidiDevices.removeWhere((device) => 
+      newMidiDevices == null || !newMidiDevices.any((d) => d.id == device.id));
+    
+    // Connect to all saved devices
+    for (var deviceName in selectedMidiDeviceNames) {
+      // Check if already connected
+      if (selectedMidiDevices.any((d) => d.name == deviceName && d.connected)) {
+        print('Device $deviceName is already connected.');
+        continue;
+      }
+      
+      // Find and connect to the device
+      MidiDevice? device;
+      try {
+        device = newMidiDevices?.firstWhere((d) => d.name == deviceName);
+      } catch (e) {
+        device = null;
+      }
+      
+      if (device != null) {
         print('Connecting to device: ${device.name}');
-        if (device.connected) {
-          print('Device ${device.name} is already connected.');
-          setState(() {
-            selectedMidiDevice = device;
-            _midiConnecting = false;
-          });
-          return;
+        if (!device.connected) {
+          await _midi_cmd.connectToDevice(device);
+          print('Connected to ${device.name}.');
         }
-        await _midi_cmd.connectToDevice(device);
-        print('Connected to ${device.name}.');
-        setState(() {
-          selectedMidiDevice = device;
-        });
-        break;
+        
+        // Add to list if not already there
+        final connectedDevice = device;
+        if (!selectedMidiDevices.any((d) => d.id == connectedDevice.id)) {
+          setState(() {
+            selectedMidiDevices.add(connectedDevice);
+          });
+        }
+      } else {
+        print('Device $deviceName not found.');
       }
     }
-    if (selectedMidiDevice == null) {
-      print('No suitable MIDI device found or connection failed.');
-      selectedMidiDevice = null;
+    
+    if (selectedMidiDevices.isEmpty) {
+      print('No MIDI devices connected.');
+    } else {
+      print('Connected to ${selectedMidiDevices.length} device(s).');
     }
+    
     setState(() {
       _midiConnecting = false;
     });
@@ -380,8 +388,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       _prefs?.setBool('instrumentEnabled', true);
     }
 
-    if (_prefs?.getString('selectedMidiDevice') == null) {
-      await _prefs?.setString('selectedMidiDevice', '');
+    // Migrate old single device preference to new list format
+    if (_prefs?.getStringList('selectedMidiDevices') == null) {
+      final oldDevice = _prefs?.getString('selectedMidiDevice');
+      if (oldDevice != null && oldDevice.isNotEmpty) {
+        // Migrate old single device to new list format
+        await _prefs?.setStringList('selectedMidiDevices', [oldDevice]);
+        print('Migrated old device preference: $oldDevice');
+      } else {
+        await _prefs?.setStringList('selectedMidiDevices', []);
+      }
     }
 
     // Initialize default chords if not set
@@ -404,8 +420,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // Load instrument enabled
     instrumentEnabled = _prefs?.getBool('instrumentEnabled') ?? true;
 
-    // Load selected MIDI device name
-    selectedMidiDeviceName = _prefs?.getString('selectedMidiDevice') ?? '';
+    // Load selected MIDI device names
+    selectedMidiDeviceNames = _prefs?.getStringList('selectedMidiDevices') ?? [];
 
     // Load keyboard control settings with proper defaults
     nextChordKey = _prefs?.getString('nextChordKey') ?? 'Space';
@@ -717,11 +733,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   velocityBoost = _prefs?.getInt('velocityBoost') ?? 0;
                   // Reload instrument enabled from preferences
                   instrumentEnabled = _prefs?.getBool('instrumentEnabled') ?? true;
-                  // Reload selected MIDI device name
-                  selectedMidiDeviceName = _prefs?.getString('selectedMidiDevice') ?? '';
-                  // Clear selectedMidiDevice if no device name is saved
-                  if (selectedMidiDeviceName.isEmpty) {
-                    selectedMidiDevice = null;
+                  // Reload selected MIDI device names
+                  selectedMidiDeviceNames = _prefs?.getStringList('selectedMidiDevices') ?? [];
+                  // Clear selectedMidiDevices if no device names are saved
+                  if (selectedMidiDeviceNames.isEmpty) {
+                    selectedMidiDevices.clear();
                   }
                   // Reload keyboard control settings
                   nextChordKey = _prefs?.getString('nextChordKey');
@@ -751,7 +767,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             midiConfig: MidiConfig(
               prefs: _prefs,
               sfID: sfID,
-              selectedDevice: selectedMidiDevice,
+              selectedDevices: selectedMidiDevices,
               guitarStringsKey: _guitarStringsKey,
               midiPlayer: _midi,
               velocityBoost: velocityBoost,
@@ -868,9 +884,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final titleText = widget.midiConfig.selectedDevice == null
+    final titleText = widget.midiConfig.selectedDevices.isEmpty
         ? 'Not connected - ${widget.chordState.songName}'
-        : widget.chordState.songName;
+        : widget.midiConfig.selectedDevices.length == 1
+            ? widget.chordState.songName
+            : '${widget.midiConfig.selectedDevices.length} devices - ${widget.chordState.songName}';
 
     return Scaffold(
       appBar: AppBar(

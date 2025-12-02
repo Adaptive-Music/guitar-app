@@ -1306,7 +1306,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void _showConnectionPopup() async {
     // Fetch devices immediately
     final devices = await _midiCommand.devices ?? [];
-    // remove virtual device from the list
+    // remove virtual devices from the list
     devices.removeWhere((device) => device.name.contains(appName));
     
     showDialog(
@@ -1384,8 +1384,11 @@ class _SettingsPageState extends State<SettingsPage> {
                                     ? TextButton(
                                         onPressed: () async {
                                           try {
-                                            // Clear the selected device from prefs
-                                            await widget.prefs?.setString('selectedMidiDevice', '');
+                                            // Remove this device from the selected devices list
+                                            final selectedDevices = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
+                                            selectedDevices.remove(device.name);
+                                            await widget.prefs?.setStringList('selectedMidiDevices', selectedDevices);
+                                            
                                             _midiCommand.disconnectDevice(device);
                                             // Wait a moment for disconnect to process
                                             await Future.delayed(Duration(milliseconds: 300));
@@ -1421,8 +1424,14 @@ class _SettingsPageState extends State<SettingsPage> {
                                         onPressed: () async {
                                           try {
                                             await _midiCommand.connectToDevice(device);
-                                            // Save the selected device name to prefs
-                                            await widget.prefs?.setString('selectedMidiDevice', device.name);
+                                            
+                                            // Add this device to the selected devices list
+                                            final selectedDevices = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
+                                            if (!selectedDevices.contains(device.name)) {
+                                              selectedDevices.add(device.name);
+                                              await widget.prefs?.setStringList('selectedMidiDevices', selectedDevices);
+                                            }
+                                            
                                             // Wait a moment for connection to establish
                                             await Future.delayed(Duration(milliseconds: 300));
                                             // Refresh the device list
