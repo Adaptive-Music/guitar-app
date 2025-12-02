@@ -1309,6 +1309,11 @@ class _SettingsPageState extends State<SettingsPage> {
     // remove virtual devices from the list
     devices.removeWhere((device) => device.name.contains(appName));
     
+    // Get saved device names to show unavailable ones
+    final savedDeviceNames = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
+    final availableDeviceNames = devices.map((d) => d.name).toSet();
+    final unavailableDeviceNames = savedDeviceNames.where((name) => !availableDeviceNames.contains(name)).toList();
+    
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -1331,7 +1336,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       border: Border.all(color: Colors.grey, width: 2),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: devices.isEmpty
+                    child: (devices.isEmpty && unavailableDeviceNames.isEmpty)
                         ? Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -1352,117 +1357,183 @@ class _SettingsPageState extends State<SettingsPage> {
                           )
                         : ListView.separated(
                             shrinkWrap: true,
-                            itemCount: devices.length,
+                            itemCount: devices.length + unavailableDeviceNames.length,
                             separatorBuilder: (context, index) => Divider(
                               height: 1,
                               thickness: 1,
                               color: Colors.grey[300],
                             ),
                             itemBuilder: (context, index) {
-                              final device = devices[index];
-                              final isConnected = device.connected;
+                              // Show available devices first, then unavailable saved devices
+                              if (index < devices.length) {
+                                final device = devices[index];
+                                final isConnected = device.connected;
                               
-                              return ListTile(
-                                leading: Icon(
-                                  isConnected ? Icons.check_circle : Icons.circle_outlined,
-                                  color: isConnected ? Colors.green : Colors.grey,
-                                ),
-                                title: Text(
-                                  device.name,
-                                  style: TextStyle(
-                                    fontWeight: isConnected ? FontWeight.bold : FontWeight.normal,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  isConnected ? 'Connected' : 'Available',
-                                  style: TextStyle(
+                                return ListTile(
+                                  leading: Icon(
+                                    isConnected ? Icons.check_circle : Icons.circle_outlined,
                                     color: isConnected ? Colors.green : Colors.grey,
-                                    fontSize: 12,
                                   ),
-                                ),
-                                trailing: isConnected
-                                    ? TextButton(
-                                        onPressed: () async {
-                                          try {
-                                            // Remove this device from the selected devices list
-                                            final selectedDevices = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
-                                            selectedDevices.remove(device.name);
-                                            await widget.prefs?.setStringList('selectedMidiDevices', selectedDevices);
-                                            
-                                            _midiCommand.disconnectDevice(device);
-                                            // Wait a moment for disconnect to process
-                                            await Future.delayed(Duration(milliseconds: 300));
-                                            // Refresh the device list
-                                            final newDevices = await _midiCommand.devices ?? [];
-                                            setDialogState(() {
-                                              devices.clear();
-                                              devices.addAll(newDevices);
-                                              devices.removeWhere((device) => device.name.contains(appName));
-                                            });
-                                            if (context.mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(
-                                                  content: Text('Disconnected from ${device.name}'),
-                                                  duration: Duration(seconds: 2),
-                                                ),
-                                              );
-                                            }
-                                          } catch (e) {
-                                            if (context.mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(
-                                                  content: Text('Failed to disconnect: $e'),
-                                                  duration: Duration(seconds: 2),
-                                                ),
-                                              );
-                                            }
-                                          }
-                                        },
-                                        child: Text('Disconnect'),
-                                      )
-                                    : TextButton(
-                                        onPressed: () async {
-                                          try {
-                                            await _midiCommand.connectToDevice(device);
-                                            
-                                            // Add this device to the selected devices list
-                                            final selectedDevices = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
-                                            if (!selectedDevices.contains(device.name)) {
-                                              selectedDevices.add(device.name);
+                                  title: Text(
+                                    device.name,
+                                    style: TextStyle(
+                                      fontWeight: isConnected ? FontWeight.bold : FontWeight.normal,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    isConnected ? 'Connected' : 'Available',
+                                    style: TextStyle(
+                                      color: isConnected ? Colors.green : Colors.grey,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  trailing: isConnected
+                                      ? TextButton(
+                                          onPressed: () async {
+                                            try {
+                                              // Remove this device from the selected devices list
+                                              final selectedDevices = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
+                                              selectedDevices.remove(device.name);
                                               await widget.prefs?.setStringList('selectedMidiDevices', selectedDevices);
+                                              
+                                              _midiCommand.disconnectDevice(device);
+                                              // Wait a moment for disconnect to process
+                                              await Future.delayed(Duration(milliseconds: 300));
+                                              // Refresh the device list
+                                              final newDevices = await _midiCommand.devices ?? [];
+                                              setDialogState(() {
+                                                devices.clear();
+                                                devices.addAll(newDevices);
+                                                devices.removeWhere((device) => device.name.contains(appName));
+                                              });
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Disconnected from ${device.name}'),
+                                                    duration: Duration(seconds: 2),
+                                                  ),
+                                                );
+                                              }
+                                            } catch (e) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Failed to disconnect: $e'),
+                                                    duration: Duration(seconds: 2),
+                                                  ),
+                                                );
+                                              }
                                             }
-                                            
-                                            // Wait a moment for connection to establish
-                                            await Future.delayed(Duration(milliseconds: 300));
-                                            // Refresh the device list
-                                            final newDevices = await _midiCommand.devices ?? [];
-                                            setDialogState(() {
-                                              devices.clear();
-                                              devices.addAll(newDevices);
-                                              devices.removeWhere((device) => device.name.contains(appName));
-                                            });
-                                            if (context.mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(
-                                                  content: Text('Connected to ${device.name}'),
-                                                  duration: Duration(seconds: 2),
-                                                ),
-                                              );
+                                          },
+                                          child: Text('Disconnect'),
+                                        )
+                                      : TextButton(
+                                          onPressed: () async {
+                                            try {
+                                              await _midiCommand.connectToDevice(device);
+                                              
+                                              // Add this device to the selected devices list
+                                              final selectedDevices = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
+                                              if (!selectedDevices.contains(device.name)) {
+                                                selectedDevices.add(device.name);
+                                                await widget.prefs?.setStringList('selectedMidiDevices', selectedDevices);
+                                              }
+                                              
+                                              // Wait a moment for connection to establish
+                                              await Future.delayed(Duration(milliseconds: 300));
+                                              // Refresh the device list
+                                              final newDevices = await _midiCommand.devices ?? [];
+                                              setDialogState(() {
+                                                devices.clear();
+                                                devices.addAll(newDevices);
+                                                devices.removeWhere((device) => device.name.contains(appName));
+                                              });
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Connected to ${device.name}'),
+                                                    duration: Duration(seconds: 2),
+                                                  ),
+                                                );
+                                              }
+                                            } catch (e) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Failed to connect: $e'),
+                                                    duration: Duration(seconds: 2),
+                                                  ),
+                                                );
+                                              }
                                             }
-                                          } catch (e) {
-                                            if (context.mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(
-                                                  content: Text('Failed to connect: $e'),
-                                                  duration: Duration(seconds: 2),
-                                                ),
-                                              );
-                                            }
-                                          }
-                                        },
-                                        child: Text('Connect'),
-                                      ),
-                              );
+                                          },
+                                          child: Text('Connect'),
+                                        ),
+                                );
+                              } else {
+                                // Show unavailable saved device
+                                final unavailableDeviceName = unavailableDeviceNames[index - devices.length];
+                                
+                                return ListTile(
+                                  leading: Icon(
+                                    Icons.warning_amber,
+                                    color: Colors.orange,
+                                  ),
+                                  title: Text(
+                                    unavailableDeviceName,
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      decoration: TextDecoration.lineThrough,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    'Unavailable',
+                                    style: TextStyle(
+                                      color: Colors.orange,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  trailing: TextButton(
+                                    onPressed: () async {
+                                      try {
+                                        // Remove this device from the selected devices list
+                                        final selectedDevices = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
+                                        selectedDevices.remove(unavailableDeviceName);
+                                        await widget.prefs?.setStringList('selectedMidiDevices', selectedDevices);
+                                        
+                                        // Recalculate unavailable devices
+                                        final newSavedDeviceNames = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
+                                        final newAvailableDeviceNames = devices.map((d) => d.name).toSet();
+                                        final newUnavailableDeviceNames = newSavedDeviceNames.where((name) => !newAvailableDeviceNames.contains(name)).toList();
+                                        
+                                        setDialogState(() {
+                                          unavailableDeviceNames.clear();
+                                          unavailableDeviceNames.addAll(newUnavailableDeviceNames);
+                                        });
+                                        
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Removed $unavailableDeviceName from saved devices'),
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Failed to remove: $e'),
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
+                                    child: Text('Remove', style: TextStyle(color: Colors.red)),
+                                  ),
+                                );
+                              }
                             },
                           ),
                   ),
@@ -1471,10 +1542,18 @@ class _SettingsPageState extends State<SettingsPage> {
                     onPressed: () async {
                       // Scan for devices and update the dialog
                       final newDevices = await _midiCommand.devices ?? [];
+                      
+                      // Recalculate unavailable devices
+                      final newSavedDeviceNames = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
+                      final newAvailableDeviceNames = newDevices.map((d) => d.name).toSet();
+                      final newUnavailableDeviceNames = newSavedDeviceNames.where((name) => !newAvailableDeviceNames.contains(name)).toList();
+                      
                       setDialogState(() {
                         devices.clear();
                         devices.addAll(newDevices);
                         devices.removeWhere((device) => device.name.contains(appName));
+                        unavailableDeviceNames.clear();
+                        unavailableDeviceNames.addAll(newUnavailableDeviceNames);
                       });
                     },
                     icon: Icon(Icons.refresh),
