@@ -1307,14 +1307,14 @@ class _SettingsPageState extends State<SettingsPage> {
     // Fetch devices immediately
     final devices = await _midiCommand.devices ?? [];
     // remove virtual device from the list
-    devices.removeWhere((device) => device.name == appName);
+    devices.removeWhere((device) => device.name.contains(appName));
     
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            title: Text('MIDI Device Connection'),
+            title: Text('MIDI Input Device Connection'),
             content: SizedBox(
               width: double.maxFinite,
               child: Column(
@@ -1394,7 +1394,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                             setDialogState(() {
                                               devices.clear();
                                               devices.addAll(newDevices);
-                                              devices.removeWhere((device) => device.name == appName);
+                                              devices.removeWhere((device) => device.name.contains(appName));
                                             });
                                             if (context.mounted) {
                                               ScaffoldMessenger.of(context).showSnackBar(
@@ -1430,7 +1430,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                             setDialogState(() {
                                               devices.clear();
                                               devices.addAll(newDevices);
-                                              devices.removeWhere((device) => device.name == appName);
+                                              devices.removeWhere((device) => device.name.contains(appName));
                                             });
                                             if (context.mounted) {
                                               ScaffoldMessenger.of(context).showSnackBar(
@@ -1465,7 +1465,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       setDialogState(() {
                         devices.clear();
                         devices.addAll(newDevices);
-                        devices.removeWhere((device) => device.name == appName);
+                        devices.removeWhere((device) => device.name.contains(appName));
                       });
                     },
                     icon: Icon(Icons.refresh),
