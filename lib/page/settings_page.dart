@@ -1307,7 +1307,7 @@ class _SettingsPageState extends State<SettingsPage> {
     // Fetch devices immediately
     final devices = await _midiCommand.devices ?? [];
     // remove virtual device from the list
-    devices.removeWhere((device) => device.name == virtualInstrumentName);
+    devices.removeWhere((device) => device.name == appName);
     
     showDialog(
       context: context,
@@ -1394,7 +1394,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                             setDialogState(() {
                                               devices.clear();
                                               devices.addAll(newDevices);
-                                              devices.removeWhere((device) => device.name == virtualInstrumentName);
+                                              devices.removeWhere((device) => device.name == appName);
                                             });
                                             if (context.mounted) {
                                               ScaffoldMessenger.of(context).showSnackBar(
@@ -1430,7 +1430,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                             setDialogState(() {
                                               devices.clear();
                                               devices.addAll(newDevices);
-                                              devices.removeWhere((device) => device.name == virtualInstrumentName);
+                                              devices.removeWhere((device) => device.name == appName);
                                             });
                                             if (context.mounted) {
                                               ScaffoldMessenger.of(context).showSnackBar(
@@ -1465,7 +1465,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       setDialogState(() {
                         devices.clear();
                         devices.addAll(newDevices);
-                        devices.removeWhere((device) => device.name == virtualInstrumentName);
+                        devices.removeWhere((device) => device.name == appName);
                       });
                     },
                     icon: Icon(Icons.refresh),

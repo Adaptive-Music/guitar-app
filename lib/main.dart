@@ -15,7 +15,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:audio_session/audio_session.dart';
 
 
-const String virtualInstrumentName = "GuitarApp";
+const String appName = "GuitarApp";
 
 // Configuration classes to group related parameters
 class ChordState {
@@ -61,6 +61,7 @@ class MidiConfig {
   final int velocityBoost;
   final MidiCommand midiCommand;
   final bool instrumentEnabled;
+  final MidiDevice? virtualOutputDevice;
 
   const MidiConfig({
     required this.prefs,
@@ -71,6 +72,7 @@ class MidiConfig {
     required this.velocityBoost,
     required this.midiCommand,
     required this.instrumentEnabled,
+    required this.virtualOutputDevice,
   });
 }
 
@@ -170,6 +172,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   bool _prefLoading = true;
 
   MidiDevice? selectedMidiDevice;
+  MidiDevice? virtualOutputDevice;
 
   Future<void> loadSoundFont() async {
     if (_prefs == null) return; // Don't load if prefs aren't ready
@@ -317,13 +320,21 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     initMidiListening(); // Set up MIDI listener once
 
     // Create virtual MIDI device and connect to it
-    _midi_cmd.addVirtualDevice(name: virtualInstrumentName);
+    const inputName = '$appName Input';
+    const outputName = '$appName Output';
+    _midi_cmd.addVirtualDevice(name: inputName);
+    _midi_cmd.addVirtualDevice(name: outputName);
     final devices = await _midi_cmd.devices;
     if (devices != null) {
       for (MidiDevice device in devices) {
-        if (device.name == virtualInstrumentName && !device.connected) {
+        if ((device.name == inputName || device.name == outputName) && !device.connected) {
           await _midi_cmd.connectToDevice(device);
-          break;
+          print('Connected to virtual device: ${device.name}');
+          // Store the output device reference
+          if (device.name == outputName) {
+            virtualOutputDevice = device;
+            print('Stored virtual output device for MIDI sending');
+          }
         }
       }
     }
@@ -746,6 +757,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               velocityBoost: velocityBoost,
               midiCommand: _midi_cmd,
               instrumentEnabled: instrumentEnabled,
+              virtualOutputDevice: virtualOutputDevice,
             ),
             keyboardControls: KeyboardControls(
               nextChordKey: nextChordKey,
@@ -978,6 +990,7 @@ class _HomeScreenState extends State<HomeScreen> {
               sfId: widget.midiConfig.sfID,
               midiCommand: widget.midiConfig.midiCommand,
               instrumentEnabled: widget.midiConfig.instrumentEnabled,
+              virtualOutputDevice: widget.midiConfig.virtualOutputDevice,
             ),
             // Keyboard and Chord List
             Expanded(

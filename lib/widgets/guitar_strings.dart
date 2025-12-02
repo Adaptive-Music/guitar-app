@@ -10,6 +10,7 @@ class GuitarStrings extends StatefulWidget {
   final int? sfId;
   final MidiCommand? midiCommand;
   final bool instrumentEnabled;
+  final MidiDevice? virtualOutputDevice;
   
   const GuitarStrings({
     super.key, 
@@ -18,6 +19,7 @@ class GuitarStrings extends StatefulWidget {
     this.sfId,
     this.midiCommand,
     this.instrumentEnabled = true,
+    this.virtualOutputDevice,
   });
 
   @override
@@ -76,9 +78,9 @@ class GuitarStringsState extends State<GuitarStrings> {
         widget.midiPlayer!.playNote(key: note, velocity: velocity, sfId: widget.sfId!);
         
       }
-      // Send MIDI note on command (0x90 = note on channel 1)
-      if (widget.midiCommand != null) {
-        widget.midiCommand!.sendData(Uint8List.fromList([0x90, note, velocity]));
+      // Send MIDI note on command (0x90 = note on channel 1) only to virtual output device
+      if (widget.midiCommand != null && widget.virtualOutputDevice != null) {
+        widget.midiCommand!.sendData(Uint8List.fromList([0x90, note, velocity]), deviceId: widget.virtualOutputDevice!.id);
       }
       
       illuminateString(stringNumber, velocity);
@@ -95,9 +97,9 @@ class GuitarStringsState extends State<GuitarStrings> {
         widget.midiPlayer!.stopNote(key: note, sfId: widget.sfId!);
       }
       
-      // Send MIDI note off command (0x80 = note off channel 1)
-      if (widget.midiCommand != null) {
-        widget.midiCommand!.sendData(Uint8List.fromList([0x80, note, 0]));
+      // Send MIDI note off command (0x80 = note off channel 1) only to virtual output device
+      if (widget.midiCommand != null && widget.virtualOutputDevice != null) {
+        widget.midiCommand!.sendData(Uint8List.fromList([0x80, note, 0]), deviceId: widget.virtualOutputDevice!.id);
       }
     
       turnOffString(stringNumber);
