@@ -59,6 +59,7 @@ class MidiConfig {
   final GlobalKey<GuitarStringsState> guitarStringsKey;
   final MidiPro midiPlayer;
   final int velocityBoost;
+  final int transposition;
   final MidiCommand midiCommand;
   final bool instrumentEnabled;
   final MidiDevice? virtualOutputDevice;
@@ -70,6 +71,7 @@ class MidiConfig {
     required this.guitarStringsKey,
     required this.midiPlayer,
     required this.velocityBoost,
+    required this.transposition,
     required this.midiCommand,
     required this.instrumentEnabled,
     required this.virtualOutputDevice,
@@ -154,6 +156,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   String currentSongName = '';
   List<String> progressionNames = [];
   int velocityBoost = 0;
+  int transposition = 0;
   List<String> selectedMidiDeviceNames = [];
 
   // Keyboard control settings
@@ -460,6 +463,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     currentSongName = _prefs?.getString('currentSongName') ?? 'Default Song';
     currentProgressionName =
         _prefs?.getString('currentProgressionName') ?? 'Default';
+    transposition = 0;
 
     final songsJson = _prefs?.getString('savedSongs');
 
@@ -470,6 +474,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       final decoded = json.decode(songsJson) as Map<String, dynamic>;
       if (decoded.containsKey(currentSongName)) {
         final song = decoded[currentSongName] as Map<String, dynamic>;
+        transposition = (song['transposition'] as int?) ?? 0;
         final progressions = song['progressions'] as Map<String, dynamic>;
         progressionNames = List<String>.from(song['order'] as List);
         if (progressions.containsKey(currentProgressionName)) {
@@ -771,6 +776,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               guitarStringsKey: _guitarStringsKey,
               midiPlayer: _midi,
               velocityBoost: velocityBoost,
+              transposition: transposition,
               midiCommand: _midi_cmd,
               instrumentEnabled: instrumentEnabled,
               virtualOutputDevice: virtualOutputDevice,
@@ -1009,6 +1015,7 @@ class _HomeScreenState extends State<HomeScreen> {
               midiCommand: widget.midiConfig.midiCommand,
               instrumentEnabled: widget.midiConfig.instrumentEnabled,
               virtualOutputDevice: widget.midiConfig.virtualOutputDevice,
+              transposition: widget.midiConfig.transposition,
             ),
             // Keyboard and Chord List
             Expanded(

@@ -11,15 +11,17 @@ class GuitarStrings extends StatefulWidget {
   final MidiCommand? midiCommand;
   final bool instrumentEnabled;
   final MidiDevice? virtualOutputDevice;
-  
+  final int transposition;
+
   const GuitarStrings({
-    super.key, 
+    super.key,
     this.currentChord,
     this.midiPlayer,
     this.sfId,
     this.midiCommand,
     this.instrumentEnabled = true,
     this.virtualOutputDevice,
+    this.transposition = 0,
   });
 
   @override
@@ -34,6 +36,7 @@ class GuitarStringsState extends State<GuitarStrings> {
 
   // Store the time when each string was activated for fade effect
   final List<DateTime?> _activationTimes = List.generate(6, (_) => null);
+  final List<int?> _playingNotes = List.filled(6, null);
 
   // Colors for each string (can be customized)
   final List<Color> _stringColors = [
@@ -51,8 +54,8 @@ class GuitarStringsState extends State<GuitarStrings> {
       setState(() {
         _activeStrings[stringNumber] = true;
         // Clamp velocity and convert to 0..1
-  final v = velocity.clamp(0, 127);
-  _stringIntensities[stringNumber] = v / 127.0;
+        final v = velocity.clamp(0, 127);
+        _stringIntensities[stringNumber] = v / 127.0;
         _activationTimes[stringNumber] = DateTime.now();
       });
     }
@@ -70,41 +73,52 @@ class GuitarStringsState extends State<GuitarStrings> {
 
   // Play note for a string
   void playStringNote(int stringNumber, int velocity) {
-    if (widget.currentChord != null && widget.midiPlayer != null && widget.sfId != null) {
-      final note = widget.currentChord!.notes[stringNumber];
-      
+    if (widget.currentChord != null &&
+        widget.midiPlayer != null &&
+        widget.sfId != null) {
+      final note = _transposedNote(widget.currentChord!.notes[stringNumber]);
+      _playingNotes[stringNumber] = note;
+
       // Only play sound if instrument is enabled
       if (widget.instrumentEnabled) {
-        widget.midiPlayer!.playNote(key: note, velocity: velocity, sfId: widget.sfId!);
-        
+        widget.midiPlayer!
+            .playNote(key: note, velocity: velocity, sfId: widget.sfId!);
       }
       // Send MIDI note on command (0x90 = note on channel 1) only to virtual output device
       if (widget.midiCommand != null && widget.virtualOutputDevice != null) {
-        widget.midiCommand!.sendData(Uint8List.fromList([0x90, note, velocity]), deviceId: widget.virtualOutputDevice!.id);
+        widget.midiCommand!.sendData(Uint8List.fromList([0x90, note, velocity]),
+            deviceId: widget.virtualOutputDevice!.id);
       }
-      
+
       illuminateString(stringNumber, velocity);
     }
   }
 
   // Stop note for a string
   void stopStringNote(int stringNumber) {
-    if (widget.currentChord != null && widget.midiPlayer != null && widget.sfId != null) {
-      final note = widget.currentChord!.notes[stringNumber];
-      
+    if (widget.currentChord != null &&
+        widget.midiPlayer != null &&
+        widget.sfId != null) {
+      final note = _playingNotes[stringNumber] ??
+          _transposedNote(widget.currentChord!.notes[stringNumber]);
+
       // Only stop sound if instrument is enabled
       if (widget.instrumentEnabled) {
         widget.midiPlayer!.stopNote(key: note, sfId: widget.sfId!);
       }
-      
+
       // Send MIDI note off command (0x80 = note off channel 1) only to virtual output device
       if (widget.midiCommand != null && widget.virtualOutputDevice != null) {
-        widget.midiCommand!.sendData(Uint8List.fromList([0x80, note, 0]), deviceId: widget.virtualOutputDevice!.id);
+        widget.midiCommand!.sendData(Uint8List.fromList([0x80, note, 0]),
+            deviceId: widget.virtualOutputDevice!.id);
       }
-    
+      _playingNotes[stringNumber] = null;
       turnOffString(stringNumber);
     }
   }
+
+  int _transposedNote(int note) =>
+      (note + widget.transposition).clamp(0, 127).toInt();
 
   @override
   Widget build(BuildContext context) {
@@ -116,12 +130,25 @@ class GuitarStringsState extends State<GuitarStrings> {
           final isActive = _activeStrings[index];
           final stringColor = _stringColors[index];
           final intensity = _stringIntensities[index]; // 0..1
-          
+
           // Get note name for this string from current chord
           String noteName = '';
           if (widget.currentChord != null) {
-            final midiNote = widget.currentChord!.notes[index];
-            final noteNames = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+            final midiNote = _transposedNote(widget.currentChord!.notes[index]);
+            final noteNames = [
+              'C',
+              'C♯',
+              'D',
+              'D♯',
+              'E',
+              'F',
+              'F♯',
+              'G',
+              'G♯',
+              'A',
+              'A♯',
+              'B'
+            ];
             noteName = noteNames[midiNote % 12];
           }
 
@@ -134,102 +161,111 @@ class GuitarStringsState extends State<GuitarStrings> {
                 onTapCancel: () => stopStringNote(index),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? stringColor.withOpacity(
-                          // Base 0.2 with boost up to +0.5, capped at 0.7
-                          (0.2 + 0.5 * intensity).clamp(0.0, 0.7),
-                        )
-                      : Colors.black.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isActive ? stringColor : Colors.black,
-                    // Base 2.0 + up to +2.0, capped at 3.0
-                    width: isActive ? (3.0 + 2.0 * intensity).clamp(2.0, 3.0) : 3.0,
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? stringColor.withOpacity(
+                            // Base 0.2 with boost up to +0.5, capped at 0.7
+                            (0.2 + 0.5 * intensity).clamp(0.0, 0.7),
+                          )
+                        : Colors.black.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isActive ? stringColor : Colors.black,
+                      // Base 2.0 + up to +2.0, capped at 3.0
+                      width: isActive
+                          ? (3.0 + 2.0 * intensity).clamp(2.0, 3.0)
+                          : 3.0,
+                    ),
+                    boxShadow: isActive
+                        ? [
+                            BoxShadow(
+                              // Opacity capped at 0.7
+                              color: stringColor.withOpacity(
+                                  (0.3 + 0.5 * intensity).clamp(0.0, 0.7)),
+                              // Blur capped at 10
+                              blurRadius: (6 + 10 * intensity).clamp(0.0, 10.0),
+                              // Spread capped at 1.5
+                              spreadRadius: (1 + 2 * intensity).clamp(0.0, 1.5),
+                            ),
+                          ]
+                        : [],
                   ),
-                  boxShadow: isActive
-                      ? [
-                          BoxShadow(
-                            // Opacity capped at 0.7
-                            color: stringColor.withOpacity((0.3 + 0.5 * intensity).clamp(0.0, 0.7)),
-                            // Blur capped at 10
-                            blurRadius: (6 + 10 * intensity).clamp(0.0, 10.0),
-                            // Spread capped at 1.5
-                            spreadRadius: (1 + 2 * intensity).clamp(0.0, 1.5),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // String number label
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Stroke layer for readability
+                          Text(
+                            '${index + 1}',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              foreground: Paint()
+                                ..style = PaintingStyle.stroke
+                                ..strokeWidth = 3
+                                ..color = Colors.black,
+                            ),
                           ),
-                        ]
-                      : [],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // String number label
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Stroke layer for readability
-                        Text(
-                          '${index + 1}',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            foreground: Paint()
-                              ..style = PaintingStyle.stroke
-                              ..strokeWidth = 3
-                              ..color = Colors.black,
+                          // Fill layer
+                          Text(
+                            '${index + 1}',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Note name
+                      if (noteName.isNotEmpty)
+                        Container(
+                          margin: const EdgeInsets.only(top: 1),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            noteName,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                        // Fill layer
-                        Text(
-                          '${index + 1}',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                    // Note name
-                    if (noteName.isNotEmpty)
+                      const SizedBox(height: 2),
+                      // Visual string representation
                       Container(
-                        margin: const EdgeInsets.only(top: 1),
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                        height: 4 +
+                            ((5 - index) * 0.8), // Thicker for lower strings
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          noteName,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
+                          color: isActive
+                              ? stringColor.withOpacity(
+                                  (0.5 + 0.5 * intensity).clamp(0.0, 0.8))
+                              : Colors.grey[700],
+                          borderRadius: BorderRadius.circular(2),
+                          boxShadow: isActive
+                              ? [
+                                  BoxShadow(
+                                    color: stringColor.withOpacity(
+                                        (0.5 + 0.4 * intensity)
+                                            .clamp(0.0, 0.7)),
+                                    blurRadius:
+                                        (4 + 6 * intensity).clamp(0.0, 7.0),
+                                  ),
+                                ]
+                              : [],
                         ),
                       ),
-                    const SizedBox(height: 2),
-                    // Visual string representation
-                    Container(
-                      height: 4 + ((5 - index) * 0.8), // Thicker for lower strings
-                      decoration: BoxDecoration(
-            color: isActive
-              ? stringColor.withOpacity((0.5 + 0.5 * intensity).clamp(0.0, 0.8))
-                            : Colors.grey[700],
-                        borderRadius: BorderRadius.circular(2),
-                        boxShadow: isActive
-                            ? [
-                                BoxShadow(
-                                  color: stringColor.withOpacity((0.5 + 0.4 * intensity).clamp(0.0, 0.7)),
-                                  blurRadius: (4 + 6 * intensity).clamp(0.0, 7.0),
-                                ),
-                              ]
-                            : [],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
               ),
             ),
           );

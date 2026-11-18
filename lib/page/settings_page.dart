@@ -32,6 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
   int? selectedChordIndex;
   int? selectedProgressionIndex;
   int velocityBoost = 0;
+  int transposition = 0;
   final ScrollController _leftSideScrollController = ScrollController();
 
   // Keyboard control settings
@@ -164,6 +165,7 @@ class _SettingsPageState extends State<SettingsPage> {
         'type': chord['type'] as String,
       };
     }).toList();
+    transposition = (currentSong['transposition'] as int?) ?? 0;
 
     // Set the selected progression index
     final order = (currentSong['order'] as List).cast<String>();
@@ -175,12 +177,15 @@ class _SettingsPageState extends State<SettingsPage> {
     // Load keyboard control settings with proper defaults
     nextChordKey = widget.prefs!.getString('nextChordKey') ?? 'Space';
     nextChordLongPress = widget.prefs!.getBool('nextChordLongPress') ?? false;
-    prevChordKey = widget.prefs!.getString('prevChordKey'); // No default, stays null
+    prevChordKey =
+        widget.prefs!.getString('prevChordKey'); // No default, stays null
     prevChordLongPress = widget.prefs!.getBool('prevChordLongPress') ?? false;
-    nextProgressionKey = widget.prefs!.getString('nextProgressionKey') ?? 'Enter';
+    nextProgressionKey =
+        widget.prefs!.getString('nextProgressionKey') ?? 'Enter';
     nextProgressionLongPress =
         widget.prefs!.getBool('nextProgressionLongPress') ?? false;
-    prevProgressionKey = widget.prefs!.getString('prevProgressionKey'); // No default, stays null
+    prevProgressionKey =
+        widget.prefs!.getString('prevProgressionKey'); // No default, stays null
     prevProgressionLongPress =
         widget.prefs!.getBool('prevProgressionLongPress') ?? false;
     longPressDuration = widget.prefs!.getInt('longPressDuration') ?? 500;
@@ -207,6 +212,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 'type': chord['type']!,
               })
           .toList();
+      currentSong['transposition'] = transposition;
 
       // Convert to JSON
       final songsJson = json.encode(savedSongs);
@@ -621,6 +627,7 @@ class _SettingsPageState extends State<SettingsPage> {
       // Now switch to the new song
       currentSongName = name;
       final song = savedSongs[name] as Map<String, dynamic>;
+      transposition = (song['transposition'] as int?) ?? 0;
       final order = List<String>.from(song['order']);
       currentProgressionName = order.first;
 
@@ -691,6 +698,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ]
           },
           'order': ['Default'],
+          'transposition': 0,
         };
         currentSongName = result;
         currentProgressionName = 'Default';
@@ -819,6 +827,7 @@ class _SettingsPageState extends State<SettingsPage> {
         savedSongs[result] = {
           'progressions': newProgressions,
           'order': List<String>.from(originalSong['order']),
+          'transposition': (originalSong['transposition'] as int?) ?? 0,
         };
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1308,12 +1317,15 @@ class _SettingsPageState extends State<SettingsPage> {
     final devices = await _midiCommand.devices ?? [];
     // remove virtual devices from the list
     devices.removeWhere((device) => device.name.contains(appName));
-    
+
     // Get saved device names to show unavailable ones
-    final savedDeviceNames = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
+    final savedDeviceNames =
+        widget.prefs?.getStringList('selectedMidiDevices') ?? [];
     final availableDeviceNames = devices.map((d) => d.name).toSet();
-    final unavailableDeviceNames = savedDeviceNames.where((name) => !availableDeviceNames.contains(name)).toList();
-    
+    final unavailableDeviceNames = savedDeviceNames
+        .where((name) => !availableDeviceNames.contains(name))
+        .toList();
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -1341,7 +1353,8 @@ class _SettingsPageState extends State<SettingsPage> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.search_off, size: 48, color: Colors.grey),
+                                Icon(Icons.search_off,
+                                    size: 48, color: Colors.grey),
                                 SizedBox(height: 16),
                                 Text(
                                   'No MIDI devices found',
@@ -1350,14 +1363,16 @@ class _SettingsPageState extends State<SettingsPage> {
                                 SizedBox(height: 8),
                                 Text(
                                   'Try scanning for devices',
-                                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                                  style: TextStyle(
+                                      color: Colors.grey, fontSize: 12),
                                 ),
                               ],
                             ),
                           )
                         : ListView.separated(
                             shrinkWrap: true,
-                            itemCount: devices.length + unavailableDeviceNames.length,
+                            itemCount:
+                                devices.length + unavailableDeviceNames.length,
                             separatorBuilder: (context, index) => Divider(
                               height: 1,
                               thickness: 1,
@@ -1368,22 +1383,30 @@ class _SettingsPageState extends State<SettingsPage> {
                               if (index < devices.length) {
                                 final device = devices[index];
                                 final isConnected = device.connected;
-                              
+
                                 return ListTile(
                                   leading: Icon(
-                                    isConnected ? Icons.check_circle : Icons.circle_outlined,
-                                    color: isConnected ? Colors.green : Colors.grey,
+                                    isConnected
+                                        ? Icons.check_circle
+                                        : Icons.circle_outlined,
+                                    color: isConnected
+                                        ? Colors.green
+                                        : Colors.grey,
                                   ),
                                   title: Text(
                                     device.name,
                                     style: TextStyle(
-                                      fontWeight: isConnected ? FontWeight.bold : FontWeight.normal,
+                                      fontWeight: isConnected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
                                     ),
                                   ),
                                   subtitle: Text(
                                     isConnected ? 'Connected' : 'Available',
                                     style: TextStyle(
-                                      color: isConnected ? Colors.green : Colors.grey,
+                                      color: isConnected
+                                          ? Colors.green
+                                          : Colors.grey,
                                       fontSize: 12,
                                     ),
                                   ),
@@ -1392,34 +1415,52 @@ class _SettingsPageState extends State<SettingsPage> {
                                           onPressed: () async {
                                             try {
                                               // Remove this device from the selected devices list
-                                              final selectedDevices = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
-                                              selectedDevices.remove(device.name);
-                                              await widget.prefs?.setStringList('selectedMidiDevices', selectedDevices);
-                                              
-                                              _midiCommand.disconnectDevice(device);
+                                              final selectedDevices =
+                                                  widget.prefs?.getStringList(
+                                                          'selectedMidiDevices') ??
+                                                      [];
+                                              selectedDevices
+                                                  .remove(device.name);
+                                              await widget.prefs?.setStringList(
+                                                  'selectedMidiDevices',
+                                                  selectedDevices);
+
+                                              _midiCommand
+                                                  .disconnectDevice(device);
                                               // Wait a moment for disconnect to process
-                                              await Future.delayed(Duration(milliseconds: 300));
+                                              await Future.delayed(
+                                                  Duration(milliseconds: 300));
                                               // Refresh the device list
-                                              final newDevices = await _midiCommand.devices ?? [];
+                                              final newDevices =
+                                                  await _midiCommand.devices ??
+                                                      [];
                                               setDialogState(() {
                                                 devices.clear();
                                                 devices.addAll(newDevices);
-                                                devices.removeWhere((device) => device.name.contains(appName));
+                                                devices.removeWhere((device) =>
+                                                    device.name
+                                                        .contains(appName));
                                               });
                                               if (context.mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
                                                   SnackBar(
-                                                    content: Text('Disconnected from ${device.name}'),
-                                                    duration: Duration(seconds: 2),
+                                                    content: Text(
+                                                        'Disconnected from ${device.name}'),
+                                                    duration:
+                                                        Duration(seconds: 2),
                                                   ),
                                                 );
                                               }
                                             } catch (e) {
                                               if (context.mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
                                                   SnackBar(
-                                                    content: Text('Failed to disconnect: $e'),
-                                                    duration: Duration(seconds: 2),
+                                                    content: Text(
+                                                        'Failed to disconnect: $e'),
+                                                    duration:
+                                                        Duration(seconds: 2),
                                                   ),
                                                 );
                                               }
@@ -1430,38 +1471,58 @@ class _SettingsPageState extends State<SettingsPage> {
                                       : TextButton(
                                           onPressed: () async {
                                             try {
-                                              await _midiCommand.connectToDevice(device);
-                                              
+                                              await _midiCommand
+                                                  .connectToDevice(device);
+
                                               // Add this device to the selected devices list
-                                              final selectedDevices = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
-                                              if (!selectedDevices.contains(device.name)) {
-                                                selectedDevices.add(device.name);
-                                                await widget.prefs?.setStringList('selectedMidiDevices', selectedDevices);
+                                              final selectedDevices =
+                                                  widget.prefs?.getStringList(
+                                                          'selectedMidiDevices') ??
+                                                      [];
+                                              if (!selectedDevices
+                                                  .contains(device.name)) {
+                                                selectedDevices
+                                                    .add(device.name);
+                                                await widget.prefs
+                                                    ?.setStringList(
+                                                        'selectedMidiDevices',
+                                                        selectedDevices);
                                               }
-                                              
+
                                               // Wait a moment for connection to establish
-                                              await Future.delayed(Duration(milliseconds: 300));
+                                              await Future.delayed(
+                                                  Duration(milliseconds: 300));
                                               // Refresh the device list
-                                              final newDevices = await _midiCommand.devices ?? [];
+                                              final newDevices =
+                                                  await _midiCommand.devices ??
+                                                      [];
                                               setDialogState(() {
                                                 devices.clear();
                                                 devices.addAll(newDevices);
-                                                devices.removeWhere((device) => device.name.contains(appName));
+                                                devices.removeWhere((device) =>
+                                                    device.name
+                                                        .contains(appName));
                                               });
                                               if (context.mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
                                                   SnackBar(
-                                                    content: Text('Connected to ${device.name}'),
-                                                    duration: Duration(seconds: 2),
+                                                    content: Text(
+                                                        'Connected to ${device.name}'),
+                                                    duration:
+                                                        Duration(seconds: 2),
                                                   ),
                                                 );
                                               }
                                             } catch (e) {
                                               if (context.mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
                                                   SnackBar(
-                                                    content: Text('Failed to connect: $e'),
-                                                    duration: Duration(seconds: 2),
+                                                    content: Text(
+                                                        'Failed to connect: $e'),
+                                                    duration:
+                                                        Duration(seconds: 2),
                                                   ),
                                                 );
                                               }
@@ -1472,8 +1533,10 @@ class _SettingsPageState extends State<SettingsPage> {
                                 );
                               } else {
                                 // Show unavailable saved device
-                                final unavailableDeviceName = unavailableDeviceNames[index - devices.length];
-                                
+                                final unavailableDeviceName =
+                                    unavailableDeviceNames[
+                                        index - devices.length];
+
                                 return ListTile(
                                   leading: Icon(
                                     Icons.warning_amber,
@@ -1497,40 +1560,61 @@ class _SettingsPageState extends State<SettingsPage> {
                                     onPressed: () async {
                                       try {
                                         // Remove this device from the selected devices list
-                                        final selectedDevices = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
-                                        selectedDevices.remove(unavailableDeviceName);
-                                        await widget.prefs?.setStringList('selectedMidiDevices', selectedDevices);
-                                        
+                                        final selectedDevices = widget.prefs
+                                                ?.getStringList(
+                                                    'selectedMidiDevices') ??
+                                            [];
+                                        selectedDevices
+                                            .remove(unavailableDeviceName);
+                                        await widget.prefs?.setStringList(
+                                            'selectedMidiDevices',
+                                            selectedDevices);
+
                                         // Recalculate unavailable devices
-                                        final newSavedDeviceNames = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
-                                        final newAvailableDeviceNames = devices.map((d) => d.name).toSet();
-                                        final newUnavailableDeviceNames = newSavedDeviceNames.where((name) => !newAvailableDeviceNames.contains(name)).toList();
-                                        
+                                        final newSavedDeviceNames = widget.prefs
+                                                ?.getStringList(
+                                                    'selectedMidiDevices') ??
+                                            [];
+                                        final newAvailableDeviceNames =
+                                            devices.map((d) => d.name).toSet();
+                                        final newUnavailableDeviceNames =
+                                            newSavedDeviceNames
+                                                .where((name) =>
+                                                    !newAvailableDeviceNames
+                                                        .contains(name))
+                                                .toList();
+
                                         setDialogState(() {
                                           unavailableDeviceNames.clear();
-                                          unavailableDeviceNames.addAll(newUnavailableDeviceNames);
+                                          unavailableDeviceNames.addAll(
+                                              newUnavailableDeviceNames);
                                         });
-                                        
+
                                         if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             SnackBar(
-                                              content: Text('Removed $unavailableDeviceName from saved devices'),
+                                              content: Text(
+                                                  'Removed $unavailableDeviceName from saved devices'),
                                               duration: Duration(seconds: 2),
                                             ),
                                           );
                                         }
                                       } catch (e) {
                                         if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             SnackBar(
-                                              content: Text('Failed to remove: $e'),
+                                              content:
+                                                  Text('Failed to remove: $e'),
                                               duration: Duration(seconds: 2),
                                             ),
                                           );
                                         }
                                       }
                                     },
-                                    child: Text('Remove', style: TextStyle(color: Colors.red)),
+                                    child: Text('Remove',
+                                        style: TextStyle(color: Colors.red)),
                                   ),
                                 );
                               }
@@ -1542,18 +1626,26 @@ class _SettingsPageState extends State<SettingsPage> {
                     onPressed: () async {
                       // Scan for devices and update the dialog
                       final newDevices = await _midiCommand.devices ?? [];
-                      
+
                       // Recalculate unavailable devices
-                      final newSavedDeviceNames = widget.prefs?.getStringList('selectedMidiDevices') ?? [];
-                      final newAvailableDeviceNames = newDevices.map((d) => d.name).toSet();
-                      final newUnavailableDeviceNames = newSavedDeviceNames.where((name) => !newAvailableDeviceNames.contains(name)).toList();
-                      
+                      final newSavedDeviceNames =
+                          widget.prefs?.getStringList('selectedMidiDevices') ??
+                              [];
+                      final newAvailableDeviceNames =
+                          newDevices.map((d) => d.name).toSet();
+                      final newUnavailableDeviceNames = newSavedDeviceNames
+                          .where(
+                              (name) => !newAvailableDeviceNames.contains(name))
+                          .toList();
+
                       setDialogState(() {
                         devices.clear();
                         devices.addAll(newDevices);
-                        devices.removeWhere((device) => device.name.contains(appName));
+                        devices.removeWhere(
+                            (device) => device.name.contains(appName));
                         unavailableDeviceNames.clear();
-                        unavailableDeviceNames.addAll(newUnavailableDeviceNames);
+                        unavailableDeviceNames
+                            .addAll(newUnavailableDeviceNames);
                       });
                     },
                     icon: Icon(Icons.refresh),
@@ -1833,6 +1925,71 @@ class _SettingsPageState extends State<SettingsPage> {
                         }
                       },
                     ),
+                    SizedBox(height: 16),
+                    Text('Transposition',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    Row(
+                      children: [
+                        IconButton(
+                          tooltip: 'Transpose down one semitone',
+                          onPressed: transposition > -24
+                              ? () {
+                                  setState(() {
+                                    transposition--;
+                                    (savedSongs[currentSongName] as Map<String,
+                                            dynamic>)['transposition'] =
+                                        transposition;
+                                  });
+                                }
+                              : null,
+                          icon: Icon(Icons.remove),
+                        ),
+                        Expanded(
+                          child: Slider(
+                            value: transposition.toDouble(),
+                            min: -24,
+                            max: 24,
+                            divisions: 48,
+                            label: transposition > 0
+                                ? '+$transposition'
+                                : '$transposition',
+                            onChanged: (double value) {
+                              setState(() {
+                                transposition = value.round();
+                                (savedSongs[currentSongName] as Map<String,
+                                    dynamic>)['transposition'] = transposition;
+                              });
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Transpose up one semitone',
+                          onPressed: transposition < 24
+                              ? () {
+                                  setState(() {
+                                    transposition++;
+                                    (savedSongs[currentSongName] as Map<String,
+                                            dynamic>)['transposition'] =
+                                        transposition;
+                                  });
+                                }
+                              : null,
+                          icon: Icon(Icons.add),
+                        ),
+                        SizedBox(
+                          width: 44,
+                          child: Text(
+                            transposition > 0
+                                ? '+$transposition'
+                                : '$transposition',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
 
                     SizedBox(height: 24),
                     Divider(),
@@ -1968,8 +2125,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 fontSize: 16, fontWeight: FontWeight.bold)),
                         Row(
                           children: [
-                            Text('Enabled',
-                                style: TextStyle(fontSize: 14)),
+                            Text('Enabled', style: TextStyle(fontSize: 14)),
                             SizedBox(width: 8),
                             Switch(
                               value: instrumentEnabled,
@@ -2185,7 +2341,6 @@ class _KeyCaptureDialogState extends State<KeyCaptureDialog> {
                 ),
               ),
               SizedBox(height: 12),
-
             ],
           ),
           actions: [
