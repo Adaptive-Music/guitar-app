@@ -289,6 +289,78 @@ class _SettingsPageState extends State<SettingsPage> {
     song['order'] = order;
   }
 
+  Future<int?> _editSliderValue({
+    required String label,
+    required int value,
+    required int min,
+    required int max,
+  }) {
+    final formKey = GlobalKey<FormState>();
+    var input = value.toString();
+    return showDialog<int>(
+      context: context,
+      builder: (dialogContext) {
+        void submit() {
+          if (formKey.currentState!.validate()) {
+            Navigator.pop(dialogContext, int.parse(input.trim()));
+          }
+        }
+
+        return AlertDialog(
+          title: Text('Edit $label'),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              initialValue: input,
+              autofocus: true,
+              keyboardType: TextInputType.numberWithOptions(signed: min < 0),
+              decoration: InputDecoration(labelText: '$label ($min to $max)'),
+              onChanged: (value) => input = value,
+              onFieldSubmitted: (_) => submit(),
+              validator: (value) {
+                final number = int.tryParse(value?.trim() ?? '');
+                if (number == null || number < min || number > max) {
+                  return 'Enter a whole number from $min to $max';
+                }
+                return null;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: submit,
+              child: Text('Apply'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _editTransposition() async {
+    final value = await _editSliderValue(
+        label: 'Transpose', value: transposition, min: -24, max: 24);
+    if (!mounted || value == null) return;
+    setState(() {
+      transposition = value;
+      (savedSongs[currentSongName] as Map<String, dynamic>)['transposition'] =
+          value;
+    });
+  }
+
+  Future<void> _editVelocityBoost() async {
+    final value = await _editSliderValue(
+        label: 'Volume Boost', value: velocityBoost, min: 0, max: 10);
+    if (!mounted || value == null) return;
+    setState(() {
+      velocityBoost = value;
+    });
+  }
+
   void addChord() {
     setState(() {
       chords.add({'key': 'C', 'type': 'major'});
@@ -702,6 +774,7 @@ class _SettingsPageState extends State<SettingsPage> {
         };
         currentSongName = result;
         currentProgressionName = 'Default';
+        transposition = 0;
         chords = [
           {'key': 'C', 'type': 'major'}
         ];
@@ -1926,9 +1999,24 @@ class _SettingsPageState extends State<SettingsPage> {
                       },
                     ),
                     SizedBox(height: 16),
-                    Text('Transposition',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Transpose',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        TextButton(
+                          onPressed: _editTransposition,
+                          child: Text(
+                            transposition > 0
+                                ? '+$transposition'
+                                : '$transposition',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
                     Row(
                       children: [
                         IconButton(
@@ -1976,17 +2064,6 @@ class _SettingsPageState extends State<SettingsPage> {
                                 }
                               : null,
                           icon: Icon(Icons.add),
-                        ),
-                        SizedBox(
-                          width: 44,
-                          child: Text(
-                            transposition > 0
-                                ? '+$transposition'
-                                : '$transposition',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
                         ),
                       ],
                     ),
@@ -2168,12 +2245,35 @@ class _SettingsPageState extends State<SettingsPage> {
                     SizedBox(height: 16),
 
                     // 4. Velocity Boost Section
-                    Text('Volume Boost',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Volume Boost',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        TextButton(
+                          onPressed: _editVelocityBoost,
+                          child: Text(
+                            velocityBoost.toString(),
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
                     Row(
                       children: [
+                        IconButton(
+                          tooltip: 'Decrease volume boost',
+                          onPressed: velocityBoost > 0
+                              ? () {
+                                  setState(() {
+                                    velocityBoost--;
+                                  });
+                                }
+                              : null,
+                          icon: Icon(Icons.remove),
+                        ),
                         Expanded(
                           child: Slider(
                             value: velocityBoost.toDouble(),
@@ -2188,17 +2288,16 @@ class _SettingsPageState extends State<SettingsPage> {
                             },
                           ),
                         ),
-                        SizedBox(width: 16),
-                        SizedBox(
-                          width: 50,
-                          child: Text(
-                            velocityBoost.toString(),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
+                        IconButton(
+                          tooltip: 'Increase volume boost',
+                          onPressed: velocityBoost < 10
+                              ? () {
+                                  setState(() {
+                                    velocityBoost++;
+                                  });
+                                }
+                              : null,
+                          icon: Icon(Icons.add),
                         ),
                       ],
                     ),
